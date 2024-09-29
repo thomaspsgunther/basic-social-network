@@ -42,7 +42,7 @@ func (rs LikesResource) LikePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
 
@@ -59,7 +59,7 @@ func (rs LikesResource) LikePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid post id", http.StatusBadRequest)
 		return
 	}
 
@@ -92,7 +92,7 @@ func (rs LikesResource) UnlikePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
 
@@ -109,7 +109,7 @@ func (rs LikesResource) UnlikePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid post id", http.StatusBadRequest)
 		return
 	}
 
@@ -143,7 +143,7 @@ func (rs LikesResource) GetFromPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid post id", http.StatusBadRequest)
 		return
 	}
 

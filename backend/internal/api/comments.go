@@ -49,7 +49,7 @@ func (rs CommentsResource) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid request payload", http.StatusBadRequest)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (rs CommentsResource) GetFromPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid post id", http.StatusBadRequest)
 		return
 	}
 
@@ -127,7 +127,7 @@ func (rs CommentsResource) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid request payload", http.StatusBadRequest)
 		return
 	}
 
@@ -136,7 +136,7 @@ func (rs CommentsResource) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid comment id", http.StatusBadRequest)
 		return
 	}
 
@@ -181,7 +181,7 @@ func (rs CommentsResource) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid comment id", http.StatusBadRequest)
 		return
 	}
 
@@ -193,7 +193,7 @@ func (rs CommentsResource) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := posts.Get(comment.PostID)
+	post, err := posts.GetPost(comment.PostID)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

@@ -40,7 +40,7 @@ func (rs UsersResource) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid request payload", http.StatusBadRequest)
 		return
 	}
 
@@ -135,7 +135,7 @@ func (rs UsersResource) Get(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
 
@@ -179,7 +179,7 @@ func (rs UsersResource) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
 
@@ -231,7 +231,7 @@ func (rs UsersResource) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
 

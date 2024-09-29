@@ -3,6 +3,7 @@ package comments
 import (
 	"context"
 	"fmt"
+	"time"
 	database "y_net/internal/database/postgres"
 
 	"github.com/google/uuid"
@@ -14,6 +15,7 @@ type Comment struct {
 	PostID      uuid.UUID `json:"post_id"`
 	Description string    `json:"description"`
 	LikeCount   int       `json:"like_count"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 func (comment *Comment) Create() error {
@@ -110,7 +112,11 @@ func GetFromPost(postId uuid.UUID) ([]Comment, error) {
 
 	defer database.HandleTransaction(tx, err)
 
-	rows, err := tx.Query(context.Background(), "SELECT id, user_id, description, like_count FROM comments WHERE post_id = $1", postId)
+	rows, err := tx.Query(
+		context.Background(),
+		"SELECT id, user_id, description, like_count, created_at FROM comments WHERE post_id = $1 ORDER BY like_count DESC",
+		postId,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select comments: %w", err)
 	}
@@ -119,7 +125,7 @@ func GetFromPost(postId uuid.UUID) ([]Comment, error) {
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
-		if err := rows.Scan(&comment.ID, &comment.UserID, &comment.Description, &comment.LikeCount); err != nil {
+		if err := rows.Scan(&comment.ID, &comment.UserID, &comment.Description, &comment.LikeCount, &comment.CreatedAt); err != nil {
 			return nil, fmt.Errorf("failed to scan comment: %w", err)
 		}
 		comments = append(comments, comment)
@@ -148,8 +154,8 @@ func Get(id uuid.UUID) (Comment, error) {
 	var comment Comment
 	err = tx.QueryRow(
 		context.Background(),
-		"SELECT id, user_id, post_id, description, like_count FROM comments WHERE id = $1",
-		id).Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.Description, &comment.LikeCount)
+		"SELECT id, user_id, post_id FROM comments WHERE id = $1",
+		id).Scan(&comment.ID, &comment.UserID, &comment.PostID)
 	if err != nil {
 		return Comment{}, fmt.Errorf("failed to scan comment: %w", err)
 	}

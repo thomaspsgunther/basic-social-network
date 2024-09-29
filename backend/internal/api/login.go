@@ -36,7 +36,7 @@ func (rs LoginResource) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid request payload", http.StatusBadRequest)
 		return
 	}
 	correct, err := user.Authenticate()
@@ -62,11 +62,12 @@ func (rs LoginResource) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
+
 	id, err := users.GetUserIdByUsername(user.Username)
 	if err != nil {
 		logger.ServerLogger.Warn(err.Error())
 
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -100,7 +101,7 @@ func (rs LoginResource) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid request payload", http.StatusBadRequest)
 		return
 	}
 

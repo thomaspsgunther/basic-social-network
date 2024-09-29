@@ -1,9 +1,13 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -19,7 +23,7 @@ func (rs PostsResource) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Post("/", rs.Create) // POST /api/v1/posts - Create a new post
-	r.Get("/", rs.List)    // GET /api/v1/posts - Read a list of posts
+	r.Get("/", rs.List)    // GET /api/v1/posts?limit=10&cursor=base64string - Read a list of posts using pagination
 
 	r.Route("/{id}", func(r chi.Router) {
 		r.Get("/", rs.Get)       // GET /api/v1/posts/{id} - Read a single post by: id
@@ -28,7 +32,7 @@ func (rs PostsResource) Routes() chi.Router {
 	})
 
 	r.Route("/user", func(r chi.Router) {
-		r.Get("/{user_id}", rs.GetFromUser) // GET /api/v1/posts/user/{user_id} - Read a list of posts by: user_id
+		r.Get("/{user_id}", rs.GetFromUser) // GET /api/v1/posts/user/{user_id}?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
 	})
 
 	return r
@@ -53,7 +57,7 @@ func (rs PostsResource) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid request payload", http.StatusBadRequest)
 		return
 	}
 
@@ -68,7 +72,7 @@ func (rs PostsResource) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Request Handler - GET /api/v1/posts - Read a list of posts
+// Request Handler - GET /api/v1/posts?limit=10&cursor=base64string - Read a list of posts using pagination
 func (rs PostsResource) List(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
@@ -82,7 +86,25 @@ func (rs PostsResource) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, err := posts.GetAll()
+	limitStr := r.URL.Query().Get("limit")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid posts limit", http.StatusBadRequest)
+		return
+	}
+
+	cursor := r.URL.Query().Get("cursor")
+	lastCreatedAt, lastId, err := decodeCursor(cursor)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid posts limit", http.StatusBadRequest)
+		return
+	}
+
+	posts, err := posts.GetPosts(limit, lastCreatedAt, lastId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -122,11 +144,11 @@ func (rs PostsResource) Get(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid post id", http.StatusBadRequest)
 		return
 	}
 
-	post, err := posts.Get(postId)
+	post, err := posts.GetPost(postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -166,11 +188,11 @@ func (rs PostsResource) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid post id", http.StatusBadRequest)
 		return
 	}
 
-	ogPost, err := posts.Get(postId)
+	ogPost, err := posts.GetPost(postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -192,7 +214,7 @@ func (rs PostsResource) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid request payload", http.StatusBadRequest)
 		return
 	}
 
@@ -226,11 +248,11 @@ func (rs PostsResource) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid post id", http.StatusBadRequest)
 		return
 	}
 
-	ogPost, err := posts.Get(postId)
+	ogPost, err := posts.GetPost(postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -258,7 +280,7 @@ func (rs PostsResource) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Request Handler - GET /api/v1/posts/user/{user_id} - Read a list of posts by: user_id
+// Request Handler - GET /api/v1/posts/user/{user_id}?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
 func (rs PostsResource) GetFromUser(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
@@ -277,11 +299,28 @@ func (rs PostsResource) GetFromUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return
+	}
+	limitStr := r.URL.Query().Get("limit")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid posts limit", http.StatusBadRequest)
 		return
 	}
 
-	posts, err := posts.GetFromUser(userId)
+	cursor := r.URL.Query().Get("cursor")
+	lastCreatedAt, lastId, err := decodeCursor(cursor)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid posts limit", http.StatusBadRequest)
+		return
+	}
+
+	posts, err := posts.GetFromUser(userId, limit, lastCreatedAt, lastId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -300,4 +339,28 @@ func (rs PostsResource) GetFromUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
+}
+
+func decodeCursor(encodedCursor string) (time.Time, uuid.UUID, error) {
+	byt, err := base64.StdEncoding.DecodeString(encodedCursor)
+	if err != nil {
+		return time.Time{}, uuid.UUID{}, err
+	}
+
+	arrStr := strings.Split(string(byt), ",")
+	if len(arrStr) != 2 {
+		return time.Time{}, uuid.UUID{}, fmt.Errorf("invalid posts cursor")
+	}
+
+	lastCreatedAt, err := time.Parse(time.RFC3339Nano, arrStr[0])
+	if err != nil {
+		return time.Time{}, uuid.UUID{}, fmt.Errorf("invalid posts lastCreatedAt")
+	}
+
+	lastId, err := uuid.Parse(arrStr[1])
+	if err != nil {
+		return time.Time{}, uuid.UUID{}, fmt.Errorf("invalid posts lastId")
+	}
+
+	return lastCreatedAt, lastId, nil
 }

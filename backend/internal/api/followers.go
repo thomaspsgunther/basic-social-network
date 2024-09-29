@@ -50,7 +50,7 @@ func (rs FollowersResource) Follow(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (rs FollowersResource) Follow(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
 
@@ -101,7 +101,7 @@ func (rs FollowersResource) GetFollowers(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
 
@@ -144,14 +144,14 @@ func (rs FollowersResource) Unfollow(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
 	followedId, err := uuid.Parse(chi.URLParam(r, "followed_id"))
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
 
@@ -194,7 +194,7 @@ func (rs FollowersResource) GetFollowed(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
 
