@@ -1,0 +1,27 @@
+{
+  "folders": [
+    {
+      "name": "backend",
+      "path": "backend"
+    },
+    {
+      "name": "frontend",
+      "path": "frontend"
+    }
+  ],
+  "settings": {
+    "workbench.iconTheme": "material-icon-theme",
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "thunder-client.multiRootWorkspaceName": "",
+    "thunder-client.customLocation": "",
+    "commentTranslate.targetLanguage": "pt",
+    "commentTranslate.hover.enabled": true,
+    "commentTranslate.source": "Google",
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "[go]": {
+      "editor.defaultFormatter": "golang.go"
+    }
+  }
+}
