@@ -9,6 +9,10 @@ import (
 	"github.com/google/uuid"
 )
 
+type Comments struct {
+	CommentList []*Comment
+}
+
 type Comment struct {
 	ID          uuid.UUID `json:"id"`
 	UserID      uuid.UUID `json:"user_id"`
@@ -23,13 +27,13 @@ func (comment *Comment) Create() error {
 		return fmt.Errorf("comment text must not be empty")
 	}
 
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -51,13 +55,13 @@ func (comment *Comment) Create() error {
 func Update(comment Comment, id uuid.UUID) error {
 	comment.ID = id
 
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -77,13 +81,13 @@ func Update(comment Comment, id uuid.UUID) error {
 }
 
 func Delete(id uuid.UUID) error {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -99,13 +103,13 @@ func Delete(id uuid.UUID) error {
 }
 
 func GetFromPost(postId uuid.UUID) ([]Comment, error) {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -138,13 +142,13 @@ func GetFromPost(postId uuid.UUID) ([]Comment, error) {
 }
 
 func Get(id uuid.UUID) (Comment, error) {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return Comment{}, err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return Comment{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}

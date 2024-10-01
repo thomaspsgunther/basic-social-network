@@ -9,4 +9,5 @@ CREATE TABLE IF NOT EXISTS comments (
     updated_at timestamp DEFAULT (NOW() AT TIME ZONE 'utc')
 );
 CREATE INDEX idx_comments_post_id ON comments(post_id);
+CREATE INDEX idx_comments_like_count ON comments(like_count);
 CREATE TRIGGER update_modified_time BEFORE UPDATE ON comments FOR EACH ROW EXECUTE FUNCTION update_modified_column();

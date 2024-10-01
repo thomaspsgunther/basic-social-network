@@ -17,13 +17,13 @@ type Follower struct {
 func Follow(followerId uuid.UUID, followedId uuid.UUID) error {
 	follower := Follower{FollowerID: followerId, FollowedID: followedId}
 
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -43,13 +43,13 @@ func Follow(followerId uuid.UUID, followedId uuid.UUID) error {
 }
 
 func Unfollow(followerId uuid.UUID, followedId uuid.UUID) error {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -65,13 +65,13 @@ func Unfollow(followerId uuid.UUID, followedId uuid.UUID) error {
 }
 
 func GetFollowers(userId uuid.UUID) ([]users.User, error) {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -100,13 +100,13 @@ func GetFollowers(userId uuid.UUID) ([]users.User, error) {
 }
 
 func GetFollowed(userId uuid.UUID) ([]users.User, error) {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}

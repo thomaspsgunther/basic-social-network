@@ -17,13 +17,13 @@ type Like struct {
 func LikePost(userId uuid.UUID, postId uuid.UUID) error {
 	like := Like{UserID: userId, PostID: postId}
 
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -43,13 +43,13 @@ func LikePost(userId uuid.UUID, postId uuid.UUID) error {
 }
 
 func UnlikePost(userId uuid.UUID, postId uuid.UUID) error {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -65,13 +65,13 @@ func UnlikePost(userId uuid.UUID, postId uuid.UUID) error {
 }
 
 func GetFromPost(postId uuid.UUID) ([]users.User, error) {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}

@@ -13,7 +13,7 @@ import (
 
 var Postgres *pgxpool.Pool
 
-func PostgresConnect() error {
+func PgxConnect() error {
 	pgxPoolConfig, err := postgresConfig()
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func PostgresConnect() error {
 	return nil
 }
 
-func PostgresClose() {
+func PgxClose() {
 	Postgres.Close()
 }
 

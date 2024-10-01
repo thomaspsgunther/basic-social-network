@@ -17,14 +17,26 @@ type LikesResource struct{}
 func (rs LikesResource) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/{user_id}_{post_id}", rs.LikePost)     // POST /api/v1/likes/{user_id}-{post_id} - Like a post by: id
-	r.Delete("/{user_id}_{post_id}", rs.UnlikePost) // DELETE /api/v1/likes/{user_id}-{post_id} - Unlike a post by: id
-	r.Get("/{post_id}", rs.GetFromPost)             // GET /api/v1/likes/{post_id} - Read a list of users who liked a post by: post_id
+	r.Post("/{user_id}_{post_id}", rs.LikePost)     // POST /api/v1/likes/{user_id}_{post_id} - Like a post by: id
+	r.Delete("/{user_id}_{post_id}", rs.UnlikePost) // DELETE /api/v1/likes/{user_id}_{post_id} - Unlike a post by: id
+	r.Get("/{post_id}", rs.GetLikesFromPost)        // GET /api/v1/likes/{post_id} - Read a list of users who liked a post by: post_id
 
 	return r
 }
 
-// Request Handler - POST /api/v1/likes/{user_id}-{post_id} - Like a post by: id
+// LikePost     godoc
+// @Summary     Like a post by: id
+// @Description Like a post by: id
+// @Tags        likes
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       user_id path string true "User ID" Format(uuid)
+// @Param       post_id path string true "Post ID" Format(uuid)
+// @Success     200
+// @Failure     400
+// @Failure     401
+// @Failure     403
+// @Failure     500
+// @Router      /likes/{user_id}_{post_id} [post]
 func (rs LikesResource) LikePost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
@@ -74,7 +86,19 @@ func (rs LikesResource) LikePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Request Handler - DELETE /api/v1/likes/{user_id}-{post_id} - Unlike a post by: id
+// UnlikePost   godoc
+// @Summary     Unlike a post by: id
+// @Description Unlike a post by: id
+// @Tags        likes
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       user_id path string true "User ID" Format(uuid)
+// @Param       post_id path string true "Post ID" Format(uuid)
+// @Success     200
+// @Failure     400
+// @Failure     401
+// @Failure     403
+// @Failure     500
+// @Router      /likes/{user_id}_{post_id} [delete]
 func (rs LikesResource) UnlikePost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: delete %s", r.URL))
 
@@ -124,8 +148,19 @@ func (rs LikesResource) UnlikePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Request Handler - GET /api/v1/likes/{post_id} - Read a list of users who liked a post by: post_id
-func (rs LikesResource) GetFromPost(w http.ResponseWriter, r *http.Request) {
+// GetLikesFromPost godoc
+// @Summary         Read a list of users who liked a post by: post_id
+// @Description     Read a list of users who liked a post by: post_id
+// @Tags            likes
+// @Produce         json
+// @Param           Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param           post_id path string true "Post ID" Format(uuid)
+// @Success         200 {object} users.Users
+// @Failure         400
+// @Failure         401
+// @Failure         500
+// @Router          /likes/{post_id} [get]
+func (rs LikesResource) GetLikesFromPost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())

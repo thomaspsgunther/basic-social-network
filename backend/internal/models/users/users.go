@@ -11,6 +11,14 @@ import (
 	database "y_net/internal/database/postgres"
 )
 
+type TokenJson struct {
+	Token string `json:"token"`
+}
+
+type Users struct {
+	UserList []*User
+}
+
 type User struct {
 	ID            uuid.UUID `json:"id"`
 	Username      string    `json:"username"`
@@ -33,13 +41,13 @@ func (user *User) Create() error {
 	}
 	user.Password = hashedPassword
 
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -59,13 +67,13 @@ func (user *User) Create() error {
 }
 
 func GetAll() ([]User, error) {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -94,13 +102,13 @@ func GetAll() ([]User, error) {
 }
 
 func Get(id uuid.UUID) (User, error) {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return User{}, err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return User{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -111,7 +119,7 @@ func Get(id uuid.UUID) (User, error) {
 	err = tx.QueryRow(
 		context.Background(),
 		"SELECT id, username, email, full_name, description, avatar, follower_count FROM users WHERE id = $1",
-		id).Scan(&user.ID, &user.Username)
+		id).Scan(&user.ID, &user.Username, &user.Email, &user.FullName, &user.Description, &user.Avatar, &user.FollowerCount)
 	if err != nil {
 		return User{}, fmt.Errorf("failed to scan user: %w", err)
 	}
@@ -130,13 +138,13 @@ func Update(user User, id uuid.UUID) error {
 		user.Password = hashedPassword
 	}
 
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -167,13 +175,13 @@ func Update(user User, id uuid.UUID) error {
 }
 
 func Delete(id uuid.UUID) error {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -189,13 +197,13 @@ func Delete(id uuid.UUID) error {
 }
 
 func (user *User) Authenticate() (bool, error) {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return false, err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return false, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -213,13 +221,13 @@ func (user *User) Authenticate() (bool, error) {
 
 // GetUsernameByUserID checks if a user exists in database by given id
 func GetUsernameByUserID(id uuid.UUID) (string, error) {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return "", err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return "", fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -237,13 +245,13 @@ func GetUsernameByUserID(id uuid.UUID) (string, error) {
 
 // GetUserIdByUsername checks if a user exists in database by given username
 func GetUserIdByUsername(username string) (uuid.UUID, error) {
-	connection, err := database.Postgres.Acquire(context.Background())
+	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return uuid.UUID{}, err
 	}
-	defer connection.Release()
+	defer conn.Release()
 
-	tx, err := connection.Begin(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}

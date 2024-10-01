@@ -22,24 +22,36 @@ type PostsResource struct{}
 func (rs PostsResource) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/", rs.Create) // POST /api/v1/posts - Create a new post
-	r.Get("/", rs.List)    // GET /api/v1/posts?limit=10&cursor=base64string - Read a list of posts using pagination
+	r.Post("/", rs.CreatePost) // POST /api/v1/posts - Create a new post
+	r.Get("/", rs.ListPosts)   // GET /api/v1/posts?limit=10&cursor=base64string - Read a list of posts using pagination
 
 	r.Route("/{id}", func(r chi.Router) {
-		r.Get("/", rs.Get)       // GET /api/v1/posts/{id} - Read a single post by: id
-		r.Post("/", rs.Update)   // POST /api/v1/posts/{id} - Update a single post by: id
-		r.Delete("/", rs.Delete) // DELETE /api/v1/posts/{id} - Delete a single post by: id
+		r.Get("/", rs.GetPost)       // GET /api/v1/posts/{id} - Read a single post by: id
+		r.Post("/", rs.UpdatePost)   // POST /api/v1/posts/{id} - Update a single post by: id
+		r.Delete("/", rs.DeletePost) // DELETE /api/v1/posts/{id} - Delete a single post by: id
 	})
 
 	r.Route("/user", func(r chi.Router) {
-		r.Get("/{user_id}", rs.GetFromUser) // GET /api/v1/posts/user/{user_id}?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
+		r.Get("/{user_id}", rs.ListPostsFromUser) // GET /api/v1/posts/user/{user_id}?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
 	})
 
 	return r
 }
 
-// Request Handler - POST /api/v1/posts - Create a new post
-func (rs PostsResource) Create(w http.ResponseWriter, r *http.Request) {
+// CreatePost   godoc
+// @Summary     Create a new post
+// @Description Create a new post
+// @Tags        posts
+// @Accept      json
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       body body posts.Post true "Post Object"
+// @Success     200
+// @Failure     400
+// @Failure     401
+// @Failure     403
+// @Failure     500
+// @Router      /posts [post]
+func (rs PostsResource) CreatePost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -61,6 +73,15 @@ func (rs PostsResource) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if authUser.ID != post.UserID {
+		err := fmt.Errorf("forbidden post create attempt from user: %v", authUser.ID)
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
 	err = post.Create()
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
@@ -72,8 +93,20 @@ func (rs PostsResource) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Request Handler - GET /api/v1/posts?limit=10&cursor=base64string - Read a list of posts using pagination
-func (rs PostsResource) List(w http.ResponseWriter, r *http.Request) {
+// ListPosts    godoc
+// @Summary     Read a list of posts using pagination
+// @Description Read a list of posts using pagination
+// @Tags        posts
+// @Produce     json
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       limit query int true "limit of pagination"
+// @Param       cursor query string true "cursor for pagination" Format(byte)
+// @Success     200 {object} posts.Posts
+// @Failure     400
+// @Failure     401
+// @Failure     500
+// @Router      /posts [get]
+func (rs PostsResource) ListPosts(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -125,8 +158,19 @@ func (rs PostsResource) List(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// Request Handler - GET /api/v1/posts/{id} - Read a single post by: id
-func (rs PostsResource) Get(w http.ResponseWriter, r *http.Request) {
+// GetPost      godoc
+// @Summary     Read a single post by: id
+// @Description Read a single post by: id
+// @Tags        posts
+// @Produce     json
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       id path string true "Post ID" Format(uuid)
+// @Success     200 {object} posts.Post
+// @Failure     400
+// @Failure     401
+// @Failure     500
+// @Router      /posts/{id} [get]
+func (rs PostsResource) GetPost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -169,8 +213,21 @@ func (rs PostsResource) Get(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// Request Handler - POST /api/v1/users/{id} - Update a single post by: id
-func (rs PostsResource) Update(w http.ResponseWriter, r *http.Request) {
+// UpdatePost   godoc
+// @Summary     Update a single post by: id
+// @Description Update a single post by: id
+// @Tags        posts
+// @Accept      json
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       id path string true "Post ID" Format(uuid)
+// @Param       body body posts.Post true "Post Object"
+// @Success     200
+// @Failure     400
+// @Failure     401
+// @Failure     403
+// @Failure     500
+// @Router      /posts/{id} [post]
+func (rs PostsResource) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -229,8 +286,19 @@ func (rs PostsResource) Update(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Request Handler - DELETE /api/v1/posts/{id} - Delete a single post by: id
-func (rs PostsResource) Delete(w http.ResponseWriter, r *http.Request) {
+// DeletePost   godoc
+// @Summary     Delete a single post by: id
+// @Description Delete a single post by: id
+// @Tags        posts
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       id path string true "Post ID" Format(uuid)
+// @Success     200
+// @Failure     400
+// @Failure     401
+// @Failure     403
+// @Failure     500
+// @Router      /posts/{id} [delete]
+func (rs PostsResource) DeletePost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: delete %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -280,8 +348,21 @@ func (rs PostsResource) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Request Handler - GET /api/v1/posts/user/{user_id}?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
-func (rs PostsResource) GetFromUser(w http.ResponseWriter, r *http.Request) {
+// ListPostsFromUser godoc
+// @Summary          Read a list of posts by: user_id using pagination
+// @Description      Read a list of posts by: user_id using pagination
+// @Tags             posts
+// @Produce          json
+// @Param            Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param            user_id path string true "User ID" Format(uuid)
+// @Param            limit query int true "limit of pagination"
+// @Param            cursor query string true "cursor for pagination" Format(byte)
+// @Success          200 {object} posts.Posts
+// @Failure          400
+// @Failure          401
+// @Failure          500
+// @Router           /posts/user/{user_id} [get]
+func (rs PostsResource) ListPostsFromUser(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -302,6 +383,7 @@ func (rs PostsResource) GetFromUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid user id", http.StatusBadRequest)
 		return
 	}
+
 	limitStr := r.URL.Query().Get("limit")
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {

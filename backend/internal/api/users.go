@@ -19,20 +19,31 @@ type UsersResource struct{}
 func (rs UsersResource) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/", rs.Create) // POST /api/v1/users - Create a new user
-	r.Get("/", rs.List)    // GET /api/v1/users - Read a list of users
+	r.Post("/", rs.CreateUser) // POST /api/v1/users - Create a new user
+	r.Get("/", rs.ListUsers)   // GET /api/v1/users - Read a list of users
 
 	r.Route("/{id}", func(r chi.Router) {
-		r.Get("/", rs.Get)       // GET /api/v1/users/{id} - Read a single user by: id
-		r.Post("/", rs.Update)   // POST /api/v1/users/{id} - Update a single user by: id
-		r.Delete("/", rs.Delete) // DELETE /api/v1/users/{id} - Delete a single user by: id
+		r.Get("/", rs.GetUser)       // GET /api/v1/users/{id} - Read a single user by: id
+		r.Post("/", rs.UpdateUser)   // POST /api/v1/users/{id} - Update a single user by: id
+		r.Delete("/", rs.DeleteUser) // DELETE /api/v1/users/{id} - Delete a single user by: id
 	})
 
 	return r
 }
 
-// Request Handler - POST /api/v1/users - Create a new user
-func (rs UsersResource) Create(w http.ResponseWriter, r *http.Request) {
+// CreateUser   godoc
+// @Summary     Create a new user
+// @Description Create a new user
+// @Tags        users
+// @Accept      json
+// @Produce     json
+// @Param       body body users.User true "User Object"
+// @Success     200 {object} users.TokenJson
+// @Failure     400
+// @Failure     401
+// @Failure     500
+// @Router      /users [post]
+func (rs UsersResource) CreateUser(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	var user users.User
@@ -68,7 +79,7 @@ func (rs UsersResource) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(tokenJson{Token: tokenStr})
+	response, err := json.Marshal(users.TokenJson{Token: tokenStr})
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -81,8 +92,17 @@ func (rs UsersResource) Create(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// Request Handler - GET /api/v1/users - Read a list of users
-func (rs UsersResource) List(w http.ResponseWriter, r *http.Request) {
+// ListUsers    godoc
+// @Summary     Read a list of users
+// @Description Read a list of users
+// @Tags        users
+// @Produce     json
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Success     200 {object} users.Users
+// @Failure     401
+// @Failure     500
+// @Router      /users [get]
+func (rs UsersResource) ListUsers(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -116,8 +136,19 @@ func (rs UsersResource) List(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// Request Handler - GET /api/v1/users/{id} - Read a single user by: id
-func (rs UsersResource) Get(w http.ResponseWriter, r *http.Request) {
+// GetUser      godoc
+// @Summary     Read a single user by: id
+// @Description Read a single user by: id
+// @Tags        users
+// @Produce     json
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       id path string true "User ID" Format(uuid)
+// @Success     200 {object} users.User
+// @Failure     400
+// @Failure     401
+// @Failure     500
+// @Router      /users/{id} [get]
+func (rs UsersResource) GetUser(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -160,8 +191,21 @@ func (rs UsersResource) Get(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// Request Handler - POST /api/v1/users/{id} - Update a single user by: id
-func (rs UsersResource) Update(w http.ResponseWriter, r *http.Request) {
+// UpdateUser   godoc
+// @Summary     Update a single user by: id
+// @Description Update a single user by: id
+// @Tags        users
+// @Accept      json
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       id path string true "User ID" Format(uuid)
+// @Param       body body users.User true "User Object"
+// @Success     200
+// @Failure     400
+// @Failure     401
+// @Failure     403
+// @Failure     500
+// @Router      /users/{id} [post]
+func (rs UsersResource) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -197,7 +241,7 @@ func (rs UsersResource) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "invalid request payload", http.StatusBadRequest)
 		return
 	}
 
@@ -212,8 +256,19 @@ func (rs UsersResource) Update(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Request Handler - DELETE /api/v1/users/{id} - Delete a single user by: id
-func (rs UsersResource) Delete(w http.ResponseWriter, r *http.Request) {
+// DeleteUser   godoc
+// @Summary     Delete a single user by: id
+// @Description Delete a single user by: id
+// @Tags        users
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       id path string true "User ID" Format(uuid)
+// @Success     200
+// @Failure     400
+// @Failure     401
+// @Failure     403
+// @Failure     500
+// @Router      /users/{id} [delete]
+func (rs UsersResource) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: delete %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())

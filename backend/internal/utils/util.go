@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -157,13 +156,4 @@ func Filter[T any](ss []T, test func(T) bool) (ret []T) {
 		}
 	}
 	return
-}
-
-func GetBoolFromString(booleanText string) (bool, error) {
-	boolValue, err := strconv.ParseBool(booleanText)
-	if err != nil {
-		return false, fmt.Errorf("error parsing string for bool")
-	}
-
-	return boolValue, nil
 }

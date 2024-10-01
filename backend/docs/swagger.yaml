@@ -1,0 +1,871 @@
+basePath: /api/v1/
+definitions:
+  comments.Comment:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      like_count:
+        type: integer
+      post_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  comments.Comments:
+    properties:
+      commentList:
+        items:
+          $ref: '#/definitions/comments.Comment'
+        type: array
+    type: object
+  posts.Post:
+    properties:
+      comment_count:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      image:
+        type: string
+      like_count:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  posts.Posts:
+    properties:
+      postList:
+        items:
+          $ref: '#/definitions/posts.Post'
+        type: array
+    type: object
+  users.TokenJson:
+    properties:
+      token:
+        type: string
+    type: object
+  users.User:
+    properties:
+      avatar:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      follower_count:
+        type: integer
+      full_name:
+        type: string
+      id:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  users.Users:
+    properties:
+      userList:
+        items:
+          $ref: '#/definitions/users.User'
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API for a basic social network.
+  license:
+    name: MIT
+    url: https://opensource.org/license/mit
+  title: Y API
+  version: "1.0"
+paths:
+  /comments:
+    post:
+      consumes:
+      - application/json
+      description: Create a new comment
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Comment Object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/comments.Comment'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: Create a new comment
+      tags:
+      - comments
+  /comments/{id}:
+    delete:
+      description: 'Delete a single comment by: id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Comment ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: 'Delete a single comment by: id'
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      description: 'Update a single comment by: id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Comment ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Comment Object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/comments.Comment'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: 'Update a single comment by: id'
+      tags:
+      - comments
+  /comments/{post_id}:
+    get:
+      description: 'Read a list of comments by: post_id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Post ID
+        format: uuid
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/comments.Comments'
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: 'Read a list of comments by: post_id'
+      tags:
+      - comments
+  /followers/{follower_id}_{followed_id}:
+    delete:
+      description: 'Unfollow a user by: id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Follower ID
+        format: uuid
+        in: path
+        name: follower_id
+        required: true
+        type: string
+      - description: Followed ID
+        format: uuid
+        in: path
+        name: followed_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: 'Unfollow a user by: id'
+      tags:
+      - followers
+    post:
+      description: 'Follow a user by: id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Follower ID
+        format: uuid
+        in: path
+        name: follower_id
+        required: true
+        type: string
+      - description: Followed ID
+        format: uuid
+        in: path
+        name: followed_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: 'Follow a user by: id'
+      tags:
+      - followers
+  /followers/{user_id}:
+    get:
+      description: 'Read a list of who follows a user by: user_id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User ID
+        format: uuid
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.Users'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: 'Read a list of who follows a user by: user_id'
+      tags:
+      - followers
+  /followers/followed/{user_id}:
+    get:
+      description: 'Read a list of who a user follows by: user_id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User ID
+        format: uuid
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.Users'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: 'Read a list of who a user follows by: user_id'
+      tags:
+      - followers
+  /likes/{post_id}:
+    get:
+      description: 'Read a list of users who liked a post by: post_id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Post ID
+        format: uuid
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.Users'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: 'Read a list of users who liked a post by: post_id'
+      tags:
+      - likes
+  /likes/{user_id}_{post_id}:
+    delete:
+      description: 'Unlike a post by: id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User ID
+        format: uuid
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: Post ID
+        format: uuid
+        in: path
+        name: post_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: 'Unlike a post by: id'
+      tags:
+      - likes
+    post:
+      description: 'Like a post by: id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User ID
+        format: uuid
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: Post ID
+        format: uuid
+        in: path
+        name: post_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: 'Like a post by: id'
+      tags:
+      - likes
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login user
+      parameters:
+      - description: User Object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.TokenJson'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: Login user
+      tags:
+      - login
+  /login/refreshtoken:
+    post:
+      consumes:
+      - application/json
+      description: Refresh user token
+      parameters:
+      - description: Token Object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.TokenJson'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.TokenJson'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: Refresh user token
+      tags:
+      - login
+  /posts:
+    get:
+      description: Read a list of posts using pagination
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: limit of pagination
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: cursor for pagination
+        format: byte
+        in: query
+        name: cursor
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/posts.Posts'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: Read a list of posts using pagination
+      tags:
+      - posts
+    post:
+      consumes:
+      - application/json
+      description: Create a new post
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Post Object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/posts.Post'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: Create a new post
+      tags:
+      - posts
+  /posts/{id}:
+    delete:
+      description: 'Delete a single post by: id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Post ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: 'Delete a single post by: id'
+      tags:
+      - posts
+    get:
+      description: 'Read a single post by: id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Post ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/posts.Post'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: 'Read a single post by: id'
+      tags:
+      - posts
+    post:
+      consumes:
+      - application/json
+      description: 'Update a single post by: id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Post ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Post Object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/posts.Post'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: 'Update a single post by: id'
+      tags:
+      - posts
+  /posts/user/{user_id}:
+    get:
+      description: 'Read a list of posts by: user_id using pagination'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User ID
+        format: uuid
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: limit of pagination
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: cursor for pagination
+        format: byte
+        in: query
+        name: cursor
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/posts.Posts'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: 'Read a list of posts by: user_id using pagination'
+      tags:
+      - posts
+  /users:
+    get:
+      description: Read a list of users
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.Users'
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: Read a list of users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User Object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.TokenJson'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: Create a new user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: 'Delete a single user by: id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: 'Delete a single user by: id'
+      tags:
+      - users
+    get:
+      description: 'Read a single user by: id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.User'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: 'Read a single user by: id'
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: 'Update a single user by: id'
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User Object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.User'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      summary: 'Update a single user by: id'
+      tags:
+      - users
+swagger: "2.0"

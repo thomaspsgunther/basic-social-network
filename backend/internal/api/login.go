@@ -14,10 +14,6 @@ import (
 
 type LoginResource struct{}
 
-type tokenJson struct {
-	Token string `json:"token"`
-}
-
 func (rs LoginResource) Routes() chi.Router {
 	r := chi.NewRouter()
 
@@ -27,7 +23,18 @@ func (rs LoginResource) Routes() chi.Router {
 	return r
 }
 
-// Request Handler - POST /api/v1/login - Login user
+// Login        godoc
+// @Summary     Login user
+// @Description Login user
+// @Tags        login
+// @Accept      json
+// @Produce     json
+// @Param       body body users.User true "User Object"
+// @Success     200 {object} users.TokenJson
+// @Failure     400
+// @Failure     401
+// @Failure     500
+// @Router      /login [post]
 func (rs LoginResource) Login(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
@@ -79,7 +86,7 @@ func (rs LoginResource) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(tokenJson{Token: tokenStr})
+	response, err := json.Marshal(users.TokenJson{Token: tokenStr})
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -92,11 +99,22 @@ func (rs LoginResource) Login(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// POST /api/v1/login/refreshtoken - Refresh user token
+// RefreshToken godoc
+// @Summary     Refresh user token
+// @Description Refresh user token
+// @Tags        login
+// @Accept      json
+// @Produce     json
+// @Param       body body users.TokenJson true "Token Object"
+// @Success     200 {object} users.TokenJson
+// @Failure     400
+// @Failure     401
+// @Failure     500
+// @Router      /login/refreshtoken [post]
 func (rs LoginResource) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
-	var token tokenJson
+	var token users.TokenJson
 	err := json.NewDecoder(r.Body).Decode(&token)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
@@ -122,7 +140,7 @@ func (rs LoginResource) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(tokenJson{Token: tokenStr})
+	response, err := json.Marshal(users.TokenJson{Token: tokenStr})
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

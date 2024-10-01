@@ -6,11 +6,14 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/go-chi/chi/v5"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"github.com/zishang520/socket.io/v2/socket"
 
+	_ "y_net/docs"
 	"y_net/internal/api"
 	"y_net/internal/auth"
 	database "y_net/internal/database/postgres"
@@ -19,6 +22,13 @@ import (
 	"y_net/internal/utils"
 )
 
+// @title        Y API
+// @version      1.0
+// @description  API for a basic social network.
+// @license.name MIT
+// @license.url  https://opensource.org/license/mit
+// @host         localhost:8080
+// @BasePath     /api/v1/
 func main() {
 	// Start logging
 	err := logger.InitLogger("daily")
@@ -36,7 +46,7 @@ func main() {
 	}
 
 	// Check whether to connect to PostgreSQL or not
-	connectPG, err := utils.GetBoolFromString(os.Getenv("PG_CONN"))
+	connectPG, err := strconv.ParseBool(os.Getenv("PG_CONN"))
 	if err != nil {
 		logger.ServerLogger.Info("--------------------------------------------------------------------")
 		logger.ServerLogger.Error(err.Error())
@@ -44,17 +54,17 @@ func main() {
 
 	// DB connect
 	if connectPG {
-		err := database.PostgresConnect()
+		err := database.PgxConnect()
 		if err != nil {
 			logger.ServerLogger.Info("--------------------------------------------------------------------")
 			logger.ServerLogger.Fatalf("failed to connect PostgreSQL: %v", err)
 		}
-		defer database.PostgresClose()
+		defer database.PgxClose()
 	}
 
 	// DB migrations
 	if connectPG {
-		err := database.PostgresMigration()
+		err := database.PgxMigration()
 		if err != nil {
 			logger.ServerLogger.Info("--------------------------------------------------------------------")
 			logger.ServerLogger.Fatalf("failed PostgreSQL migrations: %v", err)
@@ -67,16 +77,19 @@ func main() {
 	socketio.ConnectionHandler(io)
 
 	// Routes setup
-	router := chi.NewRouter()
-	router.Use(auth.Middleware())
-	router.Handle("/socket.io/", io.ServeHandler(nil))
-	router.HandleFunc("/api/v1/", rootFunc)
-	router.Mount("/api/v1/login", api.LoginResource{}.Routes())
-	router.Mount("/api/v1/users", api.UsersResource{}.Routes())
-	router.Mount("/api/v1/followers", api.FollowersResource{}.Routes())
-	router.Mount("/api/v1/posts", api.PostsResource{}.Routes())
-	router.Mount("/api/v1/likes", api.LikesResource{}.Routes())
-	router.Mount("/api/v1/comments", api.CommentsResource{}.Routes())
+	r := chi.NewRouter()
+	r.Use(auth.Middleware())
+	r.Handle("/socket.io/", io.ServeHandler(nil))
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
+	))
+	r.HandleFunc("/api/v1/", rootFunc)
+	r.Mount("/api/v1/login", api.LoginResource{}.Routes())
+	r.Mount("/api/v1/users", api.UsersResource{}.Routes())
+	r.Mount("/api/v1/followers", api.FollowersResource{}.Routes())
+	r.Mount("/api/v1/posts", api.PostsResource{}.Routes())
+	r.Mount("/api/v1/likes", api.LikesResource{}.Routes())
+	r.Mount("/api/v1/comments", api.CommentsResource{}.Routes())
 
 	// Start the server api
 	host := os.Getenv("HTTP_HOST")
@@ -85,7 +98,7 @@ func main() {
 	logger.ServerLogger.Info(fmt.Sprintf("server running on http://%s:%s/api/v1/", host, port))
 	logger.ServerLogger.Info("--------------------------------------------------------------------")
 
-	go http.ListenAndServe(":"+port, router)
+	go http.ListenAndServe(":"+port, r)
 
 	// Shutdown server
 	exit := make(chan struct{})

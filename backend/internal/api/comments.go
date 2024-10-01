@@ -19,19 +19,31 @@ type CommentsResource struct{}
 func (rs CommentsResource) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/", rs.Create)              // POST /api/v1/comments - Create a new comment
-	r.Get("/{post_id}", rs.GetFromPost) // GET /api/v1/comments/{post_id} - Read a list of comments by: post_id
+	r.Post("/", rs.CreateComment)               // POST /api/v1/comments - Create a new comment
+	r.Get("/{post_id}", rs.GetCommentsFromPost) // GET /api/v1/comments/{post_id} - Read a list of comments by: post_id
 
 	r.Route("/{id}", func(r chi.Router) {
-		r.Post("/", rs.Update)   // POST /api/v1/comments/{id} - Update a single comment by: id
-		r.Delete("/", rs.Delete) // DELETE /api/v1/comments/{id} - Delete a single comment by: id
+		r.Post("/", rs.UpdateComment)   // POST /api/v1/comments/{id} - Update a single comment by: id
+		r.Delete("/", rs.DeleteComment) // DELETE /api/v1/comments/{id} - Delete a single comment by: id
 	})
 
 	return r
 }
 
-// Request Handler - POST /api/v1/comments - Create a new comment
-func (rs CommentsResource) Create(w http.ResponseWriter, r *http.Request) {
+// CreateComment godoc
+// @Summary      Create a new comment
+// @Description  Create a new comment
+// @Tags         comments
+// @Accept       json
+// @Param        Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param        body body comments.Comment true "Comment Object"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /comments [post]
+func (rs CommentsResource) CreateComment(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -44,8 +56,8 @@ func (rs CommentsResource) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var post posts.Post
-	err := json.NewDecoder(r.Body).Decode(&post)
+	var comment comments.Comment
+	err := json.NewDecoder(r.Body).Decode(&comment)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -53,7 +65,16 @@ func (rs CommentsResource) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = post.Create()
+	if authUser.ID != comment.UserID {
+		err := fmt.Errorf("forbidden comment create attempt from user: %v", authUser.ID)
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	err = comment.Create()
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -64,8 +85,18 @@ func (rs CommentsResource) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Request Handler - GET /api/v1/comments/{post_id} - Read a list of comments by: post_id
-func (rs CommentsResource) GetFromPost(w http.ResponseWriter, r *http.Request) {
+// GetCommentsFromPost godoc
+// @Summary            Read a list of comments by: post_id
+// @Description        Read a list of comments by: post_id
+// @Tags               comments
+// @Produce            json
+// @Param              Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param              post_id path string true "Post ID" Format(uuid)
+// @Success            200 {object} comments.Comments
+// @Failure            401
+// @Failure            500
+// @Router             /comments/{post_id} [get]
+func (rs CommentsResource) GetCommentsFromPost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -108,8 +139,21 @@ func (rs CommentsResource) GetFromPost(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// Request Handler - POST /api/v1/comments/{id} - Update a single comment by: id
-func (rs CommentsResource) Update(w http.ResponseWriter, r *http.Request) {
+// UpdateComment godoc
+// @Summary      Update a single comment by: id
+// @Description  Update a single comment by: id
+// @Tags         comments
+// @Accept       json
+// @Param        Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param        id path string true "Comment ID" Format(uuid)
+// @Param        body body comments.Comment true "Comment Object"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /comments/{id} [post]
+func (rs CommentsResource) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -162,8 +206,19 @@ func (rs CommentsResource) Update(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Request Handler - DELETE /api/v1/comments/{id} - Delete a single comment by: id
-func (rs CommentsResource) Delete(w http.ResponseWriter, r *http.Request) {
+// DeleteComment godoc
+// @Summary      Delete a single comment by: id
+// @Description  Delete a single comment by: id
+// @Tags         comments
+// @Param        Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param        id path string true "Comment ID" Format(uuid)
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /comments/{id} [delete]
+func (rs CommentsResource) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: delete %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
