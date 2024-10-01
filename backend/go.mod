@@ -9,6 +9,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/joho/godotenv v1.5.1
 	github.com/swaggo/http-swagger/v2 v2.0.2
+	github.com/swaggo/swag v1.16.3
 	github.com/zishang520/socket.io/v2 v2.3.2
 	golang.org/x/crypto v0.27.0
 )
@@ -34,7 +35,6 @@ require (
 	github.com/quic-go/quic-go v0.47.0 // indirect
 	github.com/quic-go/webtransport-go v0.8.0 // indirect
 	github.com/swaggo/files/v2 v2.0.1 // indirect
-	github.com/swaggo/swag v1.16.3 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
