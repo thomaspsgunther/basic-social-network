@@ -11,3 +11,5 @@ Everything in /backend/internal/database/postgres/migrations/000001_init.sql nee
 Remember to create a .env file based on .env.example and adjust it for your own environment.
 
 To run the backend, first execute the command **go mod tidy** to make sure you have the dependencies of the project installed and ready to go, then just execute the command **go run server.go**, or, more likely, **go run ./cmd/app/server.go**, it depends on what directory you're running it from.
+
+Documentation is available through Swagger, go to **host:port/swagger/index.html** to access it.
