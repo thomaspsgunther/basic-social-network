@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -66,7 +67,7 @@ func (user *User) Create() error {
 	return nil
 }
 
-func GetAll() ([]User, error) {
+func Get(idList []uuid.UUID) ([]User, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
@@ -80,7 +81,15 @@ func GetAll() ([]User, error) {
 
 	defer database.HandleTransaction(tx, err)
 
-	rows, err := tx.Query(context.Background(), "SELECT id, username, full_name, avatar FROM users")
+	var placeholders []string
+	for i := 0; i < len(idList); i++ {
+		placeholders = append(placeholders, fmt.Sprintf("$%d", len(idList)+1))
+	}
+
+	placeholdersClause := strings.Join(placeholders, ", ")
+	query := fmt.Sprintf("SELECT id, username, full_name, avatar FROM users WHERE id IN (%s)", placeholdersClause)
+
+	rows, err := tx.Query(context.Background(), query, idList)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select users: %w", err)
 	}
@@ -101,30 +110,43 @@ func GetAll() ([]User, error) {
 	return users, nil
 }
 
-func Get(id uuid.UUID) (User, error) {
+func GetUsersBySearch(searchStr string) ([]User, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
-		return User{}, err
+		return nil, err
 	}
 	defer conn.Release()
 
 	tx, err := conn.Begin(context.Background())
 	if err != nil {
-		return User{}, fmt.Errorf("failed to begin transaction: %w", err)
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer database.HandleTransaction(tx, err)
 
-	var user User
-	err = tx.QueryRow(
-		context.Background(),
-		"SELECT id, username, email, full_name, description, avatar, follower_count FROM users WHERE id = $1",
-		id).Scan(&user.ID, &user.Username, &user.Email, &user.FullName, &user.Description, &user.Avatar, &user.FollowerCount)
+	query := "SELECT id, username, full_name, avatar FROM users WHERE username ILIKE $1 OR full_name ILIKE $1"
+
+	searchPattern := "%" + searchStr + "%"
+
+	rows, err := tx.Query(context.Background(), query, searchPattern)
 	if err != nil {
-		return User{}, fmt.Errorf("failed to scan user: %w", err)
+		return nil, fmt.Errorf("failed to select users: %w", err)
+	}
+	defer rows.Close()
+
+	var users []User
+	for rows.Next() {
+		var user User
+		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
+			return nil, fmt.Errorf("failed to scan user: %w", err)
+		}
+		users = append(users, user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error reading rows: %w", err)
 	}
 
-	return user, nil
+	return users, nil
 }
 
 func Update(user User, id uuid.UUID) error {

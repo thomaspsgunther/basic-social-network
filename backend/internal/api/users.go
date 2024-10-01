@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -19,13 +20,16 @@ type UsersResource struct{}
 func (rs UsersResource) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/", rs.CreateUser) // POST /api/v1/users - Create a new user
-	r.Get("/", rs.ListUsers)   // GET /api/v1/users - Read a list of users
+	r.Post("/", rs.CreateUser)       // POST /api/v1/users - Create a new user
+	r.Get("/{id_list}", rs.GetUsers) // GET /api/v1/users/{id_list} - Read a list of users by: id_list
 
 	r.Route("/{id}", func(r chi.Router) {
-		r.Get("/", rs.GetUser)       // GET /api/v1/users/{id} - Read a single user by: id
 		r.Post("/", rs.UpdateUser)   // POST /api/v1/users/{id} - Update a single user by: id
 		r.Delete("/", rs.DeleteUser) // DELETE /api/v1/users/{id} - Delete a single user by: id
+	})
+
+	r.Route("/search", func(r chi.Router) {
+		r.Get("/{search_term}", rs.SearchUsers) // GET /api/v1/users/search/{search_term} - Read a list of users by: search_term
 	})
 
 	return r
@@ -92,17 +96,19 @@ func (rs UsersResource) CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// ListUsers    godoc
-// @Summary     Read a list of users
-// @Description Read a list of users
+// GetUsers     godoc
+// @Summary     Read a list of users by: id_list
+// @Description Read a list of users by: id_list
 // @Tags        users
 // @Produce     json
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       id_list path string true "User ID List"
 // @Success     200 {object} users.Users
+// @Failure     400
 // @Failure     401
 // @Failure     500
-// @Router      /users [get]
-func (rs UsersResource) ListUsers(w http.ResponseWriter, r *http.Request) {
+// @Router      /users/{id_list} [get]
+func (rs UsersResource) GetUsers(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -115,7 +121,23 @@ func (rs UsersResource) ListUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users, err := users.GetAll()
+	idListOG := chi.URLParam(r, "id_list")
+	idListStr := strings.Split(idListOG, ",")
+
+	var idList []uuid.UUID
+	for _, id := range idListStr {
+		userId, err := uuid.Parse(id)
+		if err != nil {
+			logger.ServerLogger.Error(err.Error())
+
+			http.Error(w, "invalid user id", http.StatusBadRequest)
+			return
+		}
+
+		idList = append(idList, userId)
+	}
+
+	users, err := users.Get(idList)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -136,19 +158,19 @@ func (rs UsersResource) ListUsers(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// GetUser      godoc
-// @Summary     Read a single user by: id
-// @Description Read a single user by: id
+// SearchUsers  godoc
+// @Summary     Read a list of users by: search_term
+// @Description Read a list of users by: search_term
 // @Tags        users
 // @Produce     json
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
-// @Param       id path string true "User ID" Format(uuid)
-// @Success     200 {object} users.User
+// @Param       search_term path string true "User Search Term"
+// @Success     200 {object} users.Users
 // @Failure     400
 // @Failure     401
 // @Failure     500
-// @Router      /users/{id} [get]
-func (rs UsersResource) GetUser(w http.ResponseWriter, r *http.Request) {
+// @Router      /users/search/{search_term} [get]
+func (rs UsersResource) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -161,16 +183,9 @@ func (rs UsersResource) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := chi.URLParam(r, "id")
-	userId, err := uuid.Parse(id)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
+	searchStr := chi.URLParam(r, "search_term")
 
-		http.Error(w, "invalid user id", http.StatusBadRequest)
-		return
-	}
-
-	user, err := users.Get(userId)
+	users, err := users.GetUsersBySearch(searchStr)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -178,7 +193,7 @@ func (rs UsersResource) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(user)
+	response, err := json.Marshal(users)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

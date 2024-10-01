@@ -946,40 +946,6 @@ const docTemplate = `{
             }
         },
         "/users": {
-            "get": {
-                "description": "Read a list of users",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Read a list of users",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/users.Users"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            },
             "post": {
                 "description": "Create a new user",
                 "consumes": [
@@ -1022,16 +988,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/{id}": {
+        "/users/search/{search_term}": {
             "get": {
-                "description": "Read a single user by: id",
+                "description": "Read a list of users by: search_term",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "users"
                 ],
-                "summary": "Read a single user by: id",
+                "summary": "Read a list of users by: search_term",
                 "parameters": [
                     {
                         "type": "string",
@@ -1043,9 +1009,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "format": "uuid",
-                        "description": "User ID",
-                        "name": "id",
+                        "description": "User Search Term",
+                        "name": "search_term",
                         "in": "path",
                         "required": true
                     }
@@ -1054,7 +1019,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.User"
+                            "$ref": "#/definitions/users.Users"
                         }
                     },
                     "400": {
@@ -1067,7 +1032,55 @@ const docTemplate = `{
                         "description": "Internal Server Error"
                     }
                 }
-            },
+            }
+        },
+        "/users/{id_list}": {
+            "get": {
+                "description": "Read a list of users by: id_list",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Read a list of users by: id_list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID List",
+                        "name": "id_list",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/users.Users"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
             "post": {
                 "description": "Update a single user by: id",
                 "consumes": [

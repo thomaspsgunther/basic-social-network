@@ -11,5 +11,5 @@ CREATE TABLE IF NOT EXISTS users (
     created_at timestamp DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated_at timestamp DEFAULT (NOW() AT TIME ZONE 'utc')
 );
-CREATE INDEX idx_users_full_name ON users(full_name);
+CREATE INDEX IF NOT EXISTS idx_users_full_name ON users(full_name);
 CREATE TRIGGER update_modified_time BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_modified_column();
