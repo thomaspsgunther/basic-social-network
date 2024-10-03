@@ -10,8 +10,8 @@ import (
 )
 
 type Like struct {
-	UserID uuid.UUID `json:"user_id"`
-	PostID uuid.UUID `json:"post_id"`
+	UserID uuid.UUID `json:"userId"`
+	PostID uuid.UUID `json:"postId"`
 }
 
 func LikePost(userId uuid.UUID, postId uuid.UUID) error {

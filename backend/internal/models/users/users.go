@@ -24,47 +24,48 @@ type User struct {
 	ID            uuid.UUID `json:"id"`
 	Username      string    `json:"username"`
 	Password      string    `json:"password,omitempty"`
-	Email         *string   `json:"email" db:"email" unique:"true"`
-	FullName      *string   `json:"full_name" db:"full_name"`
-	Description   *string   `json:"description" db:"description"`
-	Avatar        *string   `json:"avatar" db:"avatar"`
-	FollowerCount int       `json:"follower_count" db:"follower_count"`
+	Email         *string   `json:"email"`
+	FullName      *string   `json:"fullName"`
+	Description   *string   `json:"description"`
+	Avatar        *string   `json:"avatar"`
+	FollowerCount int       `json:"followeCount"`
 }
 
-func (user *User) Create() error {
+func (user *User) Create() (uuid.UUID, error) {
 	if user.Username == "" || user.Password == "" {
-		return fmt.Errorf("username and password must not be empty")
+		return uuid.UUID{}, fmt.Errorf("username and password must not be empty")
 	}
 
 	hashedPassword, err := HashPassword(user.Password)
 	if err != nil {
-		return fmt.Errorf("failed to hash password: %w", err)
+		return uuid.UUID{}, fmt.Errorf("failed to hash password: %w", err)
 	}
 	user.Password = hashedPassword
 
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
-		return err
+		return uuid.UUID{}, err
 	}
 	defer conn.Release()
 
 	tx, err := conn.Begin(context.Background())
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return uuid.UUID{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer database.HandleTransaction(tx, err)
 
-	_, err = tx.Exec(
+	var id uuid.UUID
+	err = tx.QueryRow(
 		context.Background(),
-		"INSERT INTO users (username, password, email, full_name, description, avatar) VALUES ($1, $2, $3, $4, $5, $6)",
+		"INSERT INTO users (username, password, email, full_name, description, avatar) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
 		user.Username, user.Password, user.Email, user.FullName, user.Description, user.Avatar,
-	)
+	).Scan(&id)
 	if err != nil {
-		return fmt.Errorf("failed to insert user: %w", err)
+		return uuid.UUID{}, fmt.Errorf("failed to insert user: %w", err)
 	}
 
-	return nil
+	return id, nil
 }
 
 func Get(idList []uuid.UUID) ([]User, error) {
@@ -110,7 +111,7 @@ func Get(idList []uuid.UUID) ([]User, error) {
 	return users, nil
 }
 
-func GetUsersBySearch(searchStr string) ([]User, error) {
+func GetBySearch(searchStr string) ([]User, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err

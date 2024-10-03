@@ -10,8 +10,8 @@ import (
 )
 
 type Follower struct {
-	FollowerID uuid.UUID `json:"follower_id"`
-	FollowedID uuid.UUID `json:"followed_id"`
+	FollowerID uuid.UUID `json:"followerId"`
+	FollowedID uuid.UUID `json:"followedId"`
 }
 
 func Follow(followerId uuid.UUID, followedId uuid.UUID) error {

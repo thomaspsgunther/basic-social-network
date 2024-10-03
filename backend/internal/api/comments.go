@@ -35,9 +35,10 @@ func (rs CommentsResource) Routes() chi.Router {
 // @Description  Create a new comment
 // @Tags         comments
 // @Accept       json
+// @Produce      json
 // @Param        Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param        body body comments.Comment true "Comment Object"
-// @Success      200
+// @Success      200 {object} comments.Comment
 // @Failure      400
 // @Failure      401
 // @Failure      403
@@ -74,7 +75,7 @@ func (rs CommentsResource) CreateComment(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = comment.Create()
+	id, err := comment.Create()
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -82,7 +83,17 @@ func (rs CommentsResource) CreateComment(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	response, err := json.Marshal(comments.Comment{ID: id})
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	w.Write(response)
 }
 
 // GetCommentsFromPost godoc

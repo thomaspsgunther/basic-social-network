@@ -19,6 +19,9 @@
                 "consumes": [
                     "application/json"
                 ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "comments"
                 ],
@@ -44,7 +47,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/comments.Comment"
+                        }
                     },
                     "400": {
                         "description": "Bad Request"
@@ -692,6 +698,9 @@
                 "consumes": [
                     "application/json"
                 ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "posts"
                 ],
@@ -717,7 +726,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/posts.Post"
+                        }
                     },
                     "400": {
                         "description": "Bad Request"
@@ -1177,7 +1189,7 @@
         "comments.Comment": {
             "type": "object",
             "properties": {
-                "created_at": {
+                "createdAt": {
                     "type": "string"
                 },
                 "description": {
@@ -1186,13 +1198,13 @@
                 "id": {
                     "type": "string"
                 },
-                "like_count": {
+                "likeCount": {
                     "type": "integer"
                 },
-                "post_id": {
+                "postId": {
                     "type": "string"
                 },
-                "user_id": {
+                "userId": {
                     "type": "string"
                 }
             }
@@ -1211,10 +1223,10 @@
         "posts.Post": {
             "type": "object",
             "properties": {
-                "comment_count": {
+                "commentCount": {
                     "type": "integer"
                 },
-                "created_at": {
+                "createdAt": {
                     "type": "string"
                 },
                 "description": {
@@ -1226,10 +1238,10 @@
                 "image": {
                     "type": "string"
                 },
-                "like_count": {
+                "likeCount": {
                     "type": "integer"
                 },
-                "user_id": {
+                "userId": {
                     "type": "string"
                 }
             }
@@ -1265,10 +1277,10 @@
                 "email": {
                     "type": "string"
                 },
-                "follower_count": {
+                "followeCount": {
                     "type": "integer"
                 },
-                "full_name": {
+                "fullName": {
                     "type": "string"
                 },
                 "id": {

@@ -15,41 +15,42 @@ type Comments struct {
 
 type Comment struct {
 	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"user_id"`
-	PostID      uuid.UUID `json:"post_id"`
+	UserID      uuid.UUID `json:"userId"`
+	PostID      uuid.UUID `json:"postId"`
 	Description string    `json:"description"`
-	LikeCount   int       `json:"like_count"`
-	CreatedAt   time.Time `json:"created_at"`
+	LikeCount   int       `json:"likeCount"`
+	CreatedAt   time.Time `json:"createdAt"`
 }
 
-func (comment *Comment) Create() error {
+func (comment *Comment) Create() (uuid.UUID, error) {
 	if comment.Description == "" {
-		return fmt.Errorf("comment text must not be empty")
+		return uuid.UUID{}, fmt.Errorf("comment text must not be empty")
 	}
 
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
-		return err
+		return uuid.UUID{}, err
 	}
 	defer conn.Release()
 
 	tx, err := conn.Begin(context.Background())
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return uuid.UUID{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer database.HandleTransaction(tx, err)
 
-	_, err = tx.Exec(
+	var id uuid.UUID
+	err = tx.QueryRow(
 		context.Background(),
-		"INSERT INTO comments (user_id, post_id, description) VALUES ($1, $2, $3)",
+		"INSERT INTO comments (user_id, post_id, description) VALUES ($1, $2, $3) RETURNING id",
 		comment.UserID, comment.PostID, comment.Description,
-	)
+	).Scan(&id)
 	if err != nil {
-		return fmt.Errorf("failed to insert comment: %w", err)
+		return uuid.UUID{}, fmt.Errorf("failed to insert comment: %w", err)
 	}
 
-	return nil
+	return id, nil
 }
 
 func Update(comment Comment, id uuid.UUID) error {

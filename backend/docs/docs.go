@@ -25,6 +25,9 @@ const docTemplate = `{
                 "consumes": [
                     "application/json"
                 ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "comments"
                 ],
@@ -50,7 +53,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/comments.Comment"
+                        }
                     },
                     "400": {
                         "description": "Bad Request"
@@ -698,6 +704,9 @@ const docTemplate = `{
                 "consumes": [
                     "application/json"
                 ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "posts"
                 ],
@@ -723,7 +732,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/posts.Post"
+                        }
                     },
                     "400": {
                         "description": "Bad Request"
@@ -1183,7 +1195,7 @@ const docTemplate = `{
         "comments.Comment": {
             "type": "object",
             "properties": {
-                "created_at": {
+                "createdAt": {
                     "type": "string"
                 },
                 "description": {
@@ -1192,13 +1204,13 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "like_count": {
+                "likeCount": {
                     "type": "integer"
                 },
-                "post_id": {
+                "postId": {
                     "type": "string"
                 },
-                "user_id": {
+                "userId": {
                     "type": "string"
                 }
             }
@@ -1217,10 +1229,10 @@ const docTemplate = `{
         "posts.Post": {
             "type": "object",
             "properties": {
-                "comment_count": {
+                "commentCount": {
                     "type": "integer"
                 },
-                "created_at": {
+                "createdAt": {
                     "type": "string"
                 },
                 "description": {
@@ -1232,10 +1244,10 @@ const docTemplate = `{
                 "image": {
                     "type": "string"
                 },
-                "like_count": {
+                "likeCount": {
                     "type": "integer"
                 },
-                "user_id": {
+                "userId": {
                     "type": "string"
                 }
             }
@@ -1271,10 +1283,10 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "follower_count": {
+                "followeCount": {
                     "type": "integer"
                 },
-                "full_name": {
+                "fullName": {
                     "type": "string"
                 },
                 "id": {

@@ -59,19 +59,11 @@ func (rs UsersResource) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = user.Create()
+	id, err := user.Create()
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	id, err := users.GetUserIdByUsername(user.Username)
-	if err != nil {
-		logger.ServerLogger.Warn(err.Error())
-
-		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
@@ -185,7 +177,7 @@ func (rs UsersResource) SearchUsers(w http.ResponseWriter, r *http.Request) {
 
 	searchStr := chi.URLParam(r, "search_term")
 
-	users, err := users.GetUsersBySearch(searchStr)
+	users, err := users.GetBySearch(searchStr)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

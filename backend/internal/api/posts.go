@@ -43,9 +43,10 @@ func (rs PostsResource) Routes() chi.Router {
 // @Description Create a new post
 // @Tags        posts
 // @Accept      json
+// @Produce     json
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param       body body posts.Post true "Post Object"
-// @Success     200
+// @Success     200 {object} posts.Post
 // @Failure     400
 // @Failure     401
 // @Failure     403
@@ -82,7 +83,7 @@ func (rs PostsResource) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = post.Create()
+	id, err := post.Create()
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -90,7 +91,17 @@ func (rs PostsResource) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	response, err := json.Marshal(posts.Post{ID: id})
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	w.Write(response)
 }
 
 // ListPosts    godoc

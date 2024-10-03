@@ -2,17 +2,17 @@ basePath: /api/v1/
 definitions:
   comments.Comment:
     properties:
-      created_at:
+      createdAt:
         type: string
       description:
         type: string
       id:
         type: string
-      like_count:
+      likeCount:
         type: integer
-      post_id:
+      postId:
         type: string
-      user_id:
+      userId:
         type: string
     type: object
   comments.Comments:
@@ -24,9 +24,9 @@ definitions:
     type: object
   posts.Post:
     properties:
-      comment_count:
+      commentCount:
         type: integer
-      created_at:
+      createdAt:
         type: string
       description:
         type: string
@@ -34,9 +34,9 @@ definitions:
         type: string
       image:
         type: string
-      like_count:
+      likeCount:
         type: integer
-      user_id:
+      userId:
         type: string
     type: object
   posts.Posts:
@@ -59,9 +59,9 @@ definitions:
         type: string
       email:
         type: string
-      follower_count:
+      followeCount:
         type: integer
-      full_name:
+      fullName:
         type: string
       id:
         type: string
@@ -105,9 +105,13 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/comments.Comment'
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/comments.Comment'
         "400":
           description: Bad Request
         "401":
@@ -564,9 +568,13 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/posts.Post'
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/posts.Post'
         "400":
           description: Bad Request
         "401":
