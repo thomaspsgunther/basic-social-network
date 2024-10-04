@@ -28,7 +28,7 @@ type User struct {
 	FullName      *string   `json:"fullName"`
 	Description   *string   `json:"description"`
 	Avatar        *string   `json:"avatar"`
-	FollowerCount int       `json:"followeCount"`
+	FollowerCount int       `json:"followerCount"`
 }
 
 func (user *User) Create() (uuid.UUID, error) {
