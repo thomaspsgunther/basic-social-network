@@ -63,7 +63,7 @@ func (i *commentRepository) update(comment Comment, id uuid.UUID) error {
 
 	_, err = tx.Exec(
 		context.Background(),
-		"UPDATE comments SET description = $1 WHERE id = $2",
+		"UPDATE comments SET description = $1 WHERE id = $1",
 		comment.Description, id,
 	)
 	if err != nil {
@@ -89,7 +89,7 @@ func (i *commentRepository) like(id uuid.UUID) error {
 
 	_, err = tx.Exec(
 		context.Background(),
-		"UPDATE comments SET like_count = like_count + 1 WHERE id = $2",
+		"UPDATE comments SET like_count = like_count + 1 WHERE id = $1",
 		id,
 	)
 	if err != nil {
