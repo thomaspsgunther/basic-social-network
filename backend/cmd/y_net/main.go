@@ -18,6 +18,11 @@ import (
 	"y_net/internal/auth"
 	database "y_net/internal/database/postgres"
 	"y_net/internal/logger"
+	"y_net/internal/services/comments"
+	"y_net/internal/services/followers"
+	"y_net/internal/services/likes"
+	"y_net/internal/services/posts"
+	"y_net/internal/services/users"
 	"y_net/internal/socketio"
 	"y_net/internal/utils"
 )
@@ -60,11 +65,8 @@ func main() {
 			logger.ServerLogger.Fatalf("failed to connect PostgreSQL: %v", err)
 		}
 		defer database.PgxClose()
-	}
 
-	// DB migrations
-	if connectPG {
-		err := database.PgxMigration()
+		err = database.PgxMigration()
 		if err != nil {
 			logger.ServerLogger.Info("--------------------------------------------------------------------")
 			logger.ServerLogger.Fatalf("failed PostgreSQL migrations: %v", err)
@@ -84,12 +86,12 @@ func main() {
 		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
 	))
 	r.HandleFunc("/api/v1/", rootFunc)
-	r.Mount("/api/v1/login", api.LoginResource{}.Routes())
-	r.Mount("/api/v1/users", api.UsersResource{}.Routes())
-	r.Mount("/api/v1/followers", api.FollowersResource{}.Routes())
-	r.Mount("/api/v1/posts", api.PostsResource{}.Routes())
-	r.Mount("/api/v1/likes", api.LikesResource{}.Routes())
-	r.Mount("/api/v1/comments", api.CommentsResource{}.Routes())
+	r.Mount("/api/v1/users", api.UserHandler{Usecase: users.NewUserUsecase()}.Routes())
+	r.Mount("/api/v1/login", api.LoginHandler{}.Routes())
+	r.Mount("/api/v1/followers", api.FollowerHandler{Usecase: followers.NewFollowerUsecase()}.Routes())
+	r.Mount("/api/v1/posts", api.PostHandler{Usecase: posts.NewPostUsecase()}.Routes())
+	r.Mount("/api/v1/likes", api.LikeHandler{Usecase: likes.NewLikeUsecase()}.Routes())
+	r.Mount("/api/v1/comments", api.CommentHandler{Usecase: comments.NewCommentUsecase()}.Routes())
 
 	// Start the server api
 	host := os.Getenv("HTTP_HOST")

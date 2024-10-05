@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"y_net/internal/logger"
-	"y_net/internal/models/users"
+	"y_net/internal/services/users"
 	"y_net/pkg/jwt"
 )
 

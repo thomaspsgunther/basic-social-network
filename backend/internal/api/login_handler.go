@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"net/http"
 	"y_net/internal/logger"
-	"y_net/internal/models/users"
+	"y_net/internal/services/users"
 	"y_net/pkg/jwt"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 )
 
-type LoginResource struct{}
+type LoginHandler struct{}
 
-func (rs LoginResource) Routes() chi.Router {
+func (rs LoginHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Post("/", rs.Login)                    // POST /api/v1/login - Login user
@@ -35,7 +35,7 @@ func (rs LoginResource) Routes() chi.Router {
 // @Failure     401
 // @Failure     500
 // @Router      /login [post]
-func (rs LoginResource) Login(w http.ResponseWriter, r *http.Request) {
+func (rs LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	var user users.User
@@ -111,7 +111,7 @@ func (rs LoginResource) Login(w http.ResponseWriter, r *http.Request) {
 // @Failure     401
 // @Failure     500
 // @Router      /login/refreshtoken [post]
-func (rs LoginResource) RefreshToken(w http.ResponseWriter, r *http.Request) {
+func (rs LoginHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	var token users.TokenJson

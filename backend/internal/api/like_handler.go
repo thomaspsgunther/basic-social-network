@@ -6,20 +6,22 @@ import (
 	"net/http"
 	"y_net/internal/auth"
 	"y_net/internal/logger"
-	"y_net/internal/models/likes"
+	"y_net/internal/services/likes"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
-type LikesResource struct{}
+type LikeHandler struct {
+	Usecase likes.LikeUsecaseI
+}
 
-func (rs LikesResource) Routes() chi.Router {
+func (h LikeHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/{user_id}_{post_id}", rs.LikePost)     // POST /api/v1/likes/{user_id}_{post_id} - Like a post by: id
-	r.Delete("/{user_id}_{post_id}", rs.UnlikePost) // DELETE /api/v1/likes/{user_id}_{post_id} - Unlike a post by: id
-	r.Get("/{post_id}", rs.GetLikesFromPost)        // GET /api/v1/likes/{post_id} - Read a list of users who liked a post by: post_id
+	r.Post("/{user_id}_{post_id}", h.LikePost)     // POST /api/v1/likes/{user_id}_{post_id} - Like a post by: id
+	r.Delete("/{user_id}_{post_id}", h.UnlikePost) // DELETE /api/v1/likes/{user_id}_{post_id} - Unlike a post by: id
+	r.Get("/{post_id}", h.GetLikesFromPost)        // GET /api/v1/likes/{post_id} - Read a list of users who liked a post by: post_id
 
 	return r
 }
@@ -37,7 +39,7 @@ func (rs LikesResource) Routes() chi.Router {
 // @Failure     403
 // @Failure     500
 // @Router      /likes/{user_id}_{post_id} [post]
-func (rs LikesResource) LikePost(w http.ResponseWriter, r *http.Request) {
+func (h LikeHandler) LikePost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -75,7 +77,7 @@ func (rs LikesResource) LikePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = likes.LikePost(userId, postId)
+	err = h.Usecase.LikePost(userId, postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -99,7 +101,7 @@ func (rs LikesResource) LikePost(w http.ResponseWriter, r *http.Request) {
 // @Failure     403
 // @Failure     500
 // @Router      /likes/{user_id}_{post_id} [delete]
-func (rs LikesResource) UnlikePost(w http.ResponseWriter, r *http.Request) {
+func (h LikeHandler) UnlikePost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: delete %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -137,7 +139,7 @@ func (rs LikesResource) UnlikePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = likes.UnlikePost(userId, postId)
+	err = h.Usecase.UnlikePost(userId, postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -160,7 +162,7 @@ func (rs LikesResource) UnlikePost(w http.ResponseWriter, r *http.Request) {
 // @Failure         401
 // @Failure         500
 // @Router          /likes/{post_id} [get]
-func (rs LikesResource) GetLikesFromPost(w http.ResponseWriter, r *http.Request) {
+func (h LikeHandler) GetLikesFromPost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -182,7 +184,7 @@ func (rs LikesResource) GetLikesFromPost(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	likes, err := likes.GetFromPost(postId)
+	likes, err := h.Usecase.GetFromPost(postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

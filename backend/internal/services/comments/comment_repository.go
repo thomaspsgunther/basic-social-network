@@ -3,30 +3,24 @@ package comments
 import (
 	"context"
 	"fmt"
-	"time"
 	database "y_net/internal/database/postgres"
 
 	"github.com/google/uuid"
 )
 
-type Comments struct {
-	CommentList []*Comment
+type commentRepositoryI interface {
+	create(comment Comment) (uuid.UUID, error)
+	update(comment Comment, id uuid.UUID) error
+	like(id uuid.UUID) error
+	unlike(id uuid.UUID) error
+	delete(id uuid.UUID) error
+	getFromPost(postId uuid.UUID) ([]Comment, error)
+	get(id uuid.UUID) (Comment, error)
 }
 
-type Comment struct {
-	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"userId"`
-	PostID      uuid.UUID `json:"postId"`
-	Description string    `json:"description"`
-	LikeCount   int       `json:"likeCount"`
-	CreatedAt   time.Time `json:"createdAt"`
-}
+type commentRepository struct{}
 
-func (comment *Comment) Create() (uuid.UUID, error) {
-	if comment.Description == "" {
-		return uuid.UUID{}, fmt.Errorf("comment text must not be empty")
-	}
-
+func (i *commentRepository) create(comment Comment) (uuid.UUID, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return uuid.UUID{}, err
@@ -53,9 +47,7 @@ func (comment *Comment) Create() (uuid.UUID, error) {
 	return id, nil
 }
 
-func Update(comment Comment, id uuid.UUID) error {
-	comment.ID = id
-
+func (i *commentRepository) update(comment Comment, id uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
@@ -72,7 +64,7 @@ func Update(comment Comment, id uuid.UUID) error {
 	_, err = tx.Exec(
 		context.Background(),
 		"UPDATE comments SET description = $1 WHERE id = $2",
-		comment.Description, comment.ID,
+		comment.Description, id,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to update comment: %w", err)
@@ -81,7 +73,59 @@ func Update(comment Comment, id uuid.UUID) error {
 	return nil
 }
 
-func Delete(id uuid.UUID) error {
+func (i *commentRepository) like(id uuid.UUID) error {
+	conn, err := database.Postgres.Acquire(context.Background())
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	tx, err := conn.Begin(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer database.HandleTransaction(tx, err)
+
+	_, err = tx.Exec(
+		context.Background(),
+		"UPDATE comments SET like_count = like_count + 1 WHERE id = $2",
+		id,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to update comment: %w", err)
+	}
+
+	return nil
+}
+
+func (i *commentRepository) unlike(id uuid.UUID) error {
+	conn, err := database.Postgres.Acquire(context.Background())
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	tx, err := conn.Begin(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer database.HandleTransaction(tx, err)
+
+	_, err = tx.Exec(
+		context.Background(),
+		"UPDATE comments SET like_count = like_count - 1 WHERE id = $2",
+		id,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to update comment: %w", err)
+	}
+
+	return nil
+}
+
+func (i *commentRepository) delete(id uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
@@ -103,7 +147,7 @@ func Delete(id uuid.UUID) error {
 	return nil
 }
 
-func GetFromPost(postId uuid.UUID) ([]Comment, error) {
+func (i *commentRepository) getFromPost(postId uuid.UUID) ([]Comment, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
@@ -142,7 +186,7 @@ func GetFromPost(postId uuid.UUID) ([]Comment, error) {
 	return comments, nil
 }
 
-func Get(id uuid.UUID) (Comment, error) {
+func (i *commentRepository) get(id uuid.UUID) (Comment, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return Comment{}, err

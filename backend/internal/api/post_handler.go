@@ -14,25 +14,27 @@ import (
 
 	"y_net/internal/auth"
 	"y_net/internal/logger"
-	"y_net/internal/models/posts"
+	"y_net/internal/services/posts"
 )
 
-type PostsResource struct{}
+type PostHandler struct {
+	Usecase posts.PostUsecaseI
+}
 
-func (rs PostsResource) Routes() chi.Router {
+func (h PostHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/", rs.CreatePost) // POST /api/v1/posts - Create a new post
-	r.Get("/", rs.ListPosts)   // GET /api/v1/posts?limit=10&cursor=base64string - Read a list of posts using pagination
+	r.Post("/", h.CreatePost) // POST /api/v1/posts - Create a new post
+	r.Get("/", h.ListPosts)   // GET /api/v1/posts?limit=10&cursor=base64string - Read a list of posts using pagination
 
 	r.Route("/{id}", func(r chi.Router) {
-		r.Get("/", rs.GetPost)       // GET /api/v1/posts/{id} - Read a single post by: id
-		r.Post("/", rs.UpdatePost)   // POST /api/v1/posts/{id} - Update a single post by: id
-		r.Delete("/", rs.DeletePost) // DELETE /api/v1/posts/{id} - Delete a single post by: id
+		r.Get("/", h.GetPost)       // GET /api/v1/posts/{id} - Read a single post by: id
+		r.Post("/", h.UpdatePost)   // POST /api/v1/posts/{id} - Update a single post by: id
+		r.Delete("/", h.DeletePost) // DELETE /api/v1/posts/{id} - Delete a single post by: id
 	})
 
 	r.Route("/user", func(r chi.Router) {
-		r.Get("/{user_id}", rs.ListPostsFromUser) // GET /api/v1/posts/user/{user_id}?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
+		r.Get("/{user_id}", h.ListPostsFromUser) // GET /api/v1/posts/user/{user_id}?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
 	})
 
 	return r
@@ -52,7 +54,7 @@ func (rs PostsResource) Routes() chi.Router {
 // @Failure     403
 // @Failure     500
 // @Router      /posts [post]
-func (rs PostsResource) CreatePost(w http.ResponseWriter, r *http.Request) {
+func (h PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -83,7 +85,7 @@ func (rs PostsResource) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := post.Create()
+	id, err := h.Usecase.Create(post)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -117,7 +119,7 @@ func (rs PostsResource) CreatePost(w http.ResponseWriter, r *http.Request) {
 // @Failure     401
 // @Failure     500
 // @Router      /posts [get]
-func (rs PostsResource) ListPosts(w http.ResponseWriter, r *http.Request) {
+func (h PostHandler) ListPosts(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -148,7 +150,7 @@ func (rs PostsResource) ListPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, err := posts.GetPosts(limit, lastCreatedAt, lastId)
+	posts, err := h.Usecase.GetPosts(limit, lastCreatedAt, lastId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -181,7 +183,7 @@ func (rs PostsResource) ListPosts(w http.ResponseWriter, r *http.Request) {
 // @Failure     401
 // @Failure     500
 // @Router      /posts/{id} [get]
-func (rs PostsResource) GetPost(w http.ResponseWriter, r *http.Request) {
+func (h PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -203,7 +205,7 @@ func (rs PostsResource) GetPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := posts.GetPost(postId)
+	post, err := h.Usecase.GetPost(postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -238,7 +240,7 @@ func (rs PostsResource) GetPost(w http.ResponseWriter, r *http.Request) {
 // @Failure     403
 // @Failure     500
 // @Router      /posts/{id} [post]
-func (rs PostsResource) UpdatePost(w http.ResponseWriter, r *http.Request) {
+func (h PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -260,7 +262,7 @@ func (rs PostsResource) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ogPost, err := posts.GetPost(postId)
+	ogPost, err := h.Usecase.GetPost(postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -286,7 +288,7 @@ func (rs PostsResource) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = posts.Update(post, postId)
+	err = h.Usecase.Update(post, postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -309,7 +311,7 @@ func (rs PostsResource) UpdatePost(w http.ResponseWriter, r *http.Request) {
 // @Failure     403
 // @Failure     500
 // @Router      /posts/{id} [delete]
-func (rs PostsResource) DeletePost(w http.ResponseWriter, r *http.Request) {
+func (h PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: delete %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -331,7 +333,7 @@ func (rs PostsResource) DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ogPost, err := posts.GetPost(postId)
+	ogPost, err := h.Usecase.GetPost(postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -348,7 +350,7 @@ func (rs PostsResource) DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = posts.Delete(postId)
+	err = h.Usecase.Delete(postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -373,7 +375,7 @@ func (rs PostsResource) DeletePost(w http.ResponseWriter, r *http.Request) {
 // @Failure          401
 // @Failure          500
 // @Router           /posts/user/{user_id} [get]
-func (rs PostsResource) ListPostsFromUser(w http.ResponseWriter, r *http.Request) {
+func (h PostHandler) ListPostsFromUser(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -413,7 +415,7 @@ func (rs PostsResource) ListPostsFromUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	posts, err := posts.GetFromUser(userId, limit, lastCreatedAt, lastId)
+	posts, err := h.Usecase.GetFromUser(userId, limit, lastCreatedAt, lastId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

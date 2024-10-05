@@ -9,25 +9,18 @@ import (
 	"github.com/google/uuid"
 )
 
-type Posts struct {
-	PostList []*Post
+type postRepositoryI interface {
+	create(post Post) (uuid.UUID, error)
+	getPosts(limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error)
+	getPost(id uuid.UUID) (Post, error)
+	update(post Post, id uuid.UUID) error
+	delete(id uuid.UUID) error
+	getFromUser(userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error)
 }
 
-type Post struct {
-	ID           uuid.UUID `json:"id"`
-	UserID       uuid.UUID `json:"userId"`
-	Image        string    `json:"image"`
-	Description  *string   `json:"description"`
-	LikeCount    int       `json:"likeCount"`
-	CommentCount int       `json:"commentCount"`
-	CreatedAt    time.Time `json:"createdAt"`
-}
+type postRepository struct{}
 
-func (post *Post) Create() (uuid.UUID, error) {
-	if post.Image == "" {
-		return uuid.UUID{}, fmt.Errorf("post image must not be empty")
-	}
-
+func (i *postRepository) create(post Post) (uuid.UUID, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return uuid.UUID{}, err
@@ -54,7 +47,7 @@ func (post *Post) Create() (uuid.UUID, error) {
 	return id, nil
 }
 
-func GetPosts(limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error) {
+func (i *postRepository) getPosts(limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
@@ -95,7 +88,7 @@ func GetPosts(limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, err
 	return posts, nil
 }
 
-func GetPost(id uuid.UUID) (Post, error) {
+func (i *postRepository) getPost(id uuid.UUID) (Post, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return Post{}, err
@@ -121,9 +114,7 @@ func GetPost(id uuid.UUID) (Post, error) {
 	return post, nil
 }
 
-func Update(post Post, id uuid.UUID) error {
-	post.ID = id
-
+func (i *postRepository) update(post Post, id uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
@@ -140,7 +131,7 @@ func Update(post Post, id uuid.UUID) error {
 	_, err = tx.Exec(
 		context.Background(),
 		"UPDATE posts SET description = $1 WHERE id = $2",
-		post.Description, post.ID,
+		post.Description, id,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to update post: %w", err)
@@ -149,7 +140,7 @@ func Update(post Post, id uuid.UUID) error {
 	return nil
 }
 
-func Delete(id uuid.UUID) error {
+func (i *postRepository) delete(id uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
@@ -171,7 +162,7 @@ func Delete(id uuid.UUID) error {
 	return nil
 }
 
-func GetFromUser(userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error) {
+func (i *postRepository) getFromUser(userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err

@@ -10,20 +10,22 @@ import (
 
 	"y_net/internal/auth"
 	"y_net/internal/logger"
-	"y_net/internal/models/followers"
+	"y_net/internal/services/followers"
 )
 
-type FollowersResource struct{}
+type FollowerHandler struct {
+	Usecase followers.FollowerUsecaseI
+}
 
-func (rs FollowersResource) Routes() chi.Router {
+func (h FollowerHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/{follower_id}_{followed_id}", rs.Follow)     // POST /api/v1/followers/{follower_id}_{followed_id} - Follow a user by: id
-	r.Delete("/{follower_id}_{followed_id}", rs.Unfollow) // DELETE /api/v1/followers/{follower_id}_{followed_id} - Unfollow a user by: id
-	r.Get("/{user_id}", rs.GetFollowers)                  // GET /api/v1/followers/{id} - Read a list of who follows a user by: user_id
+	r.Post("/{follower_id}_{followed_id}", h.Follow)     // POST /api/v1/followers/{follower_id}_{followed_id} - Follow a user by: id
+	r.Delete("/{follower_id}_{followed_id}", h.Unfollow) // DELETE /api/v1/followers/{follower_id}_{followed_id} - Unfollow a user by: id
+	r.Get("/{user_id}", h.GetFollowers)                  // GET /api/v1/followers/{id} - Read a list of who follows a user by: user_id
 
 	r.Route("/followed", func(r chi.Router) {
-		r.Get("/{user_id}", rs.GetFollowed) // GET /api/v1/followers/followed/{id} - Read a list of who a user follows by: user_id
+		r.Get("/{user_id}", h.GetFollowed) // GET /api/v1/followers/followed/{id} - Read a list of who a user follows by: user_id
 	})
 
 	return r
@@ -42,7 +44,7 @@ func (rs FollowersResource) Routes() chi.Router {
 // @Failure     403
 // @Failure     500
 // @Router      /followers/{follower_id}_{followed_id} [post]
-func (rs FollowersResource) Follow(w http.ResponseWriter, r *http.Request) {
+func (h FollowerHandler) Follow(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -80,7 +82,7 @@ func (rs FollowersResource) Follow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = followers.Follow(followerId, followedId)
+	err = h.Usecase.Follow(followerId, followedId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -104,7 +106,7 @@ func (rs FollowersResource) Follow(w http.ResponseWriter, r *http.Request) {
 // @Failure     403
 // @Failure     500
 // @Router      /followers/{follower_id}_{followed_id} [delete]
-func (rs FollowersResource) Unfollow(w http.ResponseWriter, r *http.Request) {
+func (h FollowerHandler) Unfollow(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: delete %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -141,7 +143,7 @@ func (rs FollowersResource) Unfollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = followers.Unfollow(followerId, followedId)
+	err = h.Usecase.Unfollow(followerId, followedId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -164,7 +166,7 @@ func (rs FollowersResource) Unfollow(w http.ResponseWriter, r *http.Request) {
 // @Failure     401
 // @Failure     500
 // @Router      /followers/{user_id} [get]
-func (rs FollowersResource) GetFollowers(w http.ResponseWriter, r *http.Request) {
+func (h FollowerHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -186,7 +188,7 @@ func (rs FollowersResource) GetFollowers(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	followers, err := followers.GetFollowers(userId)
+	followers, err := h.Usecase.GetFollowers(userId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -219,7 +221,7 @@ func (rs FollowersResource) GetFollowers(w http.ResponseWriter, r *http.Request)
 // @Failure     401
 // @Failure     500
 // @Router      /followers/followed/{user_id} [get]
-func (rs FollowersResource) GetFollowed(w http.ResponseWriter, r *http.Request) {
+func (h FollowerHandler) GetFollowed(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -241,7 +243,7 @@ func (rs FollowersResource) GetFollowed(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	followed, err := followers.GetFollowed(userId)
+	followed, err := h.Usecase.GetFollowed(userId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

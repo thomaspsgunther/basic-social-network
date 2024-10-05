@@ -6,42 +6,21 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
-	"golang.org/x/crypto/bcrypt"
 
 	database "y_net/internal/database/postgres"
 )
 
-type TokenJson struct {
-	Token string `json:"token"`
+type userRepositoryI interface {
+	create(user User) (uuid.UUID, error)
+	get(idList []uuid.UUID) ([]User, error)
+	getBySearch(searchStr string) ([]User, error)
+	update(user User, id uuid.UUID) error
+	delete(id uuid.UUID) error
 }
 
-type Users struct {
-	UserList []*User
-}
+type userRepository struct{}
 
-type User struct {
-	ID            uuid.UUID `json:"id"`
-	Username      string    `json:"username"`
-	Password      string    `json:"password,omitempty"`
-	Email         *string   `json:"email"`
-	FullName      *string   `json:"fullName"`
-	Description   *string   `json:"description"`
-	Avatar        *string   `json:"avatar"`
-	FollowerCount int       `json:"followerCount"`
-}
-
-func (user *User) Create() (uuid.UUID, error) {
-	if user.Username == "" || user.Password == "" {
-		return uuid.UUID{}, fmt.Errorf("username and password must not be empty")
-	}
-
-	hashedPassword, err := HashPassword(user.Password)
-	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("failed to hash password: %w", err)
-	}
-	user.Password = hashedPassword
-
+func (i *userRepository) create(user User) (uuid.UUID, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return uuid.UUID{}, err
@@ -68,7 +47,7 @@ func (user *User) Create() (uuid.UUID, error) {
 	return id, nil
 }
 
-func Get(idList []uuid.UUID) ([]User, error) {
+func (i *userRepository) get(idList []uuid.UUID) ([]User, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
@@ -111,7 +90,7 @@ func Get(idList []uuid.UUID) ([]User, error) {
 	return users, nil
 }
 
-func GetBySearch(searchStr string) ([]User, error) {
+func (i *userRepository) getBySearch(searchStr string) ([]User, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
@@ -150,17 +129,7 @@ func GetBySearch(searchStr string) ([]User, error) {
 	return users, nil
 }
 
-func Update(user User, id uuid.UUID) error {
-	user.ID = id
-
-	if user.Password != "" {
-		hashedPassword, err := HashPassword(user.Password)
-		if err != nil {
-			return fmt.Errorf("failed to hash password: %w", err)
-		}
-		user.Password = hashedPassword
-	}
-
+func (i *userRepository) update(user User, id uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
@@ -178,7 +147,7 @@ func Update(user User, id uuid.UUID) error {
 		_, err = tx.Exec(
 			context.Background(),
 			"UPDATE users SET username = $1, password = $2, email = $3, full_name = $4, description = $5, avatar = $6 WHERE id = $7",
-			user.Username, user.Password, user.Email, user.FullName, user.Description, user.Avatar, user.ID,
+			user.Username, user.Password, user.Email, user.FullName, user.Description, user.Avatar, id,
 		)
 		if err != nil {
 			return fmt.Errorf("failed to update user: %w", err)
@@ -187,7 +156,7 @@ func Update(user User, id uuid.UUID) error {
 		_, err = tx.Exec(
 			context.Background(),
 			"UPDATE users SET username = $1, email = $2, full_name = $3, description = $4, avatar = $5 WHERE id = $6",
-			user.Username, user.Email, user.FullName, user.Description, user.Avatar, user.ID,
+			user.Username, user.Email, user.FullName, user.Description, user.Avatar, id,
 		)
 		if err != nil {
 			return fmt.Errorf("failed to update user: %w", err)
@@ -197,7 +166,7 @@ func Update(user User, id uuid.UUID) error {
 	return nil
 }
 
-func Delete(id uuid.UUID) error {
+func (i *userRepository) delete(id uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
@@ -217,91 +186,4 @@ func Delete(id uuid.UUID) error {
 	}
 
 	return nil
-}
-
-func (user *User) Authenticate() (bool, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
-	if err != nil {
-		return false, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(context.Background())
-	if err != nil {
-		return false, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-
-	defer database.HandleTransaction(tx, err)
-
-	var hashedPassword string
-	err = tx.QueryRow(context.Background(), "SELECT password FROM users WHERE username = $1", user.Username).Scan(&hashedPassword)
-	if err != nil {
-		return false, err
-	}
-
-	return CheckPasswordHash(user.Password, hashedPassword), nil
-}
-
-// GetUsernameByUserID checks if a user exists in database by given id
-func GetUsernameByUserID(id uuid.UUID) (string, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
-	if err != nil {
-		return "", err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(context.Background())
-	if err != nil {
-		return "", fmt.Errorf("failed to begin transaction: %w", err)
-	}
-
-	defer database.HandleTransaction(tx, err)
-
-	var username string
-	err = tx.QueryRow(context.Background(), "SELECT username FROM users WHERE id = $1", id).Scan(&username)
-	if err != nil {
-		return "", err
-	}
-
-	return username, nil
-}
-
-// GetUserIdByUsername checks if a user exists in database by given username
-func GetUserIdByUsername(username string) (uuid.UUID, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
-	if err != nil {
-		return uuid.UUID{}, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(context.Background())
-	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-
-	defer database.HandleTransaction(tx, err)
-
-	var id uuid.UUID
-	err = tx.QueryRow(context.Background(), "SELECT id FROM users WHERE username = $1", username).Scan(&id)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return uuid.UUID{}, &WrongUsernameOrPasswordError{}
-		} else {
-			return uuid.UUID{}, err
-		}
-	}
-
-	return id, nil
-}
-
-// HashPassword hashes given password
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-// CheckPasswordHash compares raw password with its hashed values
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
 }

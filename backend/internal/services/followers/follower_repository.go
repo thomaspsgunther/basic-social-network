@@ -4,19 +4,21 @@ import (
 	"context"
 	"fmt"
 	database "y_net/internal/database/postgres"
-	"y_net/internal/models/users"
+	"y_net/internal/services/users"
 
 	"github.com/google/uuid"
 )
 
-type Follower struct {
-	FollowerID uuid.UUID `json:"followerId"`
-	FollowedID uuid.UUID `json:"followedId"`
+type followerRepositoryI interface {
+	follow(followerId uuid.UUID, followedId uuid.UUID) error
+	unfollow(followerId uuid.UUID, followedId uuid.UUID) error
+	getFollowers(userId uuid.UUID) ([]users.User, error)
+	getFollowed(userId uuid.UUID) ([]users.User, error)
 }
 
-func Follow(followerId uuid.UUID, followedId uuid.UUID) error {
-	follower := Follower{FollowerID: followerId, FollowedID: followedId}
+type followerRepository struct{}
 
+func (i *followerRepository) follow(followerId uuid.UUID, followedId uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
@@ -33,7 +35,7 @@ func Follow(followerId uuid.UUID, followedId uuid.UUID) error {
 	_, err = tx.Exec(
 		context.Background(),
 		"INSERT INTO followers (follower_id, followed_id) VALUES ($1, $2)",
-		follower.FollowerID, follower.FollowedID,
+		followerId, followedId,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to insert follower: %w", err)
@@ -42,7 +44,7 @@ func Follow(followerId uuid.UUID, followedId uuid.UUID) error {
 	return nil
 }
 
-func Unfollow(followerId uuid.UUID, followedId uuid.UUID) error {
+func (i *followerRepository) unfollow(followerId uuid.UUID, followedId uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
@@ -64,7 +66,7 @@ func Unfollow(followerId uuid.UUID, followedId uuid.UUID) error {
 	return nil
 }
 
-func GetFollowers(userId uuid.UUID) ([]users.User, error) {
+func (i *followerRepository) getFollowers(userId uuid.UUID) ([]users.User, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
@@ -84,22 +86,22 @@ func GetFollowers(userId uuid.UUID) ([]users.User, error) {
 	}
 	defer rows.Close()
 
-	var followers []users.User
+	var userFollowers []users.User
 	for rows.Next() {
-		var follower users.User
-		if err := rows.Scan(&follower.ID, &follower.Username, &follower.FullName, &follower.Avatar); err != nil {
+		var user users.User
+		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
-		followers = append(followers, follower)
+		userFollowers = append(userFollowers, user)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error reading rows: %w", err)
 	}
 
-	return followers, nil
+	return userFollowers, nil
 }
 
-func GetFollowed(userId uuid.UUID) ([]users.User, error) {
+func (i *followerRepository) getFollowed(userId uuid.UUID) ([]users.User, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
@@ -119,17 +121,17 @@ func GetFollowed(userId uuid.UUID) ([]users.User, error) {
 	}
 	defer rows.Close()
 
-	var followed []users.User
+	var userFollowed []users.User
 	for rows.Next() {
-		var followedUser users.User
-		if err := rows.Scan(&followedUser.ID, &followedUser.Username, &followedUser.FullName, &followedUser.Avatar); err != nil {
+		var user users.User
+		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
-		followed = append(followed, followedUser)
+		userFollowed = append(userFollowed, user)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error reading rows: %w", err)
 	}
 
-	return followed, nil
+	return userFollowed, nil
 }

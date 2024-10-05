@@ -11,25 +11,27 @@ import (
 
 	"y_net/internal/auth"
 	"y_net/internal/logger"
-	"y_net/internal/models/users"
+	"y_net/internal/services/users"
 	"y_net/pkg/jwt"
 )
 
-type UsersResource struct{}
+type UserHandler struct {
+	Usecase users.UserUsecaseI
+}
 
-func (rs UsersResource) Routes() chi.Router {
+func (h UserHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/", rs.CreateUser)       // POST /api/v1/users - Create a new user
-	r.Get("/{id_list}", rs.GetUsers) // GET /api/v1/users/{id_list} - Read a list of users by: id_list
+	r.Post("/", h.CreateUser)       // POST /api/v1/users - Create a new user
+	r.Get("/{id_list}", h.GetUsers) // GET /api/v1/users/{id_list} - Read a list of users by: id_list
 
 	r.Route("/{id}", func(r chi.Router) {
-		r.Post("/", rs.UpdateUser)   // POST /api/v1/users/{id} - Update a single user by: id
-		r.Delete("/", rs.DeleteUser) // DELETE /api/v1/users/{id} - Delete a single user by: id
+		r.Post("/", h.UpdateUser)   // POST /api/v1/users/{id} - Update a single user by: id
+		r.Delete("/", h.DeleteUser) // DELETE /api/v1/users/{id} - Delete a single user by: id
 	})
 
 	r.Route("/search", func(r chi.Router) {
-		r.Get("/{search_term}", rs.SearchUsers) // GET /api/v1/users/search/{search_term} - Read a list of users by: search_term
+		r.Get("/{search_term}", h.SearchUsers) // GET /api/v1/users/search/{search_term} - Read a list of users by: search_term
 	})
 
 	return r
@@ -47,7 +49,7 @@ func (rs UsersResource) Routes() chi.Router {
 // @Failure     401
 // @Failure     500
 // @Router      /users [post]
-func (rs UsersResource) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	var user users.User
@@ -59,7 +61,7 @@ func (rs UsersResource) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := user.Create()
+	id, err := h.Usecase.Create(user)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -100,7 +102,7 @@ func (rs UsersResource) CreateUser(w http.ResponseWriter, r *http.Request) {
 // @Failure     401
 // @Failure     500
 // @Router      /users/{id_list} [get]
-func (rs UsersResource) GetUsers(w http.ResponseWriter, r *http.Request) {
+func (h UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -129,7 +131,7 @@ func (rs UsersResource) GetUsers(w http.ResponseWriter, r *http.Request) {
 		idList = append(idList, userId)
 	}
 
-	users, err := users.Get(idList)
+	users, err := h.Usecase.Get(idList)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -162,7 +164,7 @@ func (rs UsersResource) GetUsers(w http.ResponseWriter, r *http.Request) {
 // @Failure     401
 // @Failure     500
 // @Router      /users/search/{search_term} [get]
-func (rs UsersResource) SearchUsers(w http.ResponseWriter, r *http.Request) {
+func (h UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -177,7 +179,7 @@ func (rs UsersResource) SearchUsers(w http.ResponseWriter, r *http.Request) {
 
 	searchStr := chi.URLParam(r, "search_term")
 
-	users, err := users.GetBySearch(searchStr)
+	users, err := h.Usecase.GetBySearch(searchStr)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -212,7 +214,7 @@ func (rs UsersResource) SearchUsers(w http.ResponseWriter, r *http.Request) {
 // @Failure     403
 // @Failure     500
 // @Router      /users/{id} [post]
-func (rs UsersResource) UpdateUser(w http.ResponseWriter, r *http.Request) {
+func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -252,7 +254,7 @@ func (rs UsersResource) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = users.Update(user, userId)
+	err = h.Usecase.Update(user, userId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -275,7 +277,7 @@ func (rs UsersResource) UpdateUser(w http.ResponseWriter, r *http.Request) {
 // @Failure     403
 // @Failure     500
 // @Router      /users/{id} [delete]
-func (rs UsersResource) DeleteUser(w http.ResponseWriter, r *http.Request) {
+func (h UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: delete %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
@@ -306,7 +308,7 @@ func (rs UsersResource) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = users.Delete(userId)
+	err = h.Usecase.Delete(userId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

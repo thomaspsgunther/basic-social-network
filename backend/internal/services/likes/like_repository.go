@@ -4,19 +4,20 @@ import (
 	"context"
 	"fmt"
 	database "y_net/internal/database/postgres"
-	"y_net/internal/models/users"
+	"y_net/internal/services/users"
 
 	"github.com/google/uuid"
 )
 
-type Like struct {
-	UserID uuid.UUID `json:"userId"`
-	PostID uuid.UUID `json:"postId"`
+type likeRepositoryI interface {
+	likePost(userId uuid.UUID, postId uuid.UUID) error
+	unlikePost(userId uuid.UUID, postId uuid.UUID) error
+	getFromPost(postId uuid.UUID) ([]users.User, error)
 }
 
-func LikePost(userId uuid.UUID, postId uuid.UUID) error {
-	like := Like{UserID: userId, PostID: postId}
+type likeRepository struct{}
 
+func (i *likeRepository) likePost(userId uuid.UUID, postId uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
@@ -33,7 +34,7 @@ func LikePost(userId uuid.UUID, postId uuid.UUID) error {
 	_, err = tx.Exec(
 		context.Background(),
 		"INSERT INTO likes (user_id, post_id) VALUES ($1, $2)",
-		like.UserID, like.PostID,
+		userId, postId,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to insert like: %w", err)
@@ -42,7 +43,7 @@ func LikePost(userId uuid.UUID, postId uuid.UUID) error {
 	return nil
 }
 
-func UnlikePost(userId uuid.UUID, postId uuid.UUID) error {
+func (i *likeRepository) unlikePost(userId uuid.UUID, postId uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return err
@@ -64,7 +65,7 @@ func UnlikePost(userId uuid.UUID, postId uuid.UUID) error {
 	return nil
 }
 
-func GetFromPost(postId uuid.UUID) ([]users.User, error) {
+func (i *likeRepository) getFromPost(postId uuid.UUID) ([]users.User, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
 		return nil, err
@@ -84,17 +85,17 @@ func GetFromPost(postId uuid.UUID) ([]users.User, error) {
 	}
 	defer rows.Close()
 
-	var followers []users.User
+	var userLikes []users.User
 	for rows.Next() {
-		var follower users.User
-		if err := rows.Scan(&follower.ID, &follower.Username, &follower.FullName, &follower.Avatar); err != nil {
+		var user users.User
+		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
-		followers = append(followers, follower)
+		userLikes = append(userLikes, user)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error reading rows: %w", err)
 	}
 
-	return followers, nil
+	return userLikes, nil
 }

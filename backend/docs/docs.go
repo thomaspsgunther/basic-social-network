@@ -73,6 +73,94 @@ const docTemplate = `{
                 }
             }
         },
+        "/comments/like/{id}": {
+            "post": {
+                "description": "Like a single comment by: id",
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Like a single comment by: id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Comment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/comments/unlike/{id}": {
+            "post": {
+                "description": "Unlike a single comment by: id",
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Unlike a single comment by: id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Comment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/comments/{id}": {
             "post": {
                 "description": "Update a single comment by: id",
@@ -1283,7 +1371,7 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "followeCount": {
+                "followerCount": {
                     "type": "integer"
                 },
                 "fullName": {
