@@ -115,7 +115,7 @@ func (i *commentRepository) unlike(id uuid.UUID) error {
 
 	_, err = tx.Exec(
 		context.Background(),
-		"UPDATE comments SET like_count = like_count - 1 WHERE id = $2",
+		"UPDATE comments SET like_count = like_count - 1 WHERE id = $1",
 		id,
 	)
 	if err != nil {
