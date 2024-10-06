@@ -32,7 +32,7 @@ func TestCreateComment(t *testing.T) {
 	assert.NotEqual(t, uuid.Nil, id)
 }
 
-func TestCreatePostWithNilUserIDPostID(t *testing.T) {
+func TestCreateCommentWithNilUserIDPostID(t *testing.T) {
 	ts := setup()
 
 	comment := Comment{UserID: uuid.Nil, PostID: uuid.Nil, Description: "This is a comment."}
