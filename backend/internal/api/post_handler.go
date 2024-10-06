@@ -29,7 +29,7 @@ func (h PostHandler) Routes() chi.Router {
 
 	r.Route("/{id}", func(r chi.Router) {
 		r.Get("/", h.GetPost)       // GET /api/v1/posts/{id} - Read a single post by: id
-		r.Post("/", h.UpdatePost)   // POST /api/v1/posts/{id} - Update a single post by: id
+		r.Put("/", h.UpdatePost)    // PUT /api/v1/posts/{id} - Update a single post by: id
 		r.Delete("/", h.DeletePost) // DELETE /api/v1/posts/{id} - Delete a single post by: id
 	})
 
@@ -239,7 +239,7 @@ func (h PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
 // @Failure     401
 // @Failure     403
 // @Failure     500
-// @Router      /posts/{id} [post]
+// @Router      /posts/{id} [put]
 func (h PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 

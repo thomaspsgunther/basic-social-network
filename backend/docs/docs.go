@@ -162,7 +162,7 @@ const docTemplate = `{
             }
         },
         "/comments/{id}": {
-            "post": {
+            "put": {
                 "description": "Update a single comment by: id",
                 "consumes": [
                     "application/json"
@@ -948,7 +948,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "post": {
+            "put": {
                 "description": "Update a single post by: id",
                 "consumes": [
                     "application/json"
@@ -1181,7 +1181,7 @@ const docTemplate = `{
             }
         },
         "/users/{id}": {
-            "post": {
+            "put": {
                 "description": "Update a single user by: id",
                 "consumes": [
                     "application/json"

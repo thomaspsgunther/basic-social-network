@@ -26,7 +26,7 @@ func (h CommentHandler) Routes() chi.Router {
 	r.Post("/unlike/{id}", h.UnlikeComment)    // POST /api/v1/comments/unlike/{id} - Unlike a single comment by: id
 
 	r.Route("/{id}", func(r chi.Router) {
-		r.Post("/", h.UpdateComment)   // POST /api/v1/comments/{id} - Update a single comment by: id
+		r.Put("/", h.UpdateComment)    // PUT /api/v1/comments/{id} - Update a single comment by: id
 		r.Delete("/", h.DeleteComment) // DELETE /api/v1/comments/{id} - Delete a single comment by: id
 	})
 
@@ -166,7 +166,7 @@ func (h CommentHandler) GetCommentsFromPost(w http.ResponseWriter, r *http.Reque
 // @Failure      401
 // @Failure      403
 // @Failure      500
-// @Router       /comments/{id} [post]
+// @Router       /comments/{id} [put]
 func (h CommentHandler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 

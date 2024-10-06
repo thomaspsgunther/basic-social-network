@@ -26,7 +26,7 @@ func (h UserHandler) Routes() chi.Router {
 	r.Get("/{id_list}", h.GetUsers) // GET /api/v1/users/{id_list} - Read a list of users by: id_list
 
 	r.Route("/{id}", func(r chi.Router) {
-		r.Post("/", h.UpdateUser)   // POST /api/v1/users/{id} - Update a single user by: id
+		r.Put("/", h.UpdateUser)    // PUT /api/v1/users/{id} - Update a single user by: id
 		r.Delete("/", h.DeleteUser) // DELETE /api/v1/users/{id} - Delete a single user by: id
 	})
 
@@ -213,7 +213,7 @@ func (h UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 // @Failure     401
 // @Failure     403
 // @Failure     500
-// @Router      /users/{id} [post]
+// @Router      /users/{id} [put]
 func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 

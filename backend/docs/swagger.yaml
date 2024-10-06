@@ -153,7 +153,7 @@ paths:
       summary: 'Delete a single comment by: id'
       tags:
       - comments
-    post:
+    put:
       consumes:
       - application/json
       description: 'Update a single comment by: id'
@@ -707,7 +707,7 @@ paths:
       summary: 'Read a single post by: id'
       tags:
       - posts
-    post:
+    put:
       consumes:
       - application/json
       description: 'Update a single post by: id'
@@ -876,7 +876,7 @@ paths:
       summary: 'Delete a single user by: id'
       tags:
       - users
-    post:
+    put:
       consumes:
       - application/json
       description: 'Update a single user by: id'
