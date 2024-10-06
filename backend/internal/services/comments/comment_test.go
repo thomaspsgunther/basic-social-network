@@ -22,7 +22,10 @@ func setup() *TestSetup {
 
 func TestCreateComment(t *testing.T) {
 	ts := setup()
-	comment := Comment{Description: "This is a comment."}
+
+	userId := uuid.New()
+	postId := uuid.New()
+	comment := Comment{UserID: userId, PostID: postId, Description: "This is a comment."}
 
 	id, err := ts.usecase.Create(comment)
 	assert.NoError(t, err)
