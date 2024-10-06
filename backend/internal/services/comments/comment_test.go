@@ -71,6 +71,17 @@ func TestUpdateComment(t *testing.T) {
 	assert.Equal(t, "Updated comment.", updatedComment.Description)
 }
 
+func TestUpdateCommentNotFound(t *testing.T) {
+	ts := setup()
+
+	comment := Comment{Description: "This is a comment."}
+	id := uuid.New()
+
+	err := ts.usecase.Update(comment, id)
+	assert.Error(t, err)
+	assert.Equal(t, "comment not found", err.Error())
+}
+
 func TestLikeComment(t *testing.T) {
 	ts := setup()
 
@@ -85,6 +96,16 @@ func TestLikeComment(t *testing.T) {
 	likedComment, err := ts.usecase.Get(id)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, likedComment.LikeCount)
+}
+
+func TestLikeCommentNotFound(t *testing.T) {
+	ts := setup()
+
+	id := uuid.New()
+
+	err := ts.usecase.Like(id)
+	assert.Error(t, err)
+	assert.Equal(t, "comment not found", err.Error())
 }
 
 func TestUnlikeComment(t *testing.T) {
@@ -104,6 +125,16 @@ func TestUnlikeComment(t *testing.T) {
 	assert.Equal(t, 0, unlikedComment.LikeCount)
 }
 
+func TestUnlikeCommentNotFound(t *testing.T) {
+	ts := setup()
+
+	id := uuid.New()
+
+	err := ts.usecase.Unlike(id)
+	assert.Error(t, err)
+	assert.Equal(t, "comment not found", err.Error())
+}
+
 func TestDeleteComment(t *testing.T) {
 	ts := setup()
 
@@ -118,6 +149,16 @@ func TestDeleteComment(t *testing.T) {
 	comments, err := ts.usecase.GetFromPost(comment.PostID)
 	assert.NoError(t, err)
 	assert.NotContains(t, comments, comment)
+}
+
+func TestDeleteCommentNotFound(t *testing.T) {
+	ts := setup()
+
+	id := uuid.New()
+
+	err := ts.usecase.Delete(id)
+	assert.Error(t, err)
+	assert.Equal(t, "comment not found", err.Error())
 }
 
 func TestGetFromPost(t *testing.T) {
