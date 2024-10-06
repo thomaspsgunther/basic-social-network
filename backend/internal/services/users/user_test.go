@@ -22,6 +22,7 @@ func setup() *TestSetup {
 
 func TestCreateUser(t *testing.T) {
 	ts := setup()
+
 	user := User{Username: "testuser", Password: "password123"}
 
 	id, err := ts.usecase.Create(user)
@@ -31,6 +32,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestCreateUser_EmptyFields(t *testing.T) {
 	ts := setup()
+
 	user := User{Username: "", Password: ""}
 
 	id, err := ts.usecase.Create(user)
@@ -40,6 +42,7 @@ func TestCreateUser_EmptyFields(t *testing.T) {
 
 func TestGetUsers(t *testing.T) {
 	ts := setup()
+
 	user1 := User{Username: "testuser", Password: "password123"}
 	user2 := User{Username: "testuser2", Password: "password456"}
 	id1, _ := ts.usecase.Create(user1)
@@ -52,6 +55,7 @@ func TestGetUsers(t *testing.T) {
 
 func TestGetBySearch(t *testing.T) {
 	ts := setup()
+
 	user1 := User{Username: "testuser1", Password: "password123"}
 	user2 := User{Username: "testuser2", Password: "password456"}
 	ts.repo.create(user1)
@@ -64,6 +68,7 @@ func TestGetBySearch(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	ts := setup()
+
 	user := User{Username: "testuser", Password: "password123"}
 	id, _ := ts.usecase.Create(user)
 
@@ -78,6 +83,7 @@ func TestUpdateUser(t *testing.T) {
 
 func TestUpdateUser_NotFound(t *testing.T) {
 	ts := setup()
+
 	user := User{Username: "testuser", Password: "password123"}
 	id := uuid.New()
 
@@ -87,6 +93,7 @@ func TestUpdateUser_NotFound(t *testing.T) {
 
 func TestDeleteUser(t *testing.T) {
 	ts := setup()
+
 	user := User{Username: "testuser", Password: "password123"}
 	id, _ := ts.usecase.Create(user)
 
@@ -100,6 +107,7 @@ func TestDeleteUser(t *testing.T) {
 
 func TestDeleteUser_NotFound(t *testing.T) {
 	ts := setup()
+
 	id := uuid.New()
 
 	err := ts.usecase.Delete(id)

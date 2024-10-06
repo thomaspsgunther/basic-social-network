@@ -22,7 +22,9 @@ func setup() *TestSetup {
 }
 func TestCreatePost(t *testing.T) {
 	ts := setup()
-	post := Post{Image: "image_url.jpg"}
+
+	userId := uuid.New()
+	post := Post{UserID: userId, Image: "image_url.jpg"}
 
 	id, err := ts.usecase.Create(post)
 	assert.NoError(t, err)
@@ -31,7 +33,9 @@ func TestCreatePost(t *testing.T) {
 
 func TestCreatePost_EmptyImage(t *testing.T) {
 	ts := setup()
-	post := Post{Image: ""}
+
+	userId := uuid.New()
+	post := Post{UserID: userId, Image: ""}
 
 	id, err := ts.usecase.Create(post)
 	assert.Error(t, err)
@@ -40,7 +44,9 @@ func TestCreatePost_EmptyImage(t *testing.T) {
 
 func TestGetPost(t *testing.T) {
 	ts := setup()
-	post := Post{Image: "image.jpg"}
+
+	userId := uuid.New()
+	post := Post{UserID: userId, Image: "image.jpg"}
 	id, _ := ts.repo.create(post)
 
 	retrievedPost, err := ts.usecase.GetPost(id)
@@ -50,6 +56,7 @@ func TestGetPost(t *testing.T) {
 
 func TestGetPost_NotFound(t *testing.T) {
 	ts := setup()
+
 	id := uuid.New() // Random ID that does not exist
 
 	_, err := ts.usecase.GetPost(id)
@@ -58,7 +65,9 @@ func TestGetPost_NotFound(t *testing.T) {
 
 func TestUpdatePost(t *testing.T) {
 	ts := setup()
-	post := Post{Image: "image.jpg"}
+
+	userId := uuid.New()
+	post := Post{UserID: userId, Image: "image.jpg"}
 	id, _ := ts.repo.create(post)
 
 	post.Image = "updated_image.jpg"
@@ -72,7 +81,9 @@ func TestUpdatePost(t *testing.T) {
 
 func TestUpdatePost_EmptyImage(t *testing.T) {
 	ts := setup()
-	post := Post{Image: "image.jpg"}
+
+	userId := uuid.New()
+	post := Post{UserID: userId, Image: "image.jpg"}
 	id, _ := ts.repo.create(post)
 
 	post.Image = ""
@@ -82,7 +93,9 @@ func TestUpdatePost_EmptyImage(t *testing.T) {
 
 func TestDeletePost(t *testing.T) {
 	ts := setup()
-	post := Post{Image: "image.jpg"}
+
+	userId := uuid.New()
+	post := Post{UserID: userId, Image: "image.jpg"}
 	id, _ := ts.repo.create(post)
 
 	err := ts.usecase.Delete(id)
@@ -95,6 +108,7 @@ func TestDeletePost(t *testing.T) {
 
 func TestDeletePost_NotFound(t *testing.T) {
 	ts := setup()
+
 	id := uuid.New()
 
 	err := ts.usecase.Delete(id)

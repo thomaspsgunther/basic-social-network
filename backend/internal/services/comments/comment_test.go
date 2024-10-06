@@ -31,7 +31,10 @@ func TestCreateComment(t *testing.T) {
 
 func TestCreateComment_EmptyDescription(t *testing.T) {
 	ts := setup()
-	comment := Comment{Description: ""}
+
+	userId := uuid.New()
+	postId := uuid.New()
+	comment := Comment{UserID: userId, PostID: postId, Description: ""}
 
 	id, err := ts.usecase.Create(comment)
 	assert.Error(t, err)
@@ -40,7 +43,10 @@ func TestCreateComment_EmptyDescription(t *testing.T) {
 
 func TestUpdateComment(t *testing.T) {
 	ts := setup()
-	comment := Comment{Description: "This is a comment."}
+
+	userId := uuid.New()
+	postId := uuid.New()
+	comment := Comment{UserID: userId, PostID: postId, Description: "This is a comment."}
 	id, _ := ts.repo.create(comment)
 
 	comment.Description = "Updated comment."
@@ -54,7 +60,10 @@ func TestUpdateComment(t *testing.T) {
 
 func TestLikeComment(t *testing.T) {
 	ts := setup()
-	comment := Comment{Description: "This is a comment."}
+
+	userId := uuid.New()
+	postId := uuid.New()
+	comment := Comment{UserID: userId, PostID: postId, Description: "This is a comment."}
 	id, _ := ts.repo.create(comment)
 
 	err := ts.usecase.Like(id)
@@ -67,7 +76,10 @@ func TestLikeComment(t *testing.T) {
 
 func TestUnlikeComment(t *testing.T) {
 	ts := setup()
-	comment := Comment{Description: "This is a comment."}
+
+	userId := uuid.New()
+	postId := uuid.New()
+	comment := Comment{UserID: userId, PostID: postId, Description: "This is a comment."}
 	id, _ := ts.repo.create(comment)
 
 	_ = ts.usecase.Like(id)
@@ -81,7 +93,10 @@ func TestUnlikeComment(t *testing.T) {
 
 func TestDeleteComment(t *testing.T) {
 	ts := setup()
-	comment := Comment{Description: "This is a comment."}
+
+	userId := uuid.New()
+	postId := uuid.New()
+	comment := Comment{UserID: userId, PostID: postId, Description: "This is a comment."}
 	id, _ := ts.repo.create(comment)
 
 	err := ts.usecase.Delete(id)
@@ -94,6 +109,7 @@ func TestDeleteComment(t *testing.T) {
 
 func TestGetFromPost(t *testing.T) {
 	ts := setup()
+
 	postID := uuid.New()
 	comment1 := Comment{Description: "First comment", PostID: postID}
 	comment2 := Comment{Description: "Second comment", PostID: postID}
@@ -107,7 +123,10 @@ func TestGetFromPost(t *testing.T) {
 
 func TestGetComment(t *testing.T) {
 	ts := setup()
-	comment := Comment{Description: "This is a comment."}
+
+	userId := uuid.New()
+	postId := uuid.New()
+	comment := Comment{UserID: userId, PostID: postId, Description: "This is a comment."}
 	id, _ := ts.repo.create(comment)
 
 	retrievedComment, err := ts.usecase.Get(id)
@@ -117,6 +136,7 @@ func TestGetComment(t *testing.T) {
 
 func TestGetComment_NotFound(t *testing.T) {
 	ts := setup()
+
 	id := uuid.New()
 
 	_, err := ts.usecase.Get(id)
