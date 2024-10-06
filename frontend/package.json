@@ -9,7 +9,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "expo lint && eslint . --ext .ts,.mts,.tsx"
   },
   "jest": {
     "preset": "jest-expo"
@@ -40,8 +40,17 @@
     "@types/jest": "^29.5.12",
     "@types/react": "~18.2.45",
     "@types/react-test-renderer": "^18.0.7",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "@typescript-eslint/parser": "^8.8.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.37.1",
+    "eslint-plugin-react-native": "^4.1.0",
     "jest": "^29.2.1",
     "jest-expo": "~51.0.3",
+    "prettier": "^3.3.3",
     "react-test-renderer": "18.2.0",
     "typescript": "~5.3.3"
   },
