@@ -23,13 +23,13 @@ type postRepository struct{}
 func (i *postRepository) create(post Post) (uuid.UUID, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.Nil, err
 	}
 	defer conn.Release()
 
 	tx, err := conn.Begin(context.Background())
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("failed to begin transaction: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer database.HandleTransaction(tx, err)
@@ -41,7 +41,7 @@ func (i *postRepository) create(post Post) (uuid.UUID, error) {
 		post.UserID, post.Image, post.Description,
 	).Scan(&id)
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("failed to insert post: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to insert post: %w", err)
 	}
 
 	return id, nil

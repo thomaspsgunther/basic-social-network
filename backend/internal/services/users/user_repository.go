@@ -23,13 +23,13 @@ type userRepository struct{}
 func (i *userRepository) create(user User) (uuid.UUID, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.Nil, err
 	}
 	defer conn.Release()
 
 	tx, err := conn.Begin(context.Background())
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("failed to begin transaction: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer database.HandleTransaction(tx, err)
@@ -41,7 +41,7 @@ func (i *userRepository) create(user User) (uuid.UUID, error) {
 		user.Username, user.Password, user.Email, user.FullName, user.Description, user.Avatar,
 	).Scan(&id)
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("failed to insert user: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to insert user: %w", err)
 	}
 
 	return id, nil

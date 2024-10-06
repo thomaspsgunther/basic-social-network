@@ -23,13 +23,13 @@ type commentRepository struct{}
 func (i *commentRepository) create(comment Comment) (uuid.UUID, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.Nil, err
 	}
 	defer conn.Release()
 
 	tx, err := conn.Begin(context.Background())
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("failed to begin transaction: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer database.HandleTransaction(tx, err)
@@ -41,7 +41,7 @@ func (i *commentRepository) create(comment Comment) (uuid.UUID, error) {
 		comment.UserID, comment.PostID, comment.Description,
 	).Scan(&id)
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("failed to insert comment: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to insert comment: %w", err)
 	}
 
 	return id, nil

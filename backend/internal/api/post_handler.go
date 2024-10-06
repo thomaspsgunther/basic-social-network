@@ -439,22 +439,22 @@ func (h PostHandler) ListPostsFromUser(w http.ResponseWriter, r *http.Request) {
 func decodeCursor(encodedCursor string) (time.Time, uuid.UUID, error) {
 	byt, err := base64.StdEncoding.DecodeString(encodedCursor)
 	if err != nil {
-		return time.Time{}, uuid.UUID{}, err
+		return time.Time{}, uuid.Nil, err
 	}
 
 	arrStr := strings.Split(string(byt), ",")
 	if len(arrStr) != 2 {
-		return time.Time{}, uuid.UUID{}, fmt.Errorf("invalid posts cursor")
+		return time.Time{}, uuid.Nil, fmt.Errorf("invalid posts cursor")
 	}
 
 	lastCreatedAt, err := time.Parse(time.RFC3339Nano, arrStr[0])
 	if err != nil {
-		return time.Time{}, uuid.UUID{}, fmt.Errorf("invalid posts lastCreatedAt")
+		return time.Time{}, uuid.Nil, fmt.Errorf("invalid posts lastCreatedAt")
 	}
 
 	lastId, err := uuid.Parse(arrStr[1])
 	if err != nil {
-		return time.Time{}, uuid.UUID{}, fmt.Errorf("invalid posts lastId")
+		return time.Time{}, uuid.Nil, fmt.Errorf("invalid posts lastId")
 	}
 
 	return lastCreatedAt, lastId, nil

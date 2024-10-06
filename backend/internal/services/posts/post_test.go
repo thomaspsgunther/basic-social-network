@@ -31,6 +31,16 @@ func TestCreatePost(t *testing.T) {
 	assert.NotEqual(t, uuid.Nil, id)
 }
 
+func TestCreatePostWithNilUserID(t *testing.T) {
+	ts := setup()
+
+	post := Post{UserID: uuid.Nil, Image: "image_url.jpg"}
+
+	id, err := ts.usecase.Create(post)
+	assert.Error(t, err)
+	assert.Equal(t, uuid.Nil, id)
+}
+
 func TestCreatePostEmptyImage(t *testing.T) {
 	ts := setup()
 

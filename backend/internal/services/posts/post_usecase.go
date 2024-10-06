@@ -29,13 +29,16 @@ func NewPostUsecase() PostUsecaseI {
 }
 
 func (i *postUsecase) Create(post Post) (uuid.UUID, error) {
+	if post.UserID == uuid.Nil {
+		return uuid.Nil, fmt.Errorf("userid must not be empty")
+	}
 	if post.Image == "" {
-		return uuid.UUID{}, fmt.Errorf("post image must not be empty")
+		return uuid.Nil, fmt.Errorf("post image must not be empty")
 	}
 
 	id, err := i.repository.create(post)
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.Nil, err
 	}
 
 	return id, nil

@@ -29,13 +29,19 @@ func NewCommentUsecase() CommentUsecaseI {
 }
 
 func (i *commentUsecase) Create(comment Comment) (uuid.UUID, error) {
+	if comment.UserID == uuid.Nil {
+		return uuid.Nil, fmt.Errorf("postid must not be empty")
+	}
+	if comment.PostID == uuid.Nil {
+		return uuid.Nil, fmt.Errorf("userid must not be empty")
+	}
 	if comment.Description == "" {
-		return uuid.UUID{}, fmt.Errorf("comment text must not be empty")
+		return uuid.Nil, fmt.Errorf("comment text must not be empty")
 	}
 
 	id, err := i.repository.create(comment)
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.Nil, err
 	}
 
 	return id, nil

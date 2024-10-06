@@ -41,11 +41,11 @@ func ParseToken(tokenStr string) (uuid.UUID, error) {
 		idStr := claims["id"].(string)
 		id, err := uuid.Parse(idStr)
 		if err != nil {
-			return uuid.UUID{}, err
+			return uuid.Nil, err
 		}
 
 		return id, nil
 	} else {
-		return uuid.UUID{}, err
+		return uuid.Nil, err
 	}
 }

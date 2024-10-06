@@ -32,18 +32,18 @@ func NewUserUsecase() UserUsecaseI {
 
 func (i *userUsecase) Create(user User) (uuid.UUID, error) {
 	if user.Username == "" || user.Password == "" {
-		return uuid.UUID{}, fmt.Errorf("username and password must not be empty")
+		return uuid.Nil, fmt.Errorf("username and password must not be empty")
 	}
 
 	hashedPassword, err := hashPassword(user.Password)
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("failed to hash password: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 	user.Password = hashedPassword
 
 	id, err := i.repository.create(user)
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.Nil, err
 	}
 
 	return id, nil
@@ -148,13 +148,13 @@ func GetUsernameByUserID(id uuid.UUID) (string, error) {
 func GetUserIdByUsername(username string) (uuid.UUID, error) {
 	conn, err := database.Postgres.Acquire(context.Background())
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.Nil, err
 	}
 	defer conn.Release()
 
 	tx, err := conn.Begin(context.Background())
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("failed to begin transaction: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer database.HandleTransaction(tx, err)
@@ -163,9 +163,9 @@ func GetUserIdByUsername(username string) (uuid.UUID, error) {
 	err = tx.QueryRow(context.Background(), "SELECT id FROM users WHERE username = $1", username).Scan(&id)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return uuid.UUID{}, &WrongUsernameOrPasswordError{}
+			return uuid.Nil, &WrongUsernameOrPasswordError{}
 		} else {
-			return uuid.UUID{}, err
+			return uuid.Nil, err
 		}
 	}
 
