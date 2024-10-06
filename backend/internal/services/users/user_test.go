@@ -30,7 +30,7 @@ func TestCreateUser(t *testing.T) {
 	assert.NotEqual(t, uuid.Nil, id)
 }
 
-func TestCreateUser_EmptyFields(t *testing.T) {
+func TestCreateUserEmptyFields(t *testing.T) {
 	ts := setup()
 
 	user := User{Username: "", Password: ""}
@@ -81,7 +81,7 @@ func TestUpdateUser(t *testing.T) {
 	assert.Equal(t, "updateduser", updatedUsers[0].Username)
 }
 
-func TestUpdateUser_NotFound(t *testing.T) {
+func TestUpdateUserNotFound(t *testing.T) {
 	ts := setup()
 
 	user := User{Username: "testuser", Password: "password123"}
@@ -105,13 +105,14 @@ func TestDeleteUser(t *testing.T) {
 	assert.Len(t, users, 0)
 }
 
-func TestDeleteUser_NotFound(t *testing.T) {
+func TestDeleteUserNotFound(t *testing.T) {
 	ts := setup()
 
 	id := uuid.New()
 
 	err := ts.usecase.Delete(id)
-	assert.NoError(t, err)
+	assert.Error(t, err)
+	assert.Equal(t, "user not found", err.Error())
 }
 
 // mockUserRepository is a mock implementation of userRepositoryI for testing
@@ -164,6 +165,9 @@ func (m *mockUserRepository) update(user User, id uuid.UUID) error {
 }
 
 func (m *mockUserRepository) delete(id uuid.UUID) error {
+	if _, exists := m.users[id]; !exists {
+		return fmt.Errorf("user not found")
+	}
 	delete(m.users, id)
 
 	return nil

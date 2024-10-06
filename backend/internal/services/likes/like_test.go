@@ -53,7 +53,7 @@ func TestUnlikePost(t *testing.T) {
 	assert.Len(t, likedUsers, 0)
 }
 
-func TestUnlikePost_UserNotLiked(t *testing.T) {
+func TestUnlikePostUserNotLiked(t *testing.T) {
 	ts := setup()
 
 	userId := uuid.New()

@@ -31,7 +31,7 @@ func TestCreatePost(t *testing.T) {
 	assert.NotEqual(t, uuid.Nil, id)
 }
 
-func TestCreatePost_EmptyImage(t *testing.T) {
+func TestCreatePostEmptyImage(t *testing.T) {
 	ts := setup()
 
 	userId := uuid.New()
@@ -54,10 +54,10 @@ func TestGetPost(t *testing.T) {
 	assert.Equal(t, post.Image, retrievedPost.Image)
 }
 
-func TestGetPost_NotFound(t *testing.T) {
+func TestGetPostNotFound(t *testing.T) {
 	ts := setup()
 
-	id := uuid.New() // Random ID that does not exist
+	id := uuid.New()
 
 	_, err := ts.usecase.GetPost(id)
 	assert.Error(t, err)
@@ -79,7 +79,7 @@ func TestUpdatePost(t *testing.T) {
 	assert.Equal(t, "updated_image.jpg", updatedPost.Image)
 }
 
-func TestUpdatePost_EmptyImage(t *testing.T) {
+func TestUpdatePostEmptyImage(t *testing.T) {
 	ts := setup()
 
 	userId := uuid.New()
@@ -106,13 +106,14 @@ func TestDeletePost(t *testing.T) {
 	assert.NotContains(t, posts, post)
 }
 
-func TestDeletePost_NotFound(t *testing.T) {
+func TestDeletePostNotFound(t *testing.T) {
 	ts := setup()
 
 	id := uuid.New()
 
 	err := ts.usecase.Delete(id)
-	assert.NoError(t, err)
+	assert.Error(t, err)
+	assert.Equal(t, "post not found", err.Error())
 }
 
 // mockPostRepository is a mock implementation of postRepositoryI for testing
@@ -166,11 +167,13 @@ func (m *mockPostRepository) update(post Post, id uuid.UUID) error {
 }
 
 func (m *mockPostRepository) delete(id uuid.UUID) error {
+	if _, exists := m.posts[id]; !exists {
+		return fmt.Errorf("post not found")
+	}
 	delete(m.posts, id)
 
 	return nil
 }
-
 func (m *mockPostRepository) getFromUser(userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error) {
 	var result []Post
 	for _, post := range m.posts {

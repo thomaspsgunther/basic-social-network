@@ -32,7 +32,7 @@ func TestCreateComment(t *testing.T) {
 	assert.NotEqual(t, uuid.Nil, id)
 }
 
-func TestCreateComment_EmptyDescription(t *testing.T) {
+func TestCreateCommentEmptyDescription(t *testing.T) {
 	ts := setup()
 
 	userId := uuid.New()
@@ -137,7 +137,7 @@ func TestGetComment(t *testing.T) {
 	assert.Equal(t, comment.Description, retrievedComment.Description)
 }
 
-func TestGetComment_NotFound(t *testing.T) {
+func TestGetCommentNotFound(t *testing.T) {
 	ts := setup()
 
 	id := uuid.New()
