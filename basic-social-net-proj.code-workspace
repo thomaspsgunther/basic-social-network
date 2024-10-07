@@ -22,6 +22,7 @@
     "java.configuration.updateBuildConfiguration": "interactive",
     "[go]": {
       "editor.defaultFormatter": "golang.go"
-    }
+    },
+    "java.compile.nullAnalysis.mode": "disabled"
   }
 }
