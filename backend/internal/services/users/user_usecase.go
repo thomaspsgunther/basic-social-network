@@ -109,7 +109,9 @@ func (user *User) Authenticate() (bool, error) {
 		return false, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	var hashedPassword string
 	err = tx.QueryRow(context.Background(), "SELECT password FROM users WHERE username = $1", user.Username).Scan(&hashedPassword)
@@ -133,7 +135,9 @@ func GetUsernameByUserID(id uuid.UUID) (string, error) {
 		return "", fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	var username string
 	err = tx.QueryRow(context.Background(), "SELECT username FROM users WHERE id = $1", id).Scan(&username)
@@ -157,7 +161,9 @@ func GetUserIdByUsername(username string) (uuid.UUID, error) {
 		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	var id uuid.UUID
 	err = tx.QueryRow(context.Background(), "SELECT id FROM users WHERE username = $1", username).Scan(&id)

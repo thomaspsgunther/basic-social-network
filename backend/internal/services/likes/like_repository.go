@@ -29,7 +29,9 @@ func (i *likeRepository) likePost(userId uuid.UUID, postId uuid.UUID) error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	_, err = tx.Exec(
 		context.Background(),
@@ -55,7 +57,9 @@ func (i *likeRepository) unlikePost(userId uuid.UUID, postId uuid.UUID) error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	_, err = tx.Exec(context.Background(), "DELETE FROM likes WHERE user_id = $1 AND post_id = $2", userId, postId)
 	if err != nil {
@@ -77,7 +81,9 @@ func (i *likeRepository) getFromPost(postId uuid.UUID) ([]users.User, error) {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	rows, err := tx.Query(context.Background(), "SELECT u.id, u.username, u.full_name, u.avatar FROM likes l JOIN users u ON l.user_id = u.id WHERE l.post_id = $1", postId)
 	if err != nil {

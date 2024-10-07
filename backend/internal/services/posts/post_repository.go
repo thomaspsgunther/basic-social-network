@@ -32,7 +32,9 @@ func (i *postRepository) create(post Post) (uuid.UUID, error) {
 		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	var id uuid.UUID
 	err = tx.QueryRow(
@@ -58,7 +60,9 @@ func (i *postRepository) getPosts(limit int, lastCreatedAt time.Time, lastId uui
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	query := `
 		SELECT id, user_id, image, description, like_count, comment_count, created_at 
@@ -100,7 +104,9 @@ func (i *postRepository) getPost(id uuid.UUID) (Post, error) {
 		return Post{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	var post Post
 	err = tx.QueryRow(
@@ -126,7 +132,9 @@ func (i *postRepository) update(post Post, id uuid.UUID) error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	_, err = tx.Exec(
 		context.Background(),
@@ -152,7 +160,9 @@ func (i *postRepository) delete(id uuid.UUID) error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	_, err = tx.Exec(context.Background(), "DELETE FROM posts WHERE id = $1", id)
 	if err != nil {
@@ -173,7 +183,9 @@ func (i *postRepository) getFromUser(userId uuid.UUID, limit int, lastCreatedAt 
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	query := `
         SELECT id, user_id, image, description, like_count, comment_count, created_at 

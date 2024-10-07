@@ -59,7 +59,9 @@ func PgxMigration() error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer HandleTransaction(tx, err)
+	defer func() {
+		HandleTransaction(tx, err)
+	}()
 
 	for _, migration := range migrations {
 		logger.ServerLogger.Info("executing migration: " + migration.file)

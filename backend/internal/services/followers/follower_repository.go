@@ -30,7 +30,9 @@ func (i *followerRepository) follow(followerId uuid.UUID, followedId uuid.UUID) 
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	_, err = tx.Exec(
 		context.Background(),
@@ -56,7 +58,9 @@ func (i *followerRepository) unfollow(followerId uuid.UUID, followedId uuid.UUID
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	_, err = tx.Exec(context.Background(), "DELETE FROM followers WHERE follower_id = $1 AND followed_id = $2", followerId, followedId)
 	if err != nil {
@@ -78,7 +82,9 @@ func (i *followerRepository) getFollowers(userId uuid.UUID) ([]users.User, error
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	rows, err := tx.Query(context.Background(), "SELECT u.id, u.username, u.full_name, u.avatar FROM followers f JOIN users u ON f.follower_id = u.id WHERE f.followed_id = $1", userId)
 	if err != nil {
@@ -113,7 +119,9 @@ func (i *followerRepository) getFollowed(userId uuid.UUID) ([]users.User, error)
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	rows, err := tx.Query(context.Background(), "SELECT u.id, u.username, u.full_name, u.avatar FROM followers f JOIN users u ON f.followed_id = u.id WHERE f.follower_id = $1", userId)
 	if err != nil {

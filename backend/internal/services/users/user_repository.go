@@ -32,7 +32,9 @@ func (i *userRepository) create(user User) (uuid.UUID, error) {
 		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	var id uuid.UUID
 	err = tx.QueryRow(
@@ -59,7 +61,9 @@ func (i *userRepository) get(idList []uuid.UUID) ([]User, error) {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	var placeholders []string
 	for i := 0; i < len(idList); i++ {
@@ -102,7 +106,9 @@ func (i *userRepository) getBySearch(searchStr string) ([]User, error) {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	query := "SELECT id, username, full_name, avatar FROM users WHERE username ILIKE $1 OR full_name ILIKE $1"
 
@@ -141,7 +147,9 @@ func (i *userRepository) update(user User, id uuid.UUID) error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	if user.Password != "" {
 		_, err = tx.Exec(
@@ -178,7 +186,9 @@ func (i *userRepository) delete(id uuid.UUID) error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	_, err = tx.Exec(context.Background(), "DELETE FROM users WHERE id = $1", id)
 	if err != nil {

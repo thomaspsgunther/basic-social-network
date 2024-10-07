@@ -32,7 +32,9 @@ func (i *commentRepository) create(comment Comment) (uuid.UUID, error) {
 		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	var id uuid.UUID
 	err = tx.QueryRow(
@@ -59,7 +61,9 @@ func (i *commentRepository) update(comment Comment, id uuid.UUID) error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	_, err = tx.Exec(
 		context.Background(),
@@ -85,7 +89,9 @@ func (i *commentRepository) like(id uuid.UUID) error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	_, err = tx.Exec(
 		context.Background(),
@@ -111,7 +117,9 @@ func (i *commentRepository) unlike(id uuid.UUID) error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	_, err = tx.Exec(
 		context.Background(),
@@ -137,7 +145,9 @@ func (i *commentRepository) delete(id uuid.UUID) error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	_, err = tx.Exec(context.Background(), "DELETE FROM comments WHERE id = $1", id)
 	if err != nil {
@@ -159,7 +169,9 @@ func (i *commentRepository) getFromPost(postId uuid.UUID) ([]Comment, error) {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	rows, err := tx.Query(
 		context.Background(),
@@ -198,7 +210,9 @@ func (i *commentRepository) get(id uuid.UUID) (Comment, error) {
 		return Comment{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	defer database.HandleTransaction(tx, err)
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
 
 	var comment Comment
 	err = tx.QueryRow(
