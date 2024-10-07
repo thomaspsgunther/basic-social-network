@@ -9,7 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
-    "lint": "expo lint && eslint . --ext .ts,.mts,.tsx"
+    "lint": "expo lint && eslint . --ext .ts,.mts,.tsx",
+    "lint-fix": "expo lint && eslint . --ext .ts,.mts,.tsx --fix"
   },
   "jest": {
     "preset": "jest-expo"
