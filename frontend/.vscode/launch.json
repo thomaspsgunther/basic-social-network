@@ -1,12 +1,13 @@
 {
   "configurations": [
     {
-      "type": "expo",
-      "request": "attach",
-      "name": "Debug Expo app",
-      "projectRoot": "${workspaceFolder}",
-      "bundlerPort": "8081",
-      "bundlerHost": "127.0.0.1"
+      "type": "node",
+      "request": "launch",
+      "name": "Run Expo Android",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["expo", "run:android"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }
