@@ -12,6 +12,7 @@ import (
 type followerRepositoryI interface {
 	follow(followerId uuid.UUID, followedId uuid.UUID) error
 	unfollow(followerId uuid.UUID, followedId uuid.UUID) error
+	userFollowsUser(followerId uuid.UUID, followedId uuid.UUID) (bool, error)
 	getFollowers(userId uuid.UUID) ([]users.User, error)
 	getFollowed(userId uuid.UUID) ([]users.User, error)
 }
@@ -68,6 +69,31 @@ func (i *followerRepository) unfollow(followerId uuid.UUID, followedId uuid.UUID
 	}
 
 	return nil
+}
+
+func (i *followerRepository) userFollowsUser(followerId uuid.UUID, followedId uuid.UUID) (bool, error) {
+	conn, err := database.Postgres.Acquire(context.Background())
+	if err != nil {
+		return false, err
+	}
+	defer conn.Release()
+
+	tx, err := conn.Begin(context.Background())
+	if err != nil {
+		return false, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
+
+	var exists bool
+	err = tx.QueryRow(context.Background(), "SELECT EXISTS(SELECT 1 FROM likes WHERE follower_id = $1 AND followed_id = $2)", followerId, followedId).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check if user follows user: %w", err)
+	}
+
+	return exists, nil
 }
 
 func (i *followerRepository) getFollowers(userId uuid.UUID) ([]users.User, error) {

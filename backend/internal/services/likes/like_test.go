@@ -67,6 +67,30 @@ func TestUnlikePostUserNotLiked(t *testing.T) {
 	assert.Len(t, likedUsers, 0)
 }
 
+func TestUserLikedPost(t *testing.T) {
+	ts := setup()
+
+	userId := uuid.New()
+	postId := uuid.New()
+
+	err := ts.usecase.LikePost(userId, postId)
+	assert.NoError(t, err)
+
+	liked, err := ts.usecase.UserLikedPost(userId, postId)
+	assert.NoError(t, err)
+	assert.True(t, liked)
+
+	anotherUserId := uuid.New()
+	liked, err = ts.usecase.UserLikedPost(anotherUserId, postId)
+	assert.NoError(t, err)
+	assert.False(t, liked)
+
+	anotherPostId := uuid.New()
+	liked, err = ts.usecase.UserLikedPost(userId, anotherPostId)
+	assert.Error(t, err)
+	assert.False(t, liked)
+}
+
 func TestGetFromPost(t *testing.T) {
 	ts := setup()
 
@@ -117,6 +141,20 @@ func (m *mockLikeRepository) unlikePost(userId uuid.UUID, postId uuid.UUID) erro
 	}
 
 	return fmt.Errorf("user has not liked this post")
+}
+
+func (m *mockLikeRepository) userLikedPost(userId uuid.UUID, postId uuid.UUID) (bool, error) {
+	users, exists := m.likes[postId]
+	if !exists {
+		return false, fmt.Errorf("post not found")
+	}
+
+	for _, id := range users {
+		if id == userId {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func (m *mockLikeRepository) getFromPost(postId uuid.UUID) ([]users.User, error) {

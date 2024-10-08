@@ -12,6 +12,7 @@ import (
 type likeRepositoryI interface {
 	likePost(userId uuid.UUID, postId uuid.UUID) error
 	unlikePost(userId uuid.UUID, postId uuid.UUID) error
+	userLikedPost(userId uuid.UUID, postId uuid.UUID) (bool, error)
 	getFromPost(postId uuid.UUID) ([]users.User, error)
 }
 
@@ -67,6 +68,31 @@ func (i *likeRepository) unlikePost(userId uuid.UUID, postId uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (i *likeRepository) userLikedPost(userId uuid.UUID, postId uuid.UUID) (bool, error) {
+	conn, err := database.Postgres.Acquire(context.Background())
+	if err != nil {
+		return false, err
+	}
+	defer conn.Release()
+
+	tx, err := conn.Begin(context.Background())
+	if err != nil {
+		return false, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
+
+	var exists bool
+	err = tx.QueryRow(context.Background(), "SELECT EXISTS(SELECT 1 FROM likes WHERE user_id = $1 AND post_id = $2)", userId, postId).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check if user liked post: %w", err)
+	}
+
+	return exists, nil
 }
 
 func (i *likeRepository) getFromPost(postId uuid.UUID) ([]users.User, error) {

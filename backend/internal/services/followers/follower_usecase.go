@@ -9,6 +9,7 @@ import (
 type FollowerUsecaseI interface {
 	Follow(followerId uuid.UUID, followedId uuid.UUID) error
 	Unfollow(followerId uuid.UUID, followedId uuid.UUID) error
+	UserFollowsUser(followerId uuid.UUID, followedId uuid.UUID) (bool, error)
 	GetFollowers(userId uuid.UUID) ([]users.User, error)
 	GetFollowed(userId uuid.UUID) ([]users.User, error)
 }
@@ -41,6 +42,15 @@ func (i *followerUsecase) Unfollow(followerId uuid.UUID, followedId uuid.UUID) e
 	}
 
 	return nil
+}
+
+func (i *followerUsecase) UserFollowsUser(followerId uuid.UUID, followedId uuid.UUID) (bool, error) {
+	follows, err := i.repository.userFollowsUser(followerId, followedId)
+	if err != nil {
+		return false, err
+	}
+
+	return follows, nil
 }
 
 func (i *followerUsecase) GetFollowers(userId uuid.UUID) ([]users.User, error) {

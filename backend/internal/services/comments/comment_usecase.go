@@ -8,12 +8,12 @@ import (
 
 type CommentUsecaseI interface {
 	Create(comment Comment) (uuid.UUID, error)
+	GetFromPost(postId uuid.UUID) ([]Comment, error)
+	Get(id uuid.UUID) (Comment, error)
 	Update(comment Comment, id uuid.UUID) error
 	Like(id uuid.UUID) error
 	Unlike(id uuid.UUID) error
 	Delete(id uuid.UUID) error
-	GetFromPost(postId uuid.UUID) ([]Comment, error)
-	Get(id uuid.UUID) (Comment, error)
 }
 
 type commentUsecase struct {
@@ -45,6 +45,24 @@ func (i *commentUsecase) Create(comment Comment) (uuid.UUID, error) {
 	}
 
 	return id, nil
+}
+
+func (i *commentUsecase) GetFromPost(postId uuid.UUID) ([]Comment, error) {
+	comments, err := i.repository.getFromPost(postId)
+	if err != nil {
+		return nil, err
+	}
+
+	return comments, nil
+}
+
+func (i *commentUsecase) Get(id uuid.UUID) (Comment, error) {
+	comment, err := i.repository.get(id)
+	if err != nil {
+		return Comment{}, err
+	}
+
+	return comment, nil
 }
 
 func (i *commentUsecase) Update(comment Comment, id uuid.UUID) error {
@@ -81,22 +99,4 @@ func (i *commentUsecase) Delete(id uuid.UUID) error {
 	}
 
 	return nil
-}
-
-func (i *commentUsecase) GetFromPost(postId uuid.UUID) ([]Comment, error) {
-	comments, err := i.repository.getFromPost(postId)
-	if err != nil {
-		return nil, err
-	}
-
-	return comments, nil
-}
-
-func (i *commentUsecase) Get(id uuid.UUID) (Comment, error) {
-	comment, err := i.repository.get(id)
-	if err != nil {
-		return Comment{}, err
-	}
-
-	return comment, nil
 }

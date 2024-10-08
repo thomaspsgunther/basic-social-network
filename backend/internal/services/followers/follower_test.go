@@ -64,6 +64,20 @@ func TestUnfollow_NonExistent(t *testing.T) {
 	assert.Equal(t, "user "+nonExistentUserId.String()+" is not being followed", err.Error())
 }
 
+func TestIsFollowing(t *testing.T) {
+	ts := setup()
+
+	followerId := uuid.New()
+	followedId := uuid.New()
+
+	err := ts.usecase.Follow(followerId, followedId)
+	assert.NoError(t, err)
+
+	isFollowing, err := ts.usecase.UserFollowsUser(followerId, followedId)
+	assert.NoError(t, err)
+	assert.True(t, isFollowing)
+}
+
 func TestGetFollowers(t *testing.T) {
 	ts := setup()
 
@@ -126,6 +140,21 @@ func (m *mockFollowerRepository) unfollow(followerId uuid.UUID, followedId uuid.
 	}
 
 	return fmt.Errorf("user %v is not being followed", followedId)
+}
+
+func (m *mockFollowerRepository) userFollowsUser(followerId uuid.UUID, followedId uuid.UUID) (bool, error) {
+	followed := m.followersMap[followerId]
+	if followed == nil {
+		return false, nil
+	}
+
+	for _, id := range followed {
+		if id == followedId {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func (m *mockFollowerRepository) getFollowers(userId uuid.UUID) ([]users.User, error) {

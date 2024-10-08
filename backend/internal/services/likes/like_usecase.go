@@ -9,6 +9,7 @@ import (
 type LikeUsecaseI interface {
 	LikePost(userId uuid.UUID, postId uuid.UUID) error
 	UnlikePost(userId uuid.UUID, postId uuid.UUID) error
+	UserLikedPost(userId uuid.UUID, postId uuid.UUID) (bool, error)
 	GetFromPost(postId uuid.UUID) ([]users.User, error)
 }
 
@@ -40,6 +41,15 @@ func (i *likeUsecase) UnlikePost(userId uuid.UUID, postId uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (i *likeUsecase) UserLikedPost(userId uuid.UUID, postId uuid.UUID) (bool, error) {
+	isLiked, err := i.repository.userLikedPost(userId, postId)
+	if err != nil {
+		return false, err
+	}
+
+	return isLiked, nil
 }
 
 func (i *likeUsecase) GetFromPost(postId uuid.UUID) ([]users.User, error) {
