@@ -188,10 +188,10 @@ func (i *postRepository) getFromUser(userId uuid.UUID, limit int, lastCreatedAt 
 	}()
 
 	query := `
-        SELECT id, user_id, image, description, like_count, comment_count, created_at 
+        SELECT id, image 
         FROM posts 
         WHERE user_id = $1 
-        AND (created_at < $2 OR (created_at = $2 AND id < $3))
+        AND (created_at < $2 OR (created_at = $2 AND id < $3)) 
         ORDER BY created_at DESC, id DESC 
         LIMIT $4
     `
@@ -205,7 +205,7 @@ func (i *postRepository) getFromUser(userId uuid.UUID, limit int, lastCreatedAt 
 	var posts []Post
 	for rows.Next() {
 		var post Post
-		if err := rows.Scan(&post.ID, &post.UserID, &post.Image, &post.Description, &post.LikeCount, &post.CommentCount, &post.CreatedAt); err != nil {
+		if err := rows.Scan(&post.ID, &post.Image); err != nil {
 			return nil, fmt.Errorf("failed to scan post: %w", err)
 		}
 		posts = append(posts, post)
