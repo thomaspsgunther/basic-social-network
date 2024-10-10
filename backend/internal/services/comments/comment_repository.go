@@ -20,7 +20,7 @@ type commentRepository interface {
 
 type commentRepositoryImpl struct{}
 
-func (i *commentRepositoryImpl) create(ctx context.Context, comment Comment) (uuid.UUID, error) {
+func (r *commentRepositoryImpl) create(ctx context.Context, comment Comment) (uuid.UUID, error) {
 	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return uuid.Nil, err
@@ -49,7 +49,7 @@ func (i *commentRepositoryImpl) create(ctx context.Context, comment Comment) (uu
 	return id, nil
 }
 
-func (i *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error) {
+func (r *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error) {
 	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func (i *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUI
 	return comments, nil
 }
 
-func (i *commentRepositoryImpl) get(ctx context.Context, id uuid.UUID) (Comment, error) {
+func (r *commentRepositoryImpl) get(ctx context.Context, id uuid.UUID) (Comment, error) {
 	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return Comment{}, err
@@ -123,7 +123,7 @@ func (i *commentRepositoryImpl) get(ctx context.Context, id uuid.UUID) (Comment,
 	return comment, nil
 }
 
-func (i *commentRepositoryImpl) update(ctx context.Context, comment Comment, id uuid.UUID) error {
+func (r *commentRepositoryImpl) update(ctx context.Context, comment Comment, id uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return err
@@ -151,7 +151,7 @@ func (i *commentRepositoryImpl) update(ctx context.Context, comment Comment, id 
 	return nil
 }
 
-func (i *commentRepositoryImpl) like(ctx context.Context, id uuid.UUID) error {
+func (r *commentRepositoryImpl) like(ctx context.Context, id uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return err
@@ -179,7 +179,7 @@ func (i *commentRepositoryImpl) like(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (i *commentRepositoryImpl) unlike(ctx context.Context, id uuid.UUID) error {
+func (r *commentRepositoryImpl) unlike(ctx context.Context, id uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return err
@@ -207,7 +207,7 @@ func (i *commentRepositoryImpl) unlike(ctx context.Context, id uuid.UUID) error 
 	return nil
 }
 
-func (i *commentRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error {
+func (r *commentRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error {
 	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return err

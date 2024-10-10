@@ -30,7 +30,7 @@ func NewCommentUsecase() CommentUsecase {
 	}
 }
 
-func (i *commentUsecaseImpl) Create(ctx context.Context, comment Comment) (uuid.UUID, error) {
+func (u *commentUsecaseImpl) Create(ctx context.Context, comment Comment) (uuid.UUID, error) {
 	if (comment.User == &shared.User{}) {
 		return uuid.Nil, fmt.Errorf("user must not be empty")
 	}
@@ -41,7 +41,7 @@ func (i *commentUsecaseImpl) Create(ctx context.Context, comment Comment) (uuid.
 		return uuid.Nil, fmt.Errorf("comment text must not be empty")
 	}
 
-	id, err := i.repository.create(ctx, comment)
+	id, err := u.repository.create(ctx, comment)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -49,8 +49,8 @@ func (i *commentUsecaseImpl) Create(ctx context.Context, comment Comment) (uuid.
 	return id, nil
 }
 
-func (i *commentUsecaseImpl) GetFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error) {
-	comments, err := i.repository.getFromPost(ctx, postId)
+func (u *commentUsecaseImpl) GetFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error) {
+	comments, err := u.repository.getFromPost(ctx, postId)
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +58,8 @@ func (i *commentUsecaseImpl) GetFromPost(ctx context.Context, postId uuid.UUID) 
 	return comments, nil
 }
 
-func (i *commentUsecaseImpl) Get(ctx context.Context, id uuid.UUID) (Comment, error) {
-	comment, err := i.repository.get(ctx, id)
+func (u *commentUsecaseImpl) Get(ctx context.Context, id uuid.UUID) (Comment, error) {
+	comment, err := u.repository.get(ctx, id)
 	if err != nil {
 		return Comment{}, err
 	}
@@ -67,8 +67,8 @@ func (i *commentUsecaseImpl) Get(ctx context.Context, id uuid.UUID) (Comment, er
 	return comment, nil
 }
 
-func (i *commentUsecaseImpl) Update(ctx context.Context, comment Comment, id uuid.UUID) error {
-	err := i.repository.update(ctx, comment, id)
+func (u *commentUsecaseImpl) Update(ctx context.Context, comment Comment, id uuid.UUID) error {
+	err := u.repository.update(ctx, comment, id)
 	if err != nil {
 		return err
 	}
@@ -76,8 +76,8 @@ func (i *commentUsecaseImpl) Update(ctx context.Context, comment Comment, id uui
 	return nil
 }
 
-func (i *commentUsecaseImpl) Like(ctx context.Context, id uuid.UUID) error {
-	err := i.repository.like(ctx, id)
+func (u *commentUsecaseImpl) Like(ctx context.Context, id uuid.UUID) error {
+	err := u.repository.like(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -85,8 +85,8 @@ func (i *commentUsecaseImpl) Like(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (i *commentUsecaseImpl) Unlike(ctx context.Context, id uuid.UUID) error {
-	err := i.repository.unlike(ctx, id)
+func (u *commentUsecaseImpl) Unlike(ctx context.Context, id uuid.UUID) error {
+	err := u.repository.unlike(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -94,8 +94,8 @@ func (i *commentUsecaseImpl) Unlike(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (i *commentUsecaseImpl) Delete(ctx context.Context, id uuid.UUID) error {
-	err := i.repository.delete(ctx, id)
+func (u *commentUsecaseImpl) Delete(ctx context.Context, id uuid.UUID) error {
+	err := u.repository.delete(ctx, id)
 	if err != nil {
 		return err
 	}
