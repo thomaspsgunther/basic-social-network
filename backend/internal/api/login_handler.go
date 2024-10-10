@@ -14,7 +14,7 @@ import (
 )
 
 type LoginHandler struct {
-	Usecase users.UserUsecase
+	Usecase users.IUserUsecase
 }
 
 func (h LoginHandler) Routes() chi.Router {

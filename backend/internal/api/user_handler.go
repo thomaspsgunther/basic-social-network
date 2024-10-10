@@ -17,15 +17,20 @@ import (
 )
 
 type UserHandler struct {
-	Usecase users.UserUsecase
+	Usecase users.IUserUsecase
 }
 
 func (h UserHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Get("/{id_list}", h.GetUsers)                // GET /api/v1/users/{id_list} - Read a list of users by: id_list
-	r.Get("/search/{search_term}", h.SearchUsers)  // GET /api/v1/users/search/{search_term} - Read a list of users by: search_term
-	r.Get("/posts/{user_id}", h.ListPostsFromUser) // GET /api/v1/users/posts/{user_id}?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
+	r.Get("/{id_list}", h.GetUsers)                                        // GET /api/v1/users/{id_list} - Read a list of users by: id_list
+	r.Get("/search/{search_term}", h.SearchUsers)                          // GET /api/v1/users/search/{search_term} - Read a list of users by: search_term
+	r.Get("/posts/{user_id}", h.ListPostsFromUser)                         // GET /api/v1/users/posts/{user_id}?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
+	r.Post("/follow/{follower_id}_{followed_id}", h.Follow)                // POST /api/v1/users/follow/{follower_id}_{followed_id} - Follow a user by: id
+	r.Delete("/unfollow/{follower_id}_{followed_id}", h.Unfollow)          // DELETE /api/v1/users/unfollow/{follower_id}_{followed_id} - Unfollow a user by: id
+	r.Get("/checkfollower/{follower_id}_{followed_id}", h.UserFollowsUser) // GET /api/v1/users/checkfollower/{follower_id}_{followed_id} - Check if a user follows another user by: id
+	r.Get("/followers/{id}", h.GetFollowers)                               // GET /api/v1/users/followers/{id} - Read a list of who follows a user by: user_id
+	r.Get("/followed/{id}", h.GetFollowed)                                 // GET /api/v1/users/followed/{id} - Read a list of who a user follows by: user_id
 
 	r.Route("/{id}", func(r chi.Router) {
 		r.Put("/", h.UpdateUser)    // PUT /api/v1/users/{id} - Update a single user by: id
@@ -208,6 +213,301 @@ func (h UserHandler) ListPostsFromUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response, err := json.Marshal(posts)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+}
+
+// Follow       godoc
+// @Summary     Follow a user by: id
+// @Description Follow a user by: id
+// @Tags        users
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       follower_id path string true "Follower ID" Format(uuid)
+// @Param       followed_id path string true "Followed ID" Format(uuid)
+// @Success     200
+// @Failure     400
+// @Failure     401
+// @Failure     403
+// @Failure     500
+// @Router      /users/follow/{follower_id}_{followed_id} [post]
+func (h UserHandler) Follow(w http.ResponseWriter, r *http.Request) {
+	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
+
+	authUser := auth.ForContext(r.Context())
+	if authUser == nil {
+		err := fmt.Errorf("access denied")
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	followerId, err := uuid.Parse(chi.URLParam(r, "follower_id"))
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return
+	}
+
+	if authUser.ID != followerId {
+		err := fmt.Errorf("forbidden follow attempt from user: %v", authUser.ID)
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	followedId, err := uuid.Parse(chi.URLParam(r, "followed_id"))
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return
+	}
+
+	err = h.Usecase.Follow(r.Context(), followerId, followedId)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// Unfollow     godoc
+// @Summary     Unfollow a user by: id
+// @Description Unfollow a user by: id
+// @Tags        users
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       follower_id path string true "Follower ID" Format(uuid)
+// @Param       followed_id path string true "Followed ID" Format(uuid)
+// @Success     200
+// @Failure     400
+// @Failure     401
+// @Failure     403
+// @Failure     500
+// @Router      /users/unfollow/{follower_id}_{followed_id} [delete]
+func (h UserHandler) Unfollow(w http.ResponseWriter, r *http.Request) {
+	logger.ServerLogger.Info(fmt.Sprintf("new request: delete %s", r.URL))
+
+	authUser := auth.ForContext(r.Context())
+	if authUser == nil {
+		err := fmt.Errorf("access denied")
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	followerId, err := uuid.Parse(chi.URLParam(r, "follower_id"))
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return
+	}
+	followedId, err := uuid.Parse(chi.URLParam(r, "followed_id"))
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return
+	}
+
+	if authUser.ID != followerId || authUser.ID != followedId {
+		err := fmt.Errorf("forbidden unfollow attempt from user: %v", authUser.ID)
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	err = h.Usecase.Unfollow(r.Context(), followerId, followedId)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// UserFollowsUser godoc
+// @Summary        Check if a user follows another user by: id
+// @Description    Check if a user follows another user by: id
+// @Tags           users
+// @Produce        json
+// @Param          Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param          follower_id path string true "Follower ID" Format(uuid)
+// @Param          followed_id path string true "Followed ID" Format(uuid)
+// @Success        200 {object} users.FollowsJson
+// @Failure        400
+// @Failure        401
+// @Failure        500
+// @Router         /users/checkfollower/{follower_id}_{followed_id} [get]
+func (h UserHandler) UserFollowsUser(w http.ResponseWriter, r *http.Request) {
+	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
+
+	authUser := auth.ForContext(r.Context())
+	if authUser == nil {
+		err := fmt.Errorf("access denied")
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	followerId, err := uuid.Parse(chi.URLParam(r, "follower_id"))
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return
+	}
+	followedId, err := uuid.Parse(chi.URLParam(r, "followed_id"))
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return
+	}
+
+	follows, err := h.Usecase.UserFollowsUser(r.Context(), followerId, followedId)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(users.FollowsJson{Follows: follows})
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+}
+
+// GetFollowers godoc
+// @Summary     Read a list of who follows a user by: user_id
+// @Description Read a list of who follows a user by: user_id
+// @Tags        users
+// @Produce     json
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       id path string true "User ID" Format(uuid)
+// @Success     200 {object} shared.Users
+// @Failure     400
+// @Failure     401
+// @Failure     500
+// @Router      /users/followers/{id} [get]
+func (h UserHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
+	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
+
+	authUser := auth.ForContext(r.Context())
+	if authUser == nil {
+		err := fmt.Errorf("access denied")
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	id := chi.URLParam(r, "id")
+	userId, err := uuid.Parse(id)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return
+	}
+
+	followers, err := h.Usecase.GetFollowers(r.Context(), userId)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(followers)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+}
+
+// GetFollowed  godoc
+// @Summary     Read a list of who a user follows by: user_id
+// @Description Read a list of who a user follows by: user_id
+// @Tags        users
+// @Produce     json
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       id path string true "User ID" Format(uuid)
+// @Success     200 {object} shared.Users
+// @Failure     400
+// @Failure     401
+// @Failure     500
+// @Router      /users/followed/{id} [get]
+func (h UserHandler) GetFollowed(w http.ResponseWriter, r *http.Request) {
+	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
+
+	authUser := auth.ForContext(r.Context())
+	if authUser == nil {
+		err := fmt.Errorf("access denied")
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	id := chi.URLParam(r, "id")
+	userId, err := uuid.Parse(id)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return
+	}
+
+	followed, err := h.Usecase.GetFollowed(r.Context(), userId)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(followed)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

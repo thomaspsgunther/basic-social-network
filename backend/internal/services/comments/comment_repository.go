@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type commentRepository interface {
+type iCommentRepository interface {
 	create(ctx context.Context, comment Comment) (uuid.UUID, error)
 	getFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error)
 	get(ctx context.Context, id uuid.UUID) (Comment, error)

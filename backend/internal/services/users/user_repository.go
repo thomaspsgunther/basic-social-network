@@ -12,13 +12,18 @@ import (
 	"y_net/internal/services/shared"
 )
 
-type userRepository interface {
+type iUserRepository interface {
 	create(ctx context.Context, user shared.User) (uuid.UUID, error)
 	get(ctx context.Context, idList []uuid.UUID) ([]shared.User, error)
 	getBySearch(ctx context.Context, searchStr string) ([]shared.User, error)
 	getPostsFromUser(ctx context.Context, userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]shared.Post, error)
 	update(ctx context.Context, user shared.User, id uuid.UUID) error
 	delete(ctx context.Context, id uuid.UUID) error
+	follow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error
+	unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error
+	userFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error)
+	getFollowers(ctx context.Context, iId uuid.UUID) ([]shared.User, error)
+	getFollowed(ctx context.Context, id uuid.UUID) ([]shared.User, error)
 }
 
 type userRepositoryImpl struct{}
@@ -244,4 +249,155 @@ func (r *userRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (r *userRepositoryImpl) follow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error {
+	conn, err := database.Postgres.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
+
+	_, err = tx.Exec(
+		ctx,
+		"INSERT INTO followers (follower_id, followed_id) VALUES ($1, $2)",
+		followerId, followedId,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to insert follower: %w", err)
+	}
+
+	return nil
+}
+
+func (r *userRepositoryImpl) unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error {
+	conn, err := database.Postgres.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
+
+	_, err = tx.Exec(ctx, "DELETE FROM followers WHERE follower_id = $1 AND followed_id = $2", followerId, followedId)
+	if err != nil {
+		return fmt.Errorf("failed to delete follower: %w", err)
+	}
+
+	return nil
+}
+
+func (r *userRepositoryImpl) userFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error) {
+	conn, err := database.Postgres.Acquire(ctx)
+	if err != nil {
+		return false, err
+	}
+	defer conn.Release()
+
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
+
+	var exists bool
+	err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM likes WHERE follower_id = $1 AND followed_id = $2)", followerId, followedId).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check if user follows user: %w", err)
+	}
+
+	return exists, nil
+}
+
+func (r *userRepositoryImpl) getFollowers(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
+	conn, err := database.Postgres.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
+
+	rows, err := tx.Query(ctx, "SELECT u.id, u.username, u.full_name, u.avatar FROM followers f JOIN users u ON f.follower_id = u.id WHERE f.followed_id = $1", id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to select followers: %w", err)
+	}
+	defer rows.Close()
+
+	var userFollowers []shared.User
+	for rows.Next() {
+		var user shared.User
+		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
+			return nil, fmt.Errorf("failed to scan user: %w", err)
+		}
+		userFollowers = append(userFollowers, user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error reading rows: %w", err)
+	}
+
+	return userFollowers, nil
+}
+
+func (r *userRepositoryImpl) getFollowed(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
+	conn, err := database.Postgres.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		database.HandleTransaction(tx, err)
+	}()
+
+	rows, err := tx.Query(ctx, "SELECT u.id, u.username, u.full_name, u.avatar FROM followers f JOIN users u ON f.followed_id = u.id WHERE f.follower_id = $1", id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to select followed: %w", err)
+	}
+	defer rows.Close()
+
+	var userFollowed []shared.User
+	for rows.Next() {
+		var user shared.User
+		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
+			return nil, fmt.Errorf("failed to scan user: %w", err)
+		}
+		userFollowed = append(userFollowed, user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error reading rows: %w", err)
+	}
+
+	return userFollowed, nil
 }

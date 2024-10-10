@@ -1,4 +1,4 @@
-package likes
+package posts
 
 import "github.com/google/uuid"
 

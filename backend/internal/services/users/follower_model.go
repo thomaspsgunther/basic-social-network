@@ -1,4 +1,4 @@
-package followers
+package users
 
 import "github.com/google/uuid"
 

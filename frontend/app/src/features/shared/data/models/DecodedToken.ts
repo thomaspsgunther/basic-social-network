@@ -1,4 +1,4 @@
-export default interface DecodedToken {
+export interface DecodedToken {
   id: string;
   exp: number;
 }

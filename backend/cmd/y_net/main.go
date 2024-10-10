@@ -19,8 +19,6 @@ import (
 	database "y_net/internal/database/postgres"
 	"y_net/internal/logger"
 	"y_net/internal/services/comments"
-	"y_net/internal/services/followers"
-	"y_net/internal/services/likes"
 	"y_net/internal/services/posts"
 	"y_net/internal/services/users"
 	"y_net/internal/socketio"
@@ -88,9 +86,7 @@ func main() {
 	r.HandleFunc("/api/v1/", rootFunc)
 	r.Mount("/api/v1/login", api.LoginHandler{Usecase: users.NewUserUsecase()}.Routes())
 	r.Mount("/api/v1/users", api.UserHandler{Usecase: users.NewUserUsecase()}.Routes())
-	r.Mount("/api/v1/followers", api.FollowerHandler{Usecase: followers.NewFollowerUsecase()}.Routes())
 	r.Mount("/api/v1/posts", api.PostHandler{Usecase: posts.NewPostUsecase()}.Routes())
-	r.Mount("/api/v1/likes", api.LikeHandler{Usecase: likes.NewLikeUsecase()}.Routes())
 	r.Mount("/api/v1/comments", api.CommentHandler{Usecase: comments.NewCommentUsecase()}.Routes())
 
 	// Start the server api

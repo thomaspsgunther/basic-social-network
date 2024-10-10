@@ -1,14 +1,15 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import User from '../../features/shared/data/models/User';
+import { User } from '../../features/shared/data/models/User';
 import { setAuthToken } from '../../features/shared/data/api/axiosInstance';
-import userApi from '../../features/users/data/api/userApi';
-import loginApi from '../../features/login/data/api/loginApi';
+import { userApi } from '../../features/users/data/api/userApi';
 import { jwtDecode } from 'jwt-decode';
-import DecodedToken from '../../features/shared/data/models/DecodedToken';
+import { DecodedToken } from '../../features/shared/data/models/DecodedToken';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
+import { LoginRepositoryImpl } from '../../features/login/data/repositories/LoginRepositoryImpl';
+import { LoginUsecaseImpl } from '../../features/login/domain/usecases/LoginUsecase';
 
 interface AuthContextType {
   token: string | null;
@@ -31,30 +32,35 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [refreshTimer, setRefreshTimer] = useState<NodeJS.Timeout | null>(null);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const loginRepository = new LoginRepositoryImpl();
+  const loginUsecase = new LoginUsecaseImpl(loginRepository);
 
   useEffect(() => {
     const loadStoredToken = async () => {
-      const storedToken = await SecureStore.getItemAsync('token');
-      if (storedToken) {
-        const decodedToken = decodeToken(storedToken);
-        if (decodedToken != null && decodedToken.exp) {
-          const currentTime = Math.floor(Date.now() / 1000);
-          if (decodedToken.exp < currentTime) {
-            console.log('Token has expired');
-            logout();
-            return;
-          }
+      try {
+        const storedToken = await SecureStore.getItemAsync('token');
+        if (storedToken) {
+          const decodedToken = decodeToken(storedToken);
+          if (decodedToken != null && decodedToken.exp) {
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (decodedToken.exp < currentTime) {
+              logout();
 
-          setToken(storedToken);
-          setAuthToken(storedToken);
-          setRefreshTimerLogic(storedToken);
-          setIsAuthenticated(true);
-          await fetchUser(storedToken);
+              return;
+            }
+
+            setToken(storedToken);
+            setAuthToken(storedToken);
+            setRefreshTimerLogic(storedToken);
+            setIsAuthenticated(true);
+            await fetchUser(storedToken);
+          } else {
+            logout();
+          }
         } else {
-          console.log('Invalid token stored');
           logout();
         }
-      } else {
+      } catch (_error) {
         logout();
       }
     };
@@ -68,12 +74,63 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
+  const register = async (userData: Omit<User, 'id'>) => {
+    try {
+      const newToken = await loginUsecase.registerUser(userData);
+      await SecureStore.setItemAsync('token', newToken);
+      setToken(newToken);
+      setAuthToken(newToken);
+      setRefreshTimerLogic(newToken);
+      setIsAuthenticated(true);
+      await fetchUser(newToken);
+    } catch (_error) {
+      logout();
+    }
+  };
+
+  const login = async (userData: Omit<User, 'id'>) => {
+    try {
+      const newToken = await loginUsecase.loginUser(userData);
+      await SecureStore.setItemAsync('token', newToken);
+      setToken(newToken);
+      setAuthToken(newToken);
+      setRefreshTimerLogic(newToken);
+      setIsAuthenticated(true);
+      await fetchUser(newToken);
+    } catch (_error) {
+      logout();
+    }
+  };
+
+  const refreshToken = async (token: string) => {
+    try {
+      const newToken = await loginUsecase.refreshToken(token);
+      await SecureStore.setItemAsync('token', newToken);
+      setToken(newToken);
+      setAuthToken(newToken);
+      setIsAuthenticated(true);
+    } catch (_error) {
+      logout();
+    }
+  };
+
+  const logout = async () => {
+    await SecureStore.deleteItemAsync('token');
+    setToken(null);
+    setAuthToken(null);
+    setRefreshTimer(null);
+    setIsAuthenticated(false);
+    setUser(null);
+
+    navigation.navigate('Login');
+  };
+
   const decodeToken = (token: string): DecodedToken | null => {
     try {
       const decoded = jwtDecode<DecodedToken>(token);
+
       return decoded;
-    } catch (error) {
-      console.error('Failed to decode JWT:', error);
+    } catch (_error) {
       return null;
     }
   };
@@ -93,9 +150,8 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         throw new Error('Invalid token');
       }
-    } catch (error) {
-      console.error('Failed to fetch user:', error);
-      logout();
+    } catch (_error) {
+      throw new Error('Failed to fetch user');
     }
   };
 
@@ -111,63 +167,6 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setRefreshTimer(setTimeout(() => refreshToken(token), refreshTime));
       }
     }
-  };
-
-  const register = async (userData: Omit<User, 'id'>) => {
-    try {
-      const response = await loginApi.register(userData);
-      const newToken: string = response.data;
-      await SecureStore.setItemAsync('token', newToken);
-      setToken(newToken);
-      setAuthToken(newToken);
-      setRefreshTimerLogic(newToken);
-      setIsAuthenticated(true);
-      await fetchUser(newToken);
-    } catch (error) {
-      console.error('register failed:', error);
-      logout();
-    }
-  };
-
-  const login = async (userData: Omit<User, 'id'>) => {
-    try {
-      const response = await loginApi.login(userData);
-      const newToken: string = response.data;
-      await SecureStore.setItemAsync('token', newToken);
-      setToken(newToken);
-      setAuthToken(newToken);
-      setRefreshTimerLogic(newToken);
-      setIsAuthenticated(true);
-      await fetchUser(newToken);
-    } catch (error) {
-      console.error('login failed:', error);
-      logout();
-    }
-  };
-
-  const refreshToken = async (token: string) => {
-    try {
-      const response = await loginApi.refreshToken(token);
-      const newToken: string = response.data;
-      await SecureStore.setItemAsync('token', newToken);
-      setToken(newToken);
-      setAuthToken(newToken);
-      setIsAuthenticated(true);
-    } catch (error) {
-      console.error('refresh token failed:', error);
-      logout();
-    }
-  };
-
-  const logout = async () => {
-    await SecureStore.deleteItemAsync('token');
-    setToken(null);
-    setAuthToken(null);
-    setRefreshTimer(null);
-    setIsAuthenticated(false);
-    setUser(null);
-
-    navigation.navigate('Login');
   };
 
   return (

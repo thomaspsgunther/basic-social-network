@@ -11,7 +11,7 @@ import (
 )
 
 type TestSetup struct {
-	usecase CommentUsecase
+	usecase ICommentUsecase
 	repo    *mockCommentRepository
 }
 
@@ -199,7 +199,7 @@ func TestGetCommentNotFound(t *testing.T) {
 	assert.Error(t, err)
 }
 
-// mockCommentRepository is a mock implementation of commentRepository for testing purposes
+// mockCommentRepository is a mock implementation of iCommentRepository for testing purposes
 type mockCommentRepository struct {
 	comments map[uuid.UUID]Comment
 }

@@ -12,7 +12,7 @@ import (
 )
 
 type TestSetup struct {
-	usecase PostUsecase
+	usecase IPostUsecase
 	repo    *mockPostRepository
 }
 
@@ -128,14 +128,106 @@ func TestDeletePostNotFound(t *testing.T) {
 	assert.Equal(t, "post not found", err.Error())
 }
 
-// mockPostRepository is a mock implementation of postRepository for testing
+func TestLike(t *testing.T) {
+	ts := setup()
+
+	userId := uuid.New()
+	postId := uuid.New()
+
+	err := ts.usecase.Like(context.Background(), userId, postId)
+	assert.NoError(t, err)
+
+	likedUsers, err := ts.usecase.GetLikes(context.Background(), postId)
+	assert.NoError(t, err)
+	assert.Len(t, likedUsers, 1)
+	assert.Equal(t, likedUsers[0].ID, userId)
+}
+
+func TestUnlike(t *testing.T) {
+	ts := setup()
+
+	userId := uuid.New()
+	postId := uuid.New()
+
+	err := ts.usecase.Like(context.Background(), userId, postId)
+	assert.NoError(t, err)
+
+	err = ts.usecase.Unlike(context.Background(), userId, postId)
+	assert.NoError(t, err)
+
+	likedUsers, err := ts.usecase.GetLikes(context.Background(), postId)
+	assert.NoError(t, err)
+	assert.Len(t, likedUsers, 0)
+}
+
+func TestUnlikeUserNotLiked(t *testing.T) {
+	ts := setup()
+
+	userId := uuid.New()
+	postId := uuid.New()
+
+	err := ts.usecase.Unlike(context.Background(), userId, postId)
+	assert.Error(t, err)
+
+	likedUsers, err := ts.usecase.GetLikes(context.Background(), postId)
+	assert.NoError(t, err)
+	assert.Len(t, likedUsers, 0)
+}
+
+func TestUserLikedPost(t *testing.T) {
+	ts := setup()
+
+	userId := uuid.New()
+	postId := uuid.New()
+
+	err := ts.usecase.Like(context.Background(), userId, postId)
+	assert.NoError(t, err)
+
+	liked, err := ts.usecase.UserLikedPost(context.Background(), userId, postId)
+	assert.NoError(t, err)
+	assert.True(t, liked)
+
+	anotherUserId := uuid.New()
+	liked, err = ts.usecase.UserLikedPost(context.Background(), anotherUserId, postId)
+	assert.NoError(t, err)
+	assert.False(t, liked)
+
+	anotherPostId := uuid.New()
+	liked, err = ts.usecase.UserLikedPost(context.Background(), userId, anotherPostId)
+	assert.Error(t, err)
+	assert.False(t, liked)
+}
+
+func TestGetLikes(t *testing.T) {
+	ts := setup()
+
+	postId := uuid.New()
+	userId1 := uuid.New()
+	userId2 := uuid.New()
+
+	err := ts.usecase.Like(context.Background(), userId1, postId)
+	assert.NoError(t, err)
+
+	err = ts.usecase.Like(context.Background(), userId2, postId)
+	assert.NoError(t, err)
+
+	likedUsers, err := ts.usecase.GetLikes(context.Background(), postId)
+	assert.NoError(t, err)
+	assert.Len(t, likedUsers, 2)
+	assert.Contains(t, likedUsers, shared.User{ID: userId1})
+	assert.Contains(t, likedUsers, shared.User{ID: userId2})
+}
+
+// mockPostRepository is a mock implementation of iPostRepository for testing
 type mockPostRepository struct {
 	posts map[uuid.UUID]shared.Post
+	likes map[uuid.UUID][]uuid.UUID
 }
 
 func newMockPostRepository() *mockPostRepository {
 	return &mockPostRepository{
 		posts: make(map[uuid.UUID]shared.Post),
+		likes: make(map[uuid.UUID][]uuid.UUID),
 	}
 }
 
@@ -185,4 +277,48 @@ func (m *mockPostRepository) delete(ctx context.Context, id uuid.UUID) error {
 	delete(m.posts, id)
 
 	return nil
+}
+
+func (m *mockPostRepository) like(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error {
+	if m.likes[postId] == nil {
+		m.likes[postId] = []uuid.UUID{}
+	}
+	m.likes[postId] = append(m.likes[postId], userId)
+
+	return nil
+}
+
+func (m *mockPostRepository) unlike(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error {
+	users := m.likes[postId]
+	for i, id := range users {
+		if id == userId {
+			m.likes[postId] = append(users[:i], users[i+1:]...)
+			return nil
+		}
+	}
+
+	return fmt.Errorf("user has not liked this post")
+}
+
+func (m *mockPostRepository) userLikedPost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) (bool, error) {
+	users, exists := m.likes[postId]
+	if !exists {
+		return false, fmt.Errorf("post not found")
+	}
+
+	for _, id := range users {
+		if id == userId {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (m *mockPostRepository) getLikes(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
+	var userList []shared.User
+	for _, userId := range m.likes[id] {
+		userList = append(userList, shared.User{ID: userId})
+	}
+
+	return userList, nil
 }

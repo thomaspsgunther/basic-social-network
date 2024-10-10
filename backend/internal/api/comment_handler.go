@@ -14,7 +14,7 @@ import (
 )
 
 type CommentHandler struct {
-	Usecase comments.CommentUsecase
+	Usecase comments.ICommentUsecase
 }
 
 func (h CommentHandler) Routes() chi.Router {

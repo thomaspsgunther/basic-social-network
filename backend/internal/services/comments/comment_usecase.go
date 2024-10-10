@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type CommentUsecase interface {
+type ICommentUsecase interface {
 	Create(ctx context.Context, comment Comment) (uuid.UUID, error)
 	GetFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error)
 	Get(ctx context.Context, id uuid.UUID) (Comment, error)
@@ -19,11 +19,11 @@ type CommentUsecase interface {
 }
 
 type commentUsecaseImpl struct {
-	usecase    CommentUsecase
-	repository commentRepository
+	usecase    ICommentUsecase
+	repository iCommentRepository
 }
 
-func NewCommentUsecase() CommentUsecase {
+func NewCommentUsecase() ICommentUsecase {
 	return &commentUsecaseImpl{
 		usecase:    &commentUsecaseImpl{},
 		repository: &commentRepositoryImpl{},
