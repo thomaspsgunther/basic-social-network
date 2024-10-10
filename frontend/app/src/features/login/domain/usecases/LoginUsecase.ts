@@ -37,8 +37,8 @@ export class LoginUsecaseImpl implements ILoginUsecase {
   }
 
   private validateUserData(userData: Omit<User, 'id'>) {
-    if (!userData.email || !userData.password) {
-      throw new Error('email and password are required');
+    if (!userData.username || !userData.password) {
+      throw new Error('username and password are required');
     }
   }
 }
