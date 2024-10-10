@@ -8,26 +8,26 @@ import (
 	"github.com/google/uuid"
 )
 
-type commentRepositoryI interface {
-	create(comment Comment) (uuid.UUID, error)
-	getFromPost(postId uuid.UUID) ([]Comment, error)
-	get(id uuid.UUID) (Comment, error)
-	update(comment Comment, id uuid.UUID) error
-	like(id uuid.UUID) error
-	unlike(id uuid.UUID) error
-	delete(id uuid.UUID) error
+type commentRepository interface {
+	create(ctx context.Context, comment Comment) (uuid.UUID, error)
+	getFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error)
+	get(ctx context.Context, id uuid.UUID) (Comment, error)
+	update(ctx context.Context, comment Comment, id uuid.UUID) error
+	like(ctx context.Context, id uuid.UUID) error
+	unlike(ctx context.Context, id uuid.UUID) error
+	delete(ctx context.Context, id uuid.UUID) error
 }
 
-type commentRepository struct{}
+type commentRepositoryImpl struct{}
 
-func (i *commentRepository) create(comment Comment) (uuid.UUID, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (i *commentRepositoryImpl) create(ctx context.Context, comment Comment) (uuid.UUID, error) {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return uuid.Nil, err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -38,9 +38,9 @@ func (i *commentRepository) create(comment Comment) (uuid.UUID, error) {
 
 	var id uuid.UUID
 	err = tx.QueryRow(
-		context.Background(),
+		ctx,
 		"INSERT INTO comments (user_id, post_id, description) VALUES ($1, $2, $3) RETURNING id",
-		comment.UserID, comment.PostID, comment.Description,
+		comment.User.ID, comment.PostID, comment.Description,
 	).Scan(&id)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to insert comment: %w", err)
@@ -49,14 +49,14 @@ func (i *commentRepository) create(comment Comment) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (i *commentRepository) getFromPost(postId uuid.UUID) ([]Comment, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (i *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error) {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -65,11 +65,15 @@ func (i *commentRepository) getFromPost(postId uuid.UUID) ([]Comment, error) {
 		database.HandleTransaction(tx, err)
 	}()
 
-	rows, err := tx.Query(
-		context.Background(),
-		"SELECT id, user_id, description, like_count, created_at FROM comments WHERE post_id = $1 ORDER BY like_count DESC",
-		postId,
-	)
+	query := `
+		SELECT c.id, c.user_id, u.username, u.avatar, c.image, c.description, c.like_count, c.created_at
+		FROM comments c
+		INNER JOIN users u ON c.user_id = u.id
+		WHERE post_id = $1
+		ORDER BY like_count DESC
+	`
+
+	rows, err := tx.Query(ctx, query, postId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select comments: %w", err)
 	}
@@ -78,7 +82,8 @@ func (i *commentRepository) getFromPost(postId uuid.UUID) ([]Comment, error) {
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
-		if err := rows.Scan(&comment.ID, &comment.UserID, &comment.Description, &comment.LikeCount, &comment.CreatedAt); err != nil {
+		err := rows.Scan(&comment.ID, &comment.User.ID, &comment.User.Username, &comment.User.Avatar, &comment.Description, &comment.LikeCount, &comment.CreatedAt)
+		if err != nil {
 			return nil, fmt.Errorf("failed to scan comment: %w", err)
 		}
 		comments = append(comments, comment)
@@ -90,14 +95,14 @@ func (i *commentRepository) getFromPost(postId uuid.UUID) ([]Comment, error) {
 	return comments, nil
 }
 
-func (i *commentRepository) get(id uuid.UUID) (Comment, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (i *commentRepositoryImpl) get(ctx context.Context, id uuid.UUID) (Comment, error) {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return Comment{}, err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return Comment{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -108,9 +113,9 @@ func (i *commentRepository) get(id uuid.UUID) (Comment, error) {
 
 	var comment Comment
 	err = tx.QueryRow(
-		context.Background(),
+		ctx,
 		"SELECT id, user_id, post_id FROM comments WHERE id = $1",
-		id).Scan(&comment.ID, &comment.UserID, &comment.PostID)
+		id).Scan(&comment.ID, &comment.User.ID, &comment.PostID)
 	if err != nil {
 		return Comment{}, fmt.Errorf("failed to scan comment: %w", err)
 	}
@@ -118,14 +123,14 @@ func (i *commentRepository) get(id uuid.UUID) (Comment, error) {
 	return comment, nil
 }
 
-func (i *commentRepository) update(comment Comment, id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (i *commentRepositoryImpl) update(ctx context.Context, comment Comment, id uuid.UUID) error {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -135,7 +140,7 @@ func (i *commentRepository) update(comment Comment, id uuid.UUID) error {
 	}()
 
 	_, err = tx.Exec(
-		context.Background(),
+		ctx,
 		"UPDATE comments SET description = $1 WHERE id = $1",
 		comment.Description, id,
 	)
@@ -146,14 +151,14 @@ func (i *commentRepository) update(comment Comment, id uuid.UUID) error {
 	return nil
 }
 
-func (i *commentRepository) like(id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (i *commentRepositoryImpl) like(ctx context.Context, id uuid.UUID) error {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -163,7 +168,7 @@ func (i *commentRepository) like(id uuid.UUID) error {
 	}()
 
 	_, err = tx.Exec(
-		context.Background(),
+		ctx,
 		"UPDATE comments SET like_count = like_count + 1 WHERE id = $1",
 		id,
 	)
@@ -174,14 +179,14 @@ func (i *commentRepository) like(id uuid.UUID) error {
 	return nil
 }
 
-func (i *commentRepository) unlike(id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (i *commentRepositoryImpl) unlike(ctx context.Context, id uuid.UUID) error {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -191,7 +196,7 @@ func (i *commentRepository) unlike(id uuid.UUID) error {
 	}()
 
 	_, err = tx.Exec(
-		context.Background(),
+		ctx,
 		"UPDATE comments SET like_count = like_count - 1 WHERE id = $1",
 		id,
 	)
@@ -202,14 +207,14 @@ func (i *commentRepository) unlike(id uuid.UUID) error {
 	return nil
 }
 
-func (i *commentRepository) delete(id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (i *commentRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -218,7 +223,7 @@ func (i *commentRepository) delete(id uuid.UUID) error {
 		database.HandleTransaction(tx, err)
 	}()
 
-	_, err = tx.Exec(context.Background(), "DELETE FROM comments WHERE id = $1", id)
+	_, err = tx.Exec(ctx, "DELETE FROM comments WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("failed to execute query: %w", err)
 	}

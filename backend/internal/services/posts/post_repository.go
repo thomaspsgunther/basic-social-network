@@ -5,29 +5,29 @@ import (
 	"fmt"
 	"time"
 	database "y_net/internal/database/postgres"
+	"y_net/internal/services/shared"
 
 	"github.com/google/uuid"
 )
 
-type postRepositoryI interface {
-	create(post Post) (uuid.UUID, error)
-	getPosts(limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error)
-	getPost(id uuid.UUID) (Post, error)
-	update(post Post, id uuid.UUID) error
-	delete(id uuid.UUID) error
-	getFromUser(userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error)
+type postRepository interface {
+	create(ctx context.Context, post shared.Post) (uuid.UUID, error)
+	getPosts(ctx context.Context, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]shared.Post, error)
+	getPost(ctx context.Context, id uuid.UUID) (shared.Post, error)
+	update(ctx context.Context, post shared.Post, id uuid.UUID) error
+	delete(ctx context.Context, id uuid.UUID) error
 }
 
-type postRepository struct{}
+type postRepositoryImpl struct{}
 
-func (i *postRepository) create(post Post) (uuid.UUID, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (r *postRepositoryImpl) create(ctx context.Context, post shared.Post) (uuid.UUID, error) {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return uuid.Nil, err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -38,9 +38,9 @@ func (i *postRepository) create(post Post) (uuid.UUID, error) {
 
 	var id uuid.UUID
 	err = tx.QueryRow(
-		context.Background(),
+		ctx,
 		"INSERT INTO posts (user_id, image, description) VALUES ($1, $2, $3) RETURNING id",
-		post.UserID, post.Image, post.Description,
+		post.User.ID, post.Image, post.Description,
 	).Scan(&id)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to insert post: %w", err)
@@ -49,38 +49,41 @@ func (i *postRepository) create(post Post) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (i *postRepository) getPosts(limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (r *postRepositoryImpl) getPosts(ctx context.Context, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]shared.Post, error) {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
+
 	defer func() {
 		database.HandleTransaction(tx, err)
 	}()
 
 	query := `
-		SELECT id, user_id, image, description, like_count, comment_count, created_at 
-		FROM posts 
+		SELECT p.id, p.user_id, u.username, u.avatar, p.image, p.description, p.like_count, p.comment_count, p.created_at
+		FROM posts p
+		INNER JOIN users u ON p.user_id = u.id
 		WHERE (created_at < $1 OR (created_at = $1 AND id < $2))
-		ORDER BY created_at DESC, id DESC 
+		ORDER BY created_at DESC, id DESC
 		LIMIT $3
 	`
-	rows, err := tx.Query(context.Background(), query, lastCreatedAt, lastId, limit)
+	rows, err := tx.Query(ctx, query, lastCreatedAt, lastId, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select posts: %w", err)
 	}
 	defer rows.Close()
 
-	var posts []Post
+	var posts []shared.Post
 	for rows.Next() {
-		var post Post
-		if err := rows.Scan(&post.ID, &post.UserID, &post.Image, &post.Description, &post.LikeCount, &post.CommentCount, &post.CreatedAt); err != nil {
+		var post shared.Post
+		err := rows.Scan(&post.ID, &post.User.ID, &post.User.Username, &post.User.Avatar, &post.Image, &post.Description, &post.LikeCount, &post.CommentCount, &post.CreatedAt)
+		if err != nil {
 			return nil, fmt.Errorf("failed to scan post: %w", err)
 		}
 		posts = append(posts, post)
@@ -92,42 +95,50 @@ func (i *postRepository) getPosts(limit int, lastCreatedAt time.Time, lastId uui
 	return posts, nil
 }
 
-func (i *postRepository) getPost(id uuid.UUID) (Post, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (r *postRepositoryImpl) getPost(ctx context.Context, id uuid.UUID) (shared.Post, error) {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
-		return Post{}, err
+		return shared.Post{}, err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
-		return Post{}, fmt.Errorf("failed to begin transaction: %w", err)
+		return shared.Post{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer func() {
 		database.HandleTransaction(tx, err)
 	}()
 
-	var post Post
+	query := `
+		SELECT p.id, p.user_id, u.username, u.avatar, p.image, p.description, p.like_count, p.comment_count, p.created_at
+		FROM posts p
+		INNER JOIN users u ON p.user_id = u.id
+		WHERE id = $1
+	`
+
+	var post shared.Post
 	err = tx.QueryRow(
-		context.Background(),
-		"SELECT id, user_id, image, description, like_count FROM posts WHERE id = $1",
-		id).Scan(&post.ID, &post.UserID, &post.Image, &post.Description, &post.LikeCount)
+		ctx,
+		query,
+		id,
+	).Scan(&post.ID, &post.User.ID, &post.User.Username, &post.User.Avatar, &post.Image, &post.Description, &post.LikeCount)
 	if err != nil {
-		return Post{}, fmt.Errorf("failed to scan post: %w", err)
+		return shared.Post{}, fmt.Errorf("failed to scan post: %w", err)
 	}
 
 	return post, nil
 }
 
-func (i *postRepository) update(post Post, id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (r *postRepositoryImpl) update(ctx context.Context, post shared.Post, id uuid.UUID) error {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -137,7 +148,7 @@ func (i *postRepository) update(post Post, id uuid.UUID) error {
 	}()
 
 	_, err = tx.Exec(
-		context.Background(),
+		ctx,
 		"UPDATE posts SET description = $1 WHERE id = $2",
 		post.Description, id,
 	)
@@ -148,14 +159,14 @@ func (i *postRepository) update(post Post, id uuid.UUID) error {
 	return nil
 }
 
-func (i *postRepository) delete(id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (r *postRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -164,55 +175,10 @@ func (i *postRepository) delete(id uuid.UUID) error {
 		database.HandleTransaction(tx, err)
 	}()
 
-	_, err = tx.Exec(context.Background(), "DELETE FROM posts WHERE id = $1", id)
+	_, err = tx.Exec(ctx, "DELETE FROM posts WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("failed to delete user: %w", err)
 	}
 
 	return nil
-}
-
-func (i *postRepository) getFromUser(userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(context.Background())
-	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-	defer func() {
-		database.HandleTransaction(tx, err)
-	}()
-
-	query := `
-        SELECT id, image 
-        FROM posts 
-        WHERE user_id = $1 
-        AND (created_at < $2 OR (created_at = $2 AND id < $3)) 
-        ORDER BY created_at DESC, id DESC 
-        LIMIT $4
-    `
-
-	rows, err := tx.Query(context.Background(), query, userId, lastCreatedAt, lastId, limit)
-	if err != nil {
-		return nil, fmt.Errorf("failed to select posts: %w", err)
-	}
-	defer rows.Close()
-
-	var posts []Post
-	for rows.Next() {
-		var post Post
-		if err := rows.Scan(&post.ID, &post.Image); err != nil {
-			return nil, fmt.Errorf("failed to scan post: %w", err)
-		}
-		posts = append(posts, post)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error reading rows: %w", err)
-	}
-
-	return posts, nil
 }

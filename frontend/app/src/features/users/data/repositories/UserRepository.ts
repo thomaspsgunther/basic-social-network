@@ -1,5 +1,5 @@
+import User from '../../../shared/data/models/User';
 import userApi from '../api/userApi';
-import User from '../models/User';
 
 class UserRepository {
   async createUser(userData: Omit<User, 'id'>): Promise<string> {
@@ -10,6 +10,12 @@ class UserRepository {
 
   async getUsersById(idList: string): Promise<User[]> {
     const response = await userApi.get(idList);
+    const users: User[] = response.data;
+    return users;
+  }
+
+  async getUsersBySearch(searchTerm: string): Promise<User[]> {
+    const response = await userApi.search(searchTerm);
     const users: User[] = response.data;
     return users;
   }
@@ -32,12 +38,6 @@ class UserRepository {
       console.error('User delete failed:', error);
       return false;
     }
-  }
-
-  async getUsersBySearch(searchTerm: string): Promise<User[]> {
-    const response = await userApi.search(searchTerm);
-    const users: User[] = response.data;
-    return users;
   }
 }
 

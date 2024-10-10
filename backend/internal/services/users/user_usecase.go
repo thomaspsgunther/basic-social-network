@@ -3,34 +3,37 @@ package users
 import (
 	"context"
 	"fmt"
+	"time"
 	database "y_net/internal/database/postgres"
+	"y_net/internal/services/shared"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserUsecaseI interface {
-	Create(user User) (uuid.UUID, error)
-	Get(idList []uuid.UUID) ([]User, error)
-	GetBySearch(searchStr string) ([]User, error)
-	Update(user User, id uuid.UUID) error
-	Delete(id uuid.UUID) error
+type UserUsecase interface {
+	Create(ctx context.Context, user shared.User) (uuid.UUID, error)
+	Get(ctx context.Context, idList []uuid.UUID) ([]shared.User, error)
+	GetBySearch(ctx context.Context, searchStr string) ([]shared.User, error)
+	GetPostsFromUser(ctx context.Context, userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]shared.Post, error)
+	Update(ctx context.Context, user shared.User, id uuid.UUID) error
+	Delete(ctx context.Context, id uuid.UUID) error
 }
 
-type userUsecase struct {
-	usecase    UserUsecaseI
-	repository userRepositoryI
+type userUsecaseImpl struct {
+	usecase    UserUsecase
+	repository userRepository
 }
 
-func NewUserUsecase() UserUsecaseI {
-	return &userUsecase{
-		usecase:    &userUsecase{},
-		repository: &userRepository{},
+func NewUserUsecase() UserUsecase {
+	return &userUsecaseImpl{
+		usecase:    &userUsecaseImpl{},
+		repository: &userRepositoryImpl{},
 	}
 }
 
-func (i *userUsecase) Create(user User) (uuid.UUID, error) {
+func (u *userUsecaseImpl) Create(ctx context.Context, user shared.User) (uuid.UUID, error) {
 	if user.Username == "" || user.Password == "" {
 		return uuid.Nil, fmt.Errorf("username and password must not be empty")
 	}
@@ -41,7 +44,7 @@ func (i *userUsecase) Create(user User) (uuid.UUID, error) {
 	}
 	user.Password = hashedPassword
 
-	id, err := i.repository.create(user)
+	id, err := u.repository.create(ctx, user)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -49,8 +52,8 @@ func (i *userUsecase) Create(user User) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (i *userUsecase) Get(idList []uuid.UUID) ([]User, error) {
-	users, err := i.repository.get(idList)
+func (u *userUsecaseImpl) Get(ctx context.Context, idList []uuid.UUID) ([]shared.User, error) {
+	users, err := u.repository.get(ctx, idList)
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +61,8 @@ func (i *userUsecase) Get(idList []uuid.UUID) ([]User, error) {
 	return users, nil
 }
 
-func (i *userUsecase) GetBySearch(searchStr string) ([]User, error) {
-	users, err := i.repository.getBySearch(searchStr)
+func (u *userUsecaseImpl) GetBySearch(ctx context.Context, searchStr string) ([]shared.User, error) {
+	users, err := u.repository.getBySearch(ctx, searchStr)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +70,16 @@ func (i *userUsecase) GetBySearch(searchStr string) ([]User, error) {
 	return users, nil
 }
 
-func (i *userUsecase) Update(user User, id uuid.UUID) error {
+func (u *userUsecaseImpl) GetPostsFromUser(ctx context.Context, userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]shared.Post, error) {
+	posts, err := u.repository.getPostsFromUser(ctx, userId, limit, lastCreatedAt, lastId)
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
+func (u *userUsecaseImpl) Update(ctx context.Context, user shared.User, id uuid.UUID) error {
 	if user.Username == "" {
 		return fmt.Errorf("username must not be empty")
 	}
@@ -80,7 +92,7 @@ func (i *userUsecase) Update(user User, id uuid.UUID) error {
 		user.Password = hashedPassword
 	}
 
-	err := i.repository.update(user, id)
+	err := u.repository.update(ctx, user, id)
 	if err != nil {
 		return err
 	}
@@ -88,8 +100,8 @@ func (i *userUsecase) Update(user User, id uuid.UUID) error {
 	return nil
 }
 
-func (i *userUsecase) Delete(id uuid.UUID) error {
-	err := i.repository.delete(id)
+func (u *userUsecaseImpl) Delete(ctx context.Context, id uuid.UUID) error {
+	err := u.repository.delete(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -97,14 +109,14 @@ func (i *userUsecase) Delete(id uuid.UUID) error {
 	return nil
 }
 
-func (user *User) Authenticate() (bool, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
+func Authenticate(ctx context.Context, user shared.User) (bool, error) {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return false, err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -114,7 +126,7 @@ func (user *User) Authenticate() (bool, error) {
 	}()
 
 	var hashedPassword string
-	err = tx.QueryRow(context.Background(), "SELECT password FROM users WHERE username = $1", user.Username).Scan(&hashedPassword)
+	err = tx.QueryRow(ctx, "SELECT password FROM users WHERE username = $1", user.Username).Scan(&hashedPassword)
 	if err != nil {
 		return false, err
 	}
@@ -123,14 +135,14 @@ func (user *User) Authenticate() (bool, error) {
 }
 
 // GetUsernameByUserID checks if a user exists in database by given id
-func GetUsernameByUserID(id uuid.UUID) (string, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
+func GetUsernameByUserID(ctx context.Context, id uuid.UUID) (string, error) {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return "", err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -140,7 +152,7 @@ func GetUsernameByUserID(id uuid.UUID) (string, error) {
 	}()
 
 	var username string
-	err = tx.QueryRow(context.Background(), "SELECT username FROM users WHERE id = $1", id).Scan(&username)
+	err = tx.QueryRow(ctx, "SELECT username FROM users WHERE id = $1", id).Scan(&username)
 	if err != nil {
 		return "", err
 	}
@@ -149,14 +161,14 @@ func GetUsernameByUserID(id uuid.UUID) (string, error) {
 }
 
 // GetUserIdByUsername checks if a user exists in database by given username
-func GetUserIdByUsername(username string) (uuid.UUID, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
+func GetUserIdByUsername(ctx context.Context, username string) (uuid.UUID, error) {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return uuid.Nil, err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -166,7 +178,7 @@ func GetUserIdByUsername(username string) (uuid.UUID, error) {
 	}()
 
 	var id uuid.UUID
-	err = tx.QueryRow(context.Background(), "SELECT id FROM users WHERE username = $1", username).Scan(&id)
+	err = tx.QueryRow(ctx, "SELECT id FROM users WHERE username = $1", username).Scan(&id)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return uuid.Nil, &WrongUsernameOrPasswordError{}

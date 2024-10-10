@@ -1,42 +1,44 @@
 package posts
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
+	"y_net/internal/services/shared"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 type TestSetup struct {
-	usecase PostUsecaseI
+	usecase PostUsecase
 	repo    *mockPostRepository
 }
 
 func setup() *TestSetup {
 	repo := newMockPostRepository()
-	usecase := &postUsecase{repository: repo}
+	usecase := &postUsecaseImpl{repository: repo}
 
 	return &TestSetup{usecase: usecase, repo: repo}
 }
 func TestCreatePost(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
-	post := Post{UserID: userId, Image: "image_url.jpg"}
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
+	post := shared.Post{User: &user, Image: "image_url.jpg"}
 
-	id, err := ts.usecase.Create(post)
+	id, err := ts.usecase.Create(context.Background(), post)
 	assert.NoError(t, err)
 	assert.NotEqual(t, uuid.Nil, id)
 }
 
-func TestCreatePostWithNilUserID(t *testing.T) {
+func TestCreatePostEmptyUser(t *testing.T) {
 	ts := setup()
 
-	post := Post{UserID: uuid.Nil, Image: "image_url.jpg"}
+	post := shared.Post{User: &shared.User{}, Image: "image_url.jpg"}
 
-	id, err := ts.usecase.Create(post)
+	id, err := ts.usecase.Create(context.Background(), post)
 	assert.Error(t, err)
 	assert.Equal(t, uuid.Nil, id)
 }
@@ -44,10 +46,10 @@ func TestCreatePostWithNilUserID(t *testing.T) {
 func TestCreatePostEmptyImage(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
-	post := Post{UserID: userId, Image: ""}
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
+	post := shared.Post{User: &user, Image: ""}
 
-	id, err := ts.usecase.Create(post)
+	id, err := ts.usecase.Create(context.Background(), post)
 	assert.Error(t, err)
 	assert.Equal(t, uuid.Nil, id)
 }
@@ -55,11 +57,11 @@ func TestCreatePostEmptyImage(t *testing.T) {
 func TestGetPost(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
-	post := Post{UserID: userId, Image: "image.jpg"}
-	id, _ := ts.repo.create(post)
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
+	post := shared.Post{User: &user, Image: "image.jpg"}
+	id, _ := ts.usecase.Create(context.Background(), post)
 
-	retrievedPost, err := ts.usecase.GetPost(id)
+	retrievedPost, err := ts.usecase.GetPost(context.Background(), id)
 	assert.NoError(t, err)
 	assert.Equal(t, post.Image, retrievedPost.Image)
 }
@@ -69,22 +71,22 @@ func TestGetPostNotFound(t *testing.T) {
 
 	id := uuid.New()
 
-	_, err := ts.usecase.GetPost(id)
+	_, err := ts.usecase.GetPost(context.Background(), id)
 	assert.Error(t, err)
 }
 
 func TestUpdatePost(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
-	post := Post{UserID: userId, Image: "image.jpg"}
-	id, _ := ts.repo.create(post)
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
+	post := shared.Post{User: &user, Image: "image.jpg"}
+	id, _ := ts.usecase.Create(context.Background(), post)
 
 	post.Image = "updated_image.jpg"
-	err := ts.usecase.Update(post, id)
+	err := ts.usecase.Update(context.Background(), post, id)
 	assert.NoError(t, err)
 
-	updatedPost, err := ts.usecase.GetPost(id)
+	updatedPost, err := ts.usecase.GetPost(context.Background(), id)
 	assert.NoError(t, err)
 	assert.Equal(t, "updated_image.jpg", updatedPost.Image)
 }
@@ -92,26 +94,26 @@ func TestUpdatePost(t *testing.T) {
 func TestUpdatePostEmptyImage(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
-	post := Post{UserID: userId, Image: "image.jpg"}
-	id, _ := ts.repo.create(post)
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
+	post := shared.Post{User: &user, Image: "image.jpg"}
+	id, _ := ts.usecase.Create(context.Background(), post)
 
 	post.Image = ""
-	err := ts.usecase.Update(post, id)
+	err := ts.usecase.Update(context.Background(), post, id)
 	assert.Error(t, err)
 }
 
 func TestDeletePost(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
-	post := Post{UserID: userId, Image: "image.jpg"}
-	id, _ := ts.repo.create(post)
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
+	post := shared.Post{User: &user, Image: "image.jpg"}
+	id, _ := ts.usecase.Create(context.Background(), post)
 
-	err := ts.usecase.Delete(id)
+	err := ts.usecase.Delete(context.Background(), id)
 	assert.NoError(t, err)
 
-	posts, err := ts.usecase.GetPosts(10, time.Now(), uuid.Nil)
+	posts, err := ts.usecase.GetPosts(context.Background(), 10, time.Now(), uuid.Nil)
 	assert.NoError(t, err)
 	assert.NotContains(t, posts, post)
 }
@@ -121,31 +123,31 @@ func TestDeletePostNotFound(t *testing.T) {
 
 	id := uuid.New()
 
-	err := ts.usecase.Delete(id)
+	err := ts.usecase.Delete(context.Background(), id)
 	assert.Error(t, err)
 	assert.Equal(t, "post not found", err.Error())
 }
 
-// mockPostRepository is a mock implementation of postRepositoryI for testing
+// mockPostRepository is a mock implementation of postRepository for testing
 type mockPostRepository struct {
-	posts map[uuid.UUID]Post
+	posts map[uuid.UUID]shared.Post
 }
 
 func newMockPostRepository() *mockPostRepository {
 	return &mockPostRepository{
-		posts: make(map[uuid.UUID]Post),
+		posts: make(map[uuid.UUID]shared.Post),
 	}
 }
 
-func (m *mockPostRepository) create(post Post) (uuid.UUID, error) {
+func (m *mockPostRepository) create(ctx context.Context, post shared.Post) (uuid.UUID, error) {
 	id := uuid.New()
 	m.posts[id] = post
 
 	return id, nil
 }
 
-func (m *mockPostRepository) getPosts(limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error) {
-	var result []Post
+func (m *mockPostRepository) getPosts(ctx context.Context, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]shared.Post, error) {
+	var result []shared.Post
 	for id, post := range m.posts {
 		if len(result) >= limit {
 			break
@@ -158,16 +160,16 @@ func (m *mockPostRepository) getPosts(limit int, lastCreatedAt time.Time, lastId
 	return result, nil
 }
 
-func (m *mockPostRepository) getPost(id uuid.UUID) (Post, error) {
+func (m *mockPostRepository) getPost(ctx context.Context, id uuid.UUID) (shared.Post, error) {
 	post, exists := m.posts[id]
 	if !exists {
-		return Post{}, fmt.Errorf("post not found")
+		return shared.Post{}, fmt.Errorf("post not found")
 	}
 
 	return post, nil
 }
 
-func (m *mockPostRepository) update(post Post, id uuid.UUID) error {
+func (m *mockPostRepository) update(ctx context.Context, post shared.Post, id uuid.UUID) error {
 	if _, exists := m.posts[id]; !exists {
 		return fmt.Errorf("post not found")
 	}
@@ -176,24 +178,11 @@ func (m *mockPostRepository) update(post Post, id uuid.UUID) error {
 	return nil
 }
 
-func (m *mockPostRepository) delete(id uuid.UUID) error {
+func (m *mockPostRepository) delete(ctx context.Context, id uuid.UUID) error {
 	if _, exists := m.posts[id]; !exists {
 		return fmt.Errorf("post not found")
 	}
 	delete(m.posts, id)
 
 	return nil
-}
-func (m *mockPostRepository) getFromUser(userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error) {
-	var result []Post
-	for _, post := range m.posts {
-		if len(result) >= limit {
-			break
-		}
-		if post.UserID == userId && post.CreatedAt.After(lastCreatedAt) && post.ID != lastId {
-			result = append(result, post)
-		}
-	}
-
-	return result, nil
 }

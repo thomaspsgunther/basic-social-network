@@ -14,7 +14,7 @@ import (
 )
 
 type CommentHandler struct {
-	Usecase comments.CommentUsecaseI
+	Usecase comments.CommentUsecase
 }
 
 func (h CommentHandler) Routes() chi.Router {
@@ -69,7 +69,7 @@ func (h CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if authUser.ID != comment.UserID {
+	if authUser.ID != comment.User.ID {
 		err := fmt.Errorf("forbidden comment create attempt from user: %v", authUser.ID)
 
 		logger.ServerLogger.Warn(err.Error())
@@ -78,7 +78,7 @@ func (h CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.Usecase.Create(comment)
+	id, err := h.Usecase.Create(r.Context(), comment)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -132,7 +132,7 @@ func (h CommentHandler) GetCommentsFromPost(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	comments, err := h.Usecase.GetFromPost(postId)
+	comments, err := h.Usecase.GetFromPost(r.Context(), postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -198,7 +198,7 @@ func (h CommentHandler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId := comment.UserID
+	userId := comment.User.ID
 
 	if authUser.ID != userId {
 		err := fmt.Errorf("forbidden comment update attempt from user: %v", authUser.ID)
@@ -209,7 +209,7 @@ func (h CommentHandler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Usecase.Update(comment, commentId)
+	err = h.Usecase.Update(r.Context(), comment, commentId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -254,7 +254,7 @@ func (h CommentHandler) LikeComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Usecase.Like(commentId)
+	err = h.Usecase.Like(r.Context(), commentId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -299,7 +299,7 @@ func (h CommentHandler) UnlikeComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Usecase.Unlike(commentId)
+	err = h.Usecase.Unlike(r.Context(), commentId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -344,7 +344,7 @@ func (h CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	comment, err := h.Usecase.Get(commentId)
+	comment, err := h.Usecase.Get(r.Context(), commentId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -352,7 +352,7 @@ func (h CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if authUser.ID != comment.UserID {
+	if authUser.ID != comment.User.ID {
 		err := fmt.Errorf("forbidden comment delete attempt from user: %v", authUser.ID)
 
 		logger.ServerLogger.Warn(err.Error())
@@ -361,7 +361,7 @@ func (h CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Usecase.Delete(commentId)
+	err = h.Usecase.Delete(r.Context(), commentId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

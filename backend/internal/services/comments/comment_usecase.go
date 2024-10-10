@@ -1,45 +1,47 @@
 package comments
 
 import (
+	"context"
 	"fmt"
+	"y_net/internal/services/shared"
 
 	"github.com/google/uuid"
 )
 
-type CommentUsecaseI interface {
-	Create(comment Comment) (uuid.UUID, error)
-	GetFromPost(postId uuid.UUID) ([]Comment, error)
-	Get(id uuid.UUID) (Comment, error)
-	Update(comment Comment, id uuid.UUID) error
-	Like(id uuid.UUID) error
-	Unlike(id uuid.UUID) error
-	Delete(id uuid.UUID) error
+type CommentUsecase interface {
+	Create(ctx context.Context, comment Comment) (uuid.UUID, error)
+	GetFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error)
+	Get(ctx context.Context, id uuid.UUID) (Comment, error)
+	Update(ctx context.Context, comment Comment, id uuid.UUID) error
+	Like(ctx context.Context, id uuid.UUID) error
+	Unlike(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, id uuid.UUID) error
 }
 
-type commentUsecase struct {
-	usecase    CommentUsecaseI
-	repository commentRepositoryI
+type commentUsecaseImpl struct {
+	usecase    CommentUsecase
+	repository commentRepository
 }
 
-func NewCommentUsecase() CommentUsecaseI {
-	return &commentUsecase{
-		usecase:    &commentUsecase{},
-		repository: &commentRepository{},
+func NewCommentUsecase() CommentUsecase {
+	return &commentUsecaseImpl{
+		usecase:    &commentUsecaseImpl{},
+		repository: &commentRepositoryImpl{},
 	}
 }
 
-func (i *commentUsecase) Create(comment Comment) (uuid.UUID, error) {
-	if comment.UserID == uuid.Nil {
-		return uuid.Nil, fmt.Errorf("postid must not be empty")
+func (i *commentUsecaseImpl) Create(ctx context.Context, comment Comment) (uuid.UUID, error) {
+	if (comment.User == &shared.User{}) {
+		return uuid.Nil, fmt.Errorf("user must not be empty")
 	}
 	if comment.PostID == uuid.Nil {
-		return uuid.Nil, fmt.Errorf("userid must not be empty")
+		return uuid.Nil, fmt.Errorf("postid must not be empty")
 	}
 	if comment.Description == "" {
 		return uuid.Nil, fmt.Errorf("comment text must not be empty")
 	}
 
-	id, err := i.repository.create(comment)
+	id, err := i.repository.create(ctx, comment)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -47,8 +49,8 @@ func (i *commentUsecase) Create(comment Comment) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (i *commentUsecase) GetFromPost(postId uuid.UUID) ([]Comment, error) {
-	comments, err := i.repository.getFromPost(postId)
+func (i *commentUsecaseImpl) GetFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error) {
+	comments, err := i.repository.getFromPost(ctx, postId)
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +58,8 @@ func (i *commentUsecase) GetFromPost(postId uuid.UUID) ([]Comment, error) {
 	return comments, nil
 }
 
-func (i *commentUsecase) Get(id uuid.UUID) (Comment, error) {
-	comment, err := i.repository.get(id)
+func (i *commentUsecaseImpl) Get(ctx context.Context, id uuid.UUID) (Comment, error) {
+	comment, err := i.repository.get(ctx, id)
 	if err != nil {
 		return Comment{}, err
 	}
@@ -65,8 +67,8 @@ func (i *commentUsecase) Get(id uuid.UUID) (Comment, error) {
 	return comment, nil
 }
 
-func (i *commentUsecase) Update(comment Comment, id uuid.UUID) error {
-	err := i.repository.update(comment, id)
+func (i *commentUsecaseImpl) Update(ctx context.Context, comment Comment, id uuid.UUID) error {
+	err := i.repository.update(ctx, comment, id)
 	if err != nil {
 		return err
 	}
@@ -74,8 +76,8 @@ func (i *commentUsecase) Update(comment Comment, id uuid.UUID) error {
 	return nil
 }
 
-func (i *commentUsecase) Like(id uuid.UUID) error {
-	err := i.repository.like(id)
+func (i *commentUsecaseImpl) Like(ctx context.Context, id uuid.UUID) error {
+	err := i.repository.like(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -83,8 +85,8 @@ func (i *commentUsecase) Like(id uuid.UUID) error {
 	return nil
 }
 
-func (i *commentUsecase) Unlike(id uuid.UUID) error {
-	err := i.repository.unlike(id)
+func (i *commentUsecaseImpl) Unlike(ctx context.Context, id uuid.UUID) error {
+	err := i.repository.unlike(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -92,8 +94,8 @@ func (i *commentUsecase) Unlike(id uuid.UUID) error {
 	return nil
 }
 
-func (i *commentUsecase) Delete(id uuid.UUID) error {
-	err := i.repository.delete(id)
+func (i *commentUsecaseImpl) Delete(ctx context.Context, id uuid.UUID) error {
+	err := i.repository.delete(ctx, id)
 	if err != nil {
 		return err
 	}

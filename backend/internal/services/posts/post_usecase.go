@@ -1,42 +1,43 @@
 package posts
 
 import (
+	"context"
 	"fmt"
 	"time"
+	"y_net/internal/services/shared"
 
 	"github.com/google/uuid"
 )
 
-type PostUsecaseI interface {
-	Create(post Post) (uuid.UUID, error)
-	GetPosts(limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error)
-	GetPost(id uuid.UUID) (Post, error)
-	Update(post Post, id uuid.UUID) error
-	Delete(id uuid.UUID) error
-	GetFromUser(userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error)
+type PostUsecase interface {
+	Create(ctx context.Context, post shared.Post) (uuid.UUID, error)
+	GetPosts(ctx context.Context, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]shared.Post, error)
+	GetPost(ctx context.Context, id uuid.UUID) (shared.Post, error)
+	Update(ctx context.Context, post shared.Post, id uuid.UUID) error
+	Delete(ctx context.Context, id uuid.UUID) error
 }
 
-type postUsecase struct {
-	usecase    PostUsecaseI
-	repository postRepositoryI
+type postUsecaseImpl struct {
+	usecase    PostUsecase
+	repository postRepository
 }
 
-func NewPostUsecase() PostUsecaseI {
-	return &postUsecase{
-		usecase:    &postUsecase{},
-		repository: &postRepository{},
+func NewPostUsecase() PostUsecase {
+	return &postUsecaseImpl{
+		usecase:    &postUsecaseImpl{},
+		repository: &postRepositoryImpl{},
 	}
 }
 
-func (i *postUsecase) Create(post Post) (uuid.UUID, error) {
-	if post.UserID == uuid.Nil {
-		return uuid.Nil, fmt.Errorf("userid must not be empty")
+func (u *postUsecaseImpl) Create(ctx context.Context, post shared.Post) (uuid.UUID, error) {
+	if (post.User == &shared.User{}) {
+		return uuid.Nil, fmt.Errorf("user must not be empty")
 	}
 	if post.Image == "" {
 		return uuid.Nil, fmt.Errorf("post image must not be empty")
 	}
 
-	id, err := i.repository.create(post)
+	id, err := u.repository.create(ctx, post)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -44,8 +45,8 @@ func (i *postUsecase) Create(post Post) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (i *postUsecase) GetPosts(limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error) {
-	posts, err := i.repository.getPosts(limit, lastCreatedAt, lastId)
+func (u *postUsecaseImpl) GetPosts(ctx context.Context, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]shared.Post, error) {
+	posts, err := u.repository.getPosts(ctx, limit, lastCreatedAt, lastId)
 	if err != nil {
 		return nil, err
 	}
@@ -53,21 +54,21 @@ func (i *postUsecase) GetPosts(limit int, lastCreatedAt time.Time, lastId uuid.U
 	return posts, nil
 }
 
-func (i *postUsecase) GetPost(id uuid.UUID) (Post, error) {
-	post, err := i.repository.getPost(id)
+func (u *postUsecaseImpl) GetPost(ctx context.Context, id uuid.UUID) (shared.Post, error) {
+	post, err := u.repository.getPost(ctx, id)
 	if err != nil {
-		return Post{}, err
+		return shared.Post{}, err
 	}
 
 	return post, nil
 }
 
-func (i *postUsecase) Update(post Post, id uuid.UUID) error {
+func (u *postUsecaseImpl) Update(ctx context.Context, post shared.Post, id uuid.UUID) error {
 	if post.Image == "" {
 		return fmt.Errorf("post image must not be empty")
 	}
 
-	err := i.repository.update(post, id)
+	err := u.repository.update(ctx, post, id)
 	if err != nil {
 		return err
 	}
@@ -75,20 +76,11 @@ func (i *postUsecase) Update(post Post, id uuid.UUID) error {
 	return nil
 }
 
-func (i *postUsecase) Delete(id uuid.UUID) error {
-	err := i.repository.delete(id)
+func (u *postUsecaseImpl) Delete(ctx context.Context, id uuid.UUID) error {
+	err := u.repository.delete(ctx, id)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (i *postUsecase) GetFromUser(userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]Post, error) {
-	posts, err := i.repository.getFromUser(userId, limit, lastCreatedAt, lastId)
-	if err != nil {
-		return nil, err
-	}
-
-	return posts, nil
 }

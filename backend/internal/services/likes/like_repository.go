@@ -4,28 +4,28 @@ import (
 	"context"
 	"fmt"
 	database "y_net/internal/database/postgres"
-	"y_net/internal/services/users"
+	"y_net/internal/services/shared"
 
 	"github.com/google/uuid"
 )
 
-type likeRepositoryI interface {
-	likePost(userId uuid.UUID, postId uuid.UUID) error
-	unlikePost(userId uuid.UUID, postId uuid.UUID) error
-	userLikedPost(userId uuid.UUID, postId uuid.UUID) (bool, error)
-	getFromPost(postId uuid.UUID) ([]users.User, error)
+type likeRepository interface {
+	likePost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error
+	unlikePost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error
+	userLikedPost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) (bool, error)
+	getFromPost(ctx context.Context, postId uuid.UUID) ([]shared.User, error)
 }
 
-type likeRepository struct{}
+type likeRepositoryImpl struct{}
 
-func (i *likeRepository) likePost(userId uuid.UUID, postId uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (i *likeRepositoryImpl) likePost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -35,7 +35,7 @@ func (i *likeRepository) likePost(userId uuid.UUID, postId uuid.UUID) error {
 	}()
 
 	_, err = tx.Exec(
-		context.Background(),
+		ctx,
 		"INSERT INTO likes (user_id, post_id) VALUES ($1, $2)",
 		userId, postId,
 	)
@@ -46,14 +46,14 @@ func (i *likeRepository) likePost(userId uuid.UUID, postId uuid.UUID) error {
 	return nil
 }
 
-func (i *likeRepository) unlikePost(userId uuid.UUID, postId uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (i *likeRepositoryImpl) unlikePost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -62,7 +62,7 @@ func (i *likeRepository) unlikePost(userId uuid.UUID, postId uuid.UUID) error {
 		database.HandleTransaction(tx, err)
 	}()
 
-	_, err = tx.Exec(context.Background(), "DELETE FROM likes WHERE user_id = $1 AND post_id = $2", userId, postId)
+	_, err = tx.Exec(ctx, "DELETE FROM likes WHERE user_id = $1 AND post_id = $2", userId, postId)
 	if err != nil {
 		return fmt.Errorf("failed to delete like: %w", err)
 	}
@@ -70,14 +70,14 @@ func (i *likeRepository) unlikePost(userId uuid.UUID, postId uuid.UUID) error {
 	return nil
 }
 
-func (i *likeRepository) userLikedPost(userId uuid.UUID, postId uuid.UUID) (bool, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (i *likeRepositoryImpl) userLikedPost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) (bool, error) {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return false, err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -87,7 +87,7 @@ func (i *likeRepository) userLikedPost(userId uuid.UUID, postId uuid.UUID) (bool
 	}()
 
 	var exists bool
-	err = tx.QueryRow(context.Background(), "SELECT EXISTS(SELECT 1 FROM likes WHERE user_id = $1 AND post_id = $2)", userId, postId).Scan(&exists)
+	err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM likes WHERE user_id = $1 AND post_id = $2)", userId, postId).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("failed to check if user liked post: %w", err)
 	}
@@ -95,14 +95,14 @@ func (i *likeRepository) userLikedPost(userId uuid.UUID, postId uuid.UUID) (bool
 	return exists, nil
 }
 
-func (i *likeRepository) getFromPost(postId uuid.UUID) ([]users.User, error) {
-	conn, err := database.Postgres.Acquire(context.Background())
+func (i *likeRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUID) ([]shared.User, error) {
+	conn, err := database.Postgres.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
 
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -111,15 +111,15 @@ func (i *likeRepository) getFromPost(postId uuid.UUID) ([]users.User, error) {
 		database.HandleTransaction(tx, err)
 	}()
 
-	rows, err := tx.Query(context.Background(), "SELECT u.id, u.username, u.full_name, u.avatar FROM likes l JOIN users u ON l.user_id = u.id WHERE l.post_id = $1", postId)
+	rows, err := tx.Query(ctx, "SELECT u.id, u.username, u.full_name, u.avatar FROM likes l JOIN users u ON l.user_id = u.id WHERE l.post_id = $1", postId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select likes: %w", err)
 	}
 	defer rows.Close()
 
-	var userLikes []users.User
+	var userLikes []shared.User
 	for rows.Next() {
-		var user users.User
+		var user shared.User
 		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}

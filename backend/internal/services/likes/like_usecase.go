@@ -1,32 +1,33 @@
 package likes
 
 import (
-	"y_net/internal/services/users"
+	"context"
+	"y_net/internal/services/shared"
 
 	"github.com/google/uuid"
 )
 
-type LikeUsecaseI interface {
-	LikePost(userId uuid.UUID, postId uuid.UUID) error
-	UnlikePost(userId uuid.UUID, postId uuid.UUID) error
-	UserLikedPost(userId uuid.UUID, postId uuid.UUID) (bool, error)
-	GetFromPost(postId uuid.UUID) ([]users.User, error)
+type LikeUsecase interface {
+	LikePost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error
+	UnlikePost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error
+	UserLikedPost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) (bool, error)
+	GetFromPost(ctx context.Context, postId uuid.UUID) ([]shared.User, error)
 }
 
-type likeUsecase struct {
-	usecase    LikeUsecaseI
-	repository likeRepositoryI
+type likeUsecaseImpl struct {
+	usecase    LikeUsecase
+	repository likeRepository
 }
 
-func NewLikeUsecase() LikeUsecaseI {
-	return &likeUsecase{
-		usecase:    &likeUsecase{},
-		repository: &likeRepository{},
+func NewLikeUsecase() LikeUsecase {
+	return &likeUsecaseImpl{
+		usecase:    &likeUsecaseImpl{},
+		repository: &likeRepositoryImpl{},
 	}
 }
 
-func (i *likeUsecase) LikePost(userId uuid.UUID, postId uuid.UUID) error {
-	err := i.repository.likePost(userId, postId)
+func (i *likeUsecaseImpl) LikePost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error {
+	err := i.repository.likePost(ctx, userId, postId)
 	if err != nil {
 		return err
 	}
@@ -34,8 +35,8 @@ func (i *likeUsecase) LikePost(userId uuid.UUID, postId uuid.UUID) error {
 	return nil
 }
 
-func (i *likeUsecase) UnlikePost(userId uuid.UUID, postId uuid.UUID) error {
-	err := i.repository.unlikePost(userId, postId)
+func (i *likeUsecaseImpl) UnlikePost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error {
+	err := i.repository.unlikePost(ctx, userId, postId)
 	if err != nil {
 		return err
 	}
@@ -43,8 +44,8 @@ func (i *likeUsecase) UnlikePost(userId uuid.UUID, postId uuid.UUID) error {
 	return nil
 }
 
-func (i *likeUsecase) UserLikedPost(userId uuid.UUID, postId uuid.UUID) (bool, error) {
-	isLiked, err := i.repository.userLikedPost(userId, postId)
+func (i *likeUsecaseImpl) UserLikedPost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) (bool, error) {
+	isLiked, err := i.repository.userLikedPost(ctx, userId, postId)
 	if err != nil {
 		return false, err
 	}
@@ -52,8 +53,8 @@ func (i *likeUsecase) UserLikedPost(userId uuid.UUID, postId uuid.UUID) (bool, e
 	return isLiked, nil
 }
 
-func (i *likeUsecase) GetFromPost(postId uuid.UUID) ([]users.User, error) {
-	users, err := i.repository.getFromPost(postId)
+func (i *likeUsecaseImpl) GetFromPost(ctx context.Context, postId uuid.UUID) ([]shared.User, error) {
+	users, err := i.repository.getFromPost(ctx, postId)
 	if err != nil {
 		return nil, err
 	}

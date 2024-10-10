@@ -13,7 +13,7 @@ import (
 )
 
 type LikeHandler struct {
-	Usecase likes.LikeUsecaseI
+	Usecase likes.LikeUsecase
 }
 
 func (h LikeHandler) Routes() chi.Router {
@@ -78,7 +78,7 @@ func (h LikeHandler) LikePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Usecase.LikePost(userId, postId)
+	err = h.Usecase.LikePost(r.Context(), userId, postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -140,7 +140,7 @@ func (h LikeHandler) UnlikePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Usecase.UnlikePost(userId, postId)
+	err = h.Usecase.UnlikePost(r.Context(), userId, postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -193,7 +193,7 @@ func (h LikeHandler) UserLikedPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isLiked, err := h.Usecase.UserLikedPost(userId, postId)
+	isLiked, err := h.Usecase.UserLikedPost(r.Context(), userId, postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -221,7 +221,7 @@ func (h LikeHandler) UserLikedPost(w http.ResponseWriter, r *http.Request) {
 // @Produce         json
 // @Param           Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param           post_id path string true "Post ID" Format(uuid)
-// @Success         200 {object} users.Users
+// @Success         200 {object} shared.Users
 // @Failure         400
 // @Failure         401
 // @Failure         500
@@ -248,7 +248,7 @@ func (h LikeHandler) GetLikesFromPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	likes, err := h.Usecase.GetFromPost(postId)
+	likes, err := h.Usecase.GetFromPost(r.Context(), postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

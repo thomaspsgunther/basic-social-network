@@ -1,11 +1,11 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import User from '../data/models/User';
-import { setAuthToken } from '../data/api/axiosInstance';
-import userApi from '../data/api/userApi';
-import loginApi from '../data/api/loginApi';
+import User from '../../features/shared/data/models/User';
+import { setAuthToken } from '../../features/shared/data/api/axiosInstance';
+import userApi from '../../features/users/data/api/userApi';
+import loginApi from '../../features/login/data/api/loginApi';
 import { jwtDecode } from 'jwt-decode';
-import DecodedToken from '../data/models/DecodedToken';
+import DecodedToken from '../../features/shared/data/models/DecodedToken';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';

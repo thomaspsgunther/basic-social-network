@@ -1,21 +1,23 @@
 package comments
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"y_net/internal/services/shared"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 type TestSetup struct {
-	usecase CommentUsecaseI
+	usecase CommentUsecase
 	repo    *mockCommentRepository
 }
 
 func setup() *TestSetup {
 	repo := newMockCommentRepository()
-	usecase := &commentUsecase{repository: repo}
+	usecase := &commentUsecaseImpl{repository: repo}
 
 	return &TestSetup{usecase: usecase, repo: repo}
 }
@@ -23,21 +25,21 @@ func setup() *TestSetup {
 func TestCreateComment(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{UserID: userId, PostID: postId, Description: "This is a comment."}
+	comment := Comment{User: &user, PostID: postId, Description: "This is a comment."}
 
-	id, err := ts.usecase.Create(comment)
+	id, err := ts.usecase.Create(context.Background(), comment)
 	assert.NoError(t, err)
 	assert.NotEqual(t, uuid.Nil, id)
 }
 
-func TestCreateCommentWithNilUserIDPostID(t *testing.T) {
+func TestCreateCommentEmptyUserAndNilPostID(t *testing.T) {
 	ts := setup()
 
-	comment := Comment{UserID: uuid.Nil, PostID: uuid.Nil, Description: "This is a comment."}
+	comment := Comment{User: &shared.User{}, PostID: uuid.Nil, Description: "This is a comment."}
 
-	id, err := ts.usecase.Create(comment)
+	id, err := ts.usecase.Create(context.Background(), comment)
 	assert.Error(t, err)
 	assert.Equal(t, uuid.Nil, id)
 }
@@ -45,11 +47,11 @@ func TestCreateCommentWithNilUserIDPostID(t *testing.T) {
 func TestCreateCommentEmptyDescription(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{UserID: userId, PostID: postId, Description: ""}
+	comment := Comment{User: &user, PostID: postId, Description: ""}
 
-	id, err := ts.usecase.Create(comment)
+	id, err := ts.usecase.Create(context.Background(), comment)
 	assert.Error(t, err)
 	assert.Equal(t, uuid.Nil, id)
 }
@@ -57,16 +59,16 @@ func TestCreateCommentEmptyDescription(t *testing.T) {
 func TestUpdateComment(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{UserID: userId, PostID: postId, Description: "This is a comment."}
-	id, _ := ts.repo.create(comment)
+	comment := Comment{User: &user, PostID: postId, Description: "This is a comment."}
+	id, _ := ts.usecase.Create(context.Background(), comment)
 
 	comment.Description = "Updated comment."
-	err := ts.usecase.Update(comment, id)
+	err := ts.usecase.Update(context.Background(), comment, id)
 	assert.NoError(t, err)
 
-	updatedComment, err := ts.usecase.Get(id)
+	updatedComment, err := ts.usecase.Get(context.Background(), id)
 	assert.NoError(t, err)
 	assert.Equal(t, "Updated comment.", updatedComment.Description)
 }
@@ -77,7 +79,7 @@ func TestUpdateCommentNotFound(t *testing.T) {
 	comment := Comment{Description: "This is a comment."}
 	id := uuid.New()
 
-	err := ts.usecase.Update(comment, id)
+	err := ts.usecase.Update(context.Background(), comment, id)
 	assert.Error(t, err)
 	assert.Equal(t, "comment not found", err.Error())
 }
@@ -85,15 +87,15 @@ func TestUpdateCommentNotFound(t *testing.T) {
 func TestLikeComment(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{UserID: userId, PostID: postId, Description: "This is a comment."}
-	id, _ := ts.repo.create(comment)
+	comment := Comment{User: &user, PostID: postId, Description: "This is a comment."}
+	id, _ := ts.usecase.Create(context.Background(), comment)
 
-	err := ts.usecase.Like(id)
+	err := ts.usecase.Like(context.Background(), id)
 	assert.NoError(t, err)
 
-	likedComment, err := ts.usecase.Get(id)
+	likedComment, err := ts.usecase.Get(context.Background(), id)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, likedComment.LikeCount)
 }
@@ -103,7 +105,7 @@ func TestLikeCommentNotFound(t *testing.T) {
 
 	id := uuid.New()
 
-	err := ts.usecase.Like(id)
+	err := ts.usecase.Like(context.Background(), id)
 	assert.Error(t, err)
 	assert.Equal(t, "comment not found", err.Error())
 }
@@ -111,16 +113,16 @@ func TestLikeCommentNotFound(t *testing.T) {
 func TestUnlikeComment(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{UserID: userId, PostID: postId, Description: "This is a comment."}
-	id, _ := ts.repo.create(comment)
+	comment := Comment{User: &user, PostID: postId, Description: "This is a comment."}
+	id, _ := ts.usecase.Create(context.Background(), comment)
 
-	_ = ts.usecase.Like(id)
-	err := ts.usecase.Unlike(id)
+	_ = ts.usecase.Like(context.Background(), id)
+	err := ts.usecase.Unlike(context.Background(), id)
 	assert.NoError(t, err)
 
-	unlikedComment, err := ts.usecase.Get(id)
+	unlikedComment, err := ts.usecase.Get(context.Background(), id)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, unlikedComment.LikeCount)
 }
@@ -130,7 +132,7 @@ func TestUnlikeCommentNotFound(t *testing.T) {
 
 	id := uuid.New()
 
-	err := ts.usecase.Unlike(id)
+	err := ts.usecase.Unlike(context.Background(), id)
 	assert.Error(t, err)
 	assert.Equal(t, "comment not found", err.Error())
 }
@@ -138,15 +140,15 @@ func TestUnlikeCommentNotFound(t *testing.T) {
 func TestDeleteComment(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{UserID: userId, PostID: postId, Description: "This is a comment."}
-	id, _ := ts.repo.create(comment)
+	comment := Comment{User: &user, PostID: postId, Description: "This is a comment."}
+	id, _ := ts.usecase.Create(context.Background(), comment)
 
-	err := ts.usecase.Delete(id)
+	err := ts.usecase.Delete(context.Background(), id)
 	assert.NoError(t, err)
 
-	comments, err := ts.usecase.GetFromPost(comment.PostID)
+	comments, err := ts.usecase.GetFromPost(context.Background(), comment.PostID)
 	assert.NoError(t, err)
 	assert.NotContains(t, comments, comment)
 }
@@ -156,7 +158,7 @@ func TestDeleteCommentNotFound(t *testing.T) {
 
 	id := uuid.New()
 
-	err := ts.usecase.Delete(id)
+	err := ts.usecase.Delete(context.Background(), id)
 	assert.Error(t, err)
 	assert.Equal(t, "comment not found", err.Error())
 }
@@ -167,10 +169,10 @@ func TestGetFromPost(t *testing.T) {
 	postID := uuid.New()
 	comment1 := Comment{Description: "First comment", PostID: postID}
 	comment2 := Comment{Description: "Second comment", PostID: postID}
-	_, _ = ts.repo.create(comment1)
-	_, _ = ts.repo.create(comment2)
+	_, _ = ts.usecase.Create(context.Background(), comment1)
+	_, _ = ts.usecase.Create(context.Background(), comment2)
 
-	comments, err := ts.usecase.GetFromPost(postID)
+	comments, err := ts.usecase.GetFromPost(context.Background(), postID)
 	assert.NoError(t, err)
 	assert.Len(t, comments, 2)
 }
@@ -178,12 +180,12 @@ func TestGetFromPost(t *testing.T) {
 func TestGetComment(t *testing.T) {
 	ts := setup()
 
-	userId := uuid.New()
+	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{UserID: userId, PostID: postId, Description: "This is a comment."}
-	id, _ := ts.repo.create(comment)
+	comment := Comment{User: &user, PostID: postId, Description: "This is a comment."}
+	id, _ := ts.usecase.Create(context.Background(), comment)
 
-	retrievedComment, err := ts.usecase.Get(id)
+	retrievedComment, err := ts.usecase.Get(context.Background(), id)
 	assert.NoError(t, err)
 	assert.Equal(t, comment.Description, retrievedComment.Description)
 }
@@ -193,11 +195,11 @@ func TestGetCommentNotFound(t *testing.T) {
 
 	id := uuid.New()
 
-	_, err := ts.usecase.Get(id)
+	_, err := ts.usecase.Get(context.Background(), id)
 	assert.Error(t, err)
 }
 
-// mockCommentRepository is a mock implementation of commentRepositoryI for testing purposes
+// mockCommentRepository is a mock implementation of commentRepository for testing purposes
 type mockCommentRepository struct {
 	comments map[uuid.UUID]Comment
 }
@@ -208,7 +210,7 @@ func newMockCommentRepository() *mockCommentRepository {
 	}
 }
 
-func (m *mockCommentRepository) create(comment Comment) (uuid.UUID, error) {
+func (m *mockCommentRepository) create(ctx context.Context, comment Comment) (uuid.UUID, error) {
 	id := uuid.New()
 	comment.ID = id
 	m.comments[id] = comment
@@ -216,7 +218,7 @@ func (m *mockCommentRepository) create(comment Comment) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (m *mockCommentRepository) update(comment Comment, id uuid.UUID) error {
+func (m *mockCommentRepository) update(ctx context.Context, comment Comment, id uuid.UUID) error {
 	if _, exists := m.comments[id]; !exists {
 		return fmt.Errorf("comment not found")
 	}
@@ -226,7 +228,7 @@ func (m *mockCommentRepository) update(comment Comment, id uuid.UUID) error {
 	return nil
 }
 
-func (m *mockCommentRepository) like(id uuid.UUID) error {
+func (m *mockCommentRepository) like(ctx context.Context, id uuid.UUID) error {
 	if comment, exists := m.comments[id]; exists {
 		comment.LikeCount++
 		m.comments[id] = comment
@@ -237,7 +239,7 @@ func (m *mockCommentRepository) like(id uuid.UUID) error {
 	return fmt.Errorf("comment not found")
 }
 
-func (m *mockCommentRepository) unlike(id uuid.UUID) error {
+func (m *mockCommentRepository) unlike(ctx context.Context, id uuid.UUID) error {
 	if comment, exists := m.comments[id]; exists {
 		if comment.LikeCount > 0 {
 			comment.LikeCount--
@@ -250,7 +252,7 @@ func (m *mockCommentRepository) unlike(id uuid.UUID) error {
 	return fmt.Errorf("comment not found")
 }
 
-func (m *mockCommentRepository) delete(id uuid.UUID) error {
+func (m *mockCommentRepository) delete(ctx context.Context, id uuid.UUID) error {
 	if _, exists := m.comments[id]; !exists {
 		return fmt.Errorf("comment not found")
 	}
@@ -259,7 +261,7 @@ func (m *mockCommentRepository) delete(id uuid.UUID) error {
 	return nil
 }
 
-func (m *mockCommentRepository) get(id uuid.UUID) (Comment, error) {
+func (m *mockCommentRepository) get(ctx context.Context, id uuid.UUID) (Comment, error) {
 	if comment, exists := m.comments[id]; exists {
 		return comment, nil
 	}
@@ -267,7 +269,7 @@ func (m *mockCommentRepository) get(id uuid.UUID) (Comment, error) {
 	return Comment{}, fmt.Errorf("comment not found")
 }
 
-func (m *mockCommentRepository) getFromPost(postId uuid.UUID) ([]Comment, error) {
+func (m *mockCommentRepository) getFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error) {
 	var result []Comment
 	for _, comment := range m.comments {
 		if comment.PostID == postId {

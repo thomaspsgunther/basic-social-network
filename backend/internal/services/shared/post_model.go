@@ -1,4 +1,4 @@
-package posts
+package shared
 
 import (
 	"time"
@@ -12,7 +12,7 @@ type Posts struct {
 
 type Post struct {
 	ID           uuid.UUID `json:"id"`
-	UserID       uuid.UUID `json:"userId"`
+	User         *User     `json:"user"`
 	Image        string    `json:"image"`
 	Description  *string   `json:"description"`
 	LikeCount    int       `json:"likeCount"`

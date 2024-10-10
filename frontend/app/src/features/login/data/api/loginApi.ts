@@ -1,5 +1,5 @@
-import User from '../models/User';
-import { axiosInstance } from './axiosInstance';
+import { axiosInstance } from '../../../shared/data/api/axiosInstance';
+import User from '../../../shared/data/models/User';
 
 const loginApi = {
   login: async (userData: Omit<User, 'id'>) => {

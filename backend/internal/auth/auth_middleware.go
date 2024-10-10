@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"y_net/internal/logger"
+	"y_net/internal/services/shared"
 	"y_net/internal/services/users"
 	"y_net/pkg/jwt"
 )
@@ -40,8 +41,8 @@ func Middleware() func(http.Handler) http.Handler {
 			}
 
 			// Create user and check if user exists in db
-			user := users.User{ID: id}
-			username, err := users.GetUsernameByUserID(id)
+			user := shared.User{ID: id}
+			username, err := users.GetUsernameByUserID(r.Context(), id)
 			if err != nil {
 				next.ServeHTTP(w, r)
 				return
@@ -58,7 +59,7 @@ func Middleware() func(http.Handler) http.Handler {
 }
 
 // ForContext finds the user from the context. REQUIRES Middleware to have run.
-func ForContext(ctx context.Context) *users.User {
-	raw, _ := ctx.Value(userCtxKey).(*users.User)
+func ForContext(ctx context.Context) *shared.User {
+	raw, _ := ctx.Value(userCtxKey).(*shared.User)
 	return raw
 }

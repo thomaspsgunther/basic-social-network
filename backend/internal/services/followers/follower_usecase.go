@@ -1,33 +1,34 @@
 package followers
 
 import (
-	"y_net/internal/services/users"
+	"context"
+	"y_net/internal/services/shared"
 
 	"github.com/google/uuid"
 )
 
-type FollowerUsecaseI interface {
-	Follow(followerId uuid.UUID, followedId uuid.UUID) error
-	Unfollow(followerId uuid.UUID, followedId uuid.UUID) error
-	UserFollowsUser(followerId uuid.UUID, followedId uuid.UUID) (bool, error)
-	GetFollowers(userId uuid.UUID) ([]users.User, error)
-	GetFollowed(userId uuid.UUID) ([]users.User, error)
+type FollowerUsecase interface {
+	Follow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error
+	Unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error
+	UserFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error)
+	GetFollowers(ctx context.Context, userId uuid.UUID) ([]shared.User, error)
+	GetFollowed(ctx context.Context, userId uuid.UUID) ([]shared.User, error)
 }
 
-type followerUsecase struct {
-	usecase    FollowerUsecaseI
-	repository followerRepositoryI
+type followerUsecaseImpl struct {
+	usecase    FollowerUsecase
+	repository followerRepository
 }
 
-func NewFollowerUsecase() FollowerUsecaseI {
-	return &followerUsecase{
-		usecase:    &followerUsecase{},
-		repository: &followerRepository{},
+func NewFollowerUsecase() FollowerUsecase {
+	return &followerUsecaseImpl{
+		usecase:    &followerUsecaseImpl{},
+		repository: &followerRepositoryImpl{},
 	}
 }
 
-func (i *followerUsecase) Follow(followerId uuid.UUID, followedId uuid.UUID) error {
-	err := i.repository.follow(followerId, followedId)
+func (u *followerUsecaseImpl) Follow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error {
+	err := u.repository.follow(ctx, followerId, followedId)
 	if err != nil {
 		return err
 	}
@@ -35,8 +36,8 @@ func (i *followerUsecase) Follow(followerId uuid.UUID, followedId uuid.UUID) err
 	return nil
 }
 
-func (i *followerUsecase) Unfollow(followerId uuid.UUID, followedId uuid.UUID) error {
-	err := i.repository.unfollow(followerId, followedId)
+func (u *followerUsecaseImpl) Unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error {
+	err := u.repository.unfollow(ctx, followerId, followedId)
 	if err != nil {
 		return err
 	}
@@ -44,8 +45,8 @@ func (i *followerUsecase) Unfollow(followerId uuid.UUID, followedId uuid.UUID) e
 	return nil
 }
 
-func (i *followerUsecase) UserFollowsUser(followerId uuid.UUID, followedId uuid.UUID) (bool, error) {
-	follows, err := i.repository.userFollowsUser(followerId, followedId)
+func (u *followerUsecaseImpl) UserFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error) {
+	follows, err := u.repository.userFollowsUser(ctx, followerId, followedId)
 	if err != nil {
 		return false, err
 	}
@@ -53,8 +54,8 @@ func (i *followerUsecase) UserFollowsUser(followerId uuid.UUID, followedId uuid.
 	return follows, nil
 }
 
-func (i *followerUsecase) GetFollowers(userId uuid.UUID) ([]users.User, error) {
-	users, err := i.repository.getFollowers(userId)
+func (u *followerUsecaseImpl) GetFollowers(ctx context.Context, userId uuid.UUID) ([]shared.User, error) {
+	users, err := u.repository.getFollowers(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -62,8 +63,8 @@ func (i *followerUsecase) GetFollowers(userId uuid.UUID) ([]users.User, error) {
 	return users, nil
 }
 
-func (i *followerUsecase) GetFollowed(userId uuid.UUID) ([]users.User, error) {
-	users, err := i.repository.getFollowed(userId)
+func (u *followerUsecaseImpl) GetFollowed(ctx context.Context, userId uuid.UUID) ([]shared.User, error) {
+	users, err := u.repository.getFollowed(ctx, userId)
 	if err != nil {
 		return nil, err
 	}

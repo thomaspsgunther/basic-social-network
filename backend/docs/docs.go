@@ -390,7 +390,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.Users"
+                            "$ref": "#/definitions/shared.Users"
                         }
                     },
                     "400": {
@@ -539,7 +539,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.Users"
+                            "$ref": "#/definitions/shared.Users"
                         }
                     },
                     "400": {
@@ -641,7 +641,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.Users"
+                            "$ref": "#/definitions/shared.Users"
                         }
                     },
                     "400": {
@@ -778,7 +778,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.User"
+                            "$ref": "#/definitions/shared.User"
                         }
                     }
                 ],
@@ -786,7 +786,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.TokenJson"
+                            "$ref": "#/definitions/shared.TokenJson"
                         }
                     },
                     "400": {
@@ -821,7 +821,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.TokenJson"
+                            "$ref": "#/definitions/shared.TokenJson"
                         }
                     }
                 ],
@@ -829,7 +829,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.TokenJson"
+                            "$ref": "#/definitions/shared.TokenJson"
                         }
                     },
                     "400": {
@@ -883,7 +883,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/posts.Posts"
+                            "$ref": "#/definitions/shared.Posts"
                         }
                     },
                     "400": {
@@ -924,7 +924,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/posts.Post"
+                            "$ref": "#/definitions/shared.Post"
                         }
                     }
                 ],
@@ -932,7 +932,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/posts.Post"
+                            "$ref": "#/definitions/shared.Post"
                         }
                     },
                     "400": {
@@ -943,68 +943,6 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Forbidden"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/posts/user/{user_id}": {
-            "get": {
-                "description": "Read a list of posts by: user_id using pagination",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "posts"
-                ],
-                "summary": "Read a list of posts by: user_id using pagination",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "limit of pagination",
-                        "name": "limit",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "byte",
-                        "description": "cursor for pagination",
-                        "name": "cursor",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/posts.Posts"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
                     },
                     "500": {
                         "description": "Internal Server Error"
@@ -1044,7 +982,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/posts.Post"
+                            "$ref": "#/definitions/shared.Post"
                         }
                     },
                     "400": {
@@ -1090,7 +1028,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/posts.Post"
+                            "$ref": "#/definitions/shared.Post"
                         }
                     }
                 ],
@@ -1175,7 +1113,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.User"
+                            "$ref": "#/definitions/shared.User"
                         }
                     }
                 ],
@@ -1183,7 +1121,69 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.TokenJson"
+                            "$ref": "#/definitions/shared.TokenJson"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/users/posts/{user_id}": {
+            "get": {
+                "description": "Read a list of posts by: user_id using pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Read a list of posts by: user_id using pagination",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit of pagination",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "byte",
+                        "description": "cursor for pagination",
+                        "name": "cursor",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/shared.Posts"
                         }
                     },
                     "400": {
@@ -1229,7 +1229,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.Users"
+                            "$ref": "#/definitions/shared.Users"
                         }
                     },
                     "400": {
@@ -1275,7 +1275,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.Users"
+                            "$ref": "#/definitions/shared.Users"
                         }
                     },
                     "400": {
@@ -1323,7 +1323,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/users.User"
+                            "$ref": "#/definitions/shared.User"
                         }
                     }
                 ],
@@ -1408,8 +1408,8 @@ const docTemplate = `{
                 "postId": {
                     "type": "string"
                 },
-                "userId": {
-                    "type": "string"
+                "user": {
+                    "$ref": "#/definitions/shared.User"
                 }
             }
         },
@@ -1440,7 +1440,7 @@ const docTemplate = `{
                 }
             }
         },
-        "posts.Post": {
+        "shared.Post": {
             "type": "object",
             "properties": {
                 "commentCount": {
@@ -1461,23 +1461,23 @@ const docTemplate = `{
                 "likeCount": {
                     "type": "integer"
                 },
-                "userId": {
-                    "type": "string"
+                "user": {
+                    "$ref": "#/definitions/shared.User"
                 }
             }
         },
-        "posts.Posts": {
+        "shared.Posts": {
             "type": "object",
             "properties": {
                 "postList": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/posts.Post"
+                        "$ref": "#/definitions/shared.Post"
                     }
                 }
             }
         },
-        "users.TokenJson": {
+        "shared.TokenJson": {
             "type": "object",
             "properties": {
                 "token": {
@@ -1485,7 +1485,7 @@ const docTemplate = `{
                 }
             }
         },
-        "users.User": {
+        "shared.User": {
             "type": "object",
             "properties": {
                 "avatar": {
@@ -1514,13 +1514,13 @@ const docTemplate = `{
                 }
             }
         },
-        "users.Users": {
+        "shared.Users": {
             "type": "object",
             "properties": {
                 "userList": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/users.User"
+                        "$ref": "#/definitions/shared.User"
                     }
                 }
             }

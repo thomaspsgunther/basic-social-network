@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"y_net/internal/logger"
+	"y_net/internal/services/shared"
 	"y_net/internal/services/users"
 	"y_net/pkg/jwt"
 
@@ -29,8 +30,8 @@ func (rs LoginHandler) Routes() chi.Router {
 // @Tags        login
 // @Accept      json
 // @Produce     json
-// @Param       body body users.User true "User Object"
-// @Success     200 {object} users.TokenJson
+// @Param       body body shared.User true "User Object"
+// @Success     200 {object} shared.TokenJson
 // @Failure     400
 // @Failure     401
 // @Failure     500
@@ -38,7 +39,7 @@ func (rs LoginHandler) Routes() chi.Router {
 func (rs LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
-	var user users.User
+	var user shared.User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
@@ -46,7 +47,7 @@ func (rs LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid request payload", http.StatusBadRequest)
 		return
 	}
-	correct, err := user.Authenticate()
+	correct, err := users.Authenticate(r.Context(), user)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			err = &users.WrongUsernameOrPasswordError{}
@@ -70,7 +71,7 @@ func (rs LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := users.GetUserIdByUsername(user.Username)
+	id, err := users.GetUserIdByUsername(r.Context(), user.Username)
 	if err != nil {
 		logger.ServerLogger.Warn(err.Error())
 
@@ -86,7 +87,7 @@ func (rs LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(users.TokenJson{Token: tokenStr})
+	response, err := json.Marshal(shared.TokenJson{Token: tokenStr})
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -105,8 +106,8 @@ func (rs LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Tags        login
 // @Accept      json
 // @Produce     json
-// @Param       body body users.TokenJson true "Token Object"
-// @Success     200 {object} users.TokenJson
+// @Param       body body shared.TokenJson true "Token Object"
+// @Success     200 {object} shared.TokenJson
 // @Failure     400
 // @Failure     401
 // @Failure     500
@@ -114,7 +115,7 @@ func (rs LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 func (rs LoginHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
-	var token users.TokenJson
+	var token shared.TokenJson
 	err := json.NewDecoder(r.Body).Decode(&token)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
@@ -140,7 +141,7 @@ func (rs LoginHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(users.TokenJson{Token: tokenStr})
+	response, err := json.Marshal(shared.TokenJson{Token: tokenStr})
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

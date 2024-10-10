@@ -2,6 +2,7 @@ package comments
 
 import (
 	"time"
+	"y_net/internal/services/shared"
 
 	"github.com/google/uuid"
 )
@@ -11,10 +12,10 @@ type Comments struct {
 }
 
 type Comment struct {
-	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"userId"`
-	PostID      uuid.UUID `json:"postId"`
-	Description string    `json:"description"`
-	LikeCount   int       `json:"likeCount"`
-	CreatedAt   time.Time `json:"createdAt"`
+	ID          uuid.UUID    `json:"id"`
+	User        *shared.User `json:"user"`
+	PostID      uuid.UUID    `json:"postId"`
+	Description string       `json:"description"`
+	LikeCount   int          `json:"likeCount"`
+	CreatedAt   time.Time    `json:"createdAt"`
 }

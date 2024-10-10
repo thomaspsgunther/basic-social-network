@@ -1,5 +1,5 @@
 import loginApi from '../api/loginApi';
-import User from '../models/User';
+import User from '../../../shared/data/models/User';
 
 class LoginRepository {
   async loginUser(userData: Omit<User, 'id'>): Promise<string> {

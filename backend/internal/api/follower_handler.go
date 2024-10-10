@@ -14,7 +14,7 @@ import (
 )
 
 type FollowerHandler struct {
-	Usecase followers.FollowerUsecaseI
+	Usecase followers.FollowerUsecase
 }
 
 func (h FollowerHandler) Routes() chi.Router {
@@ -24,10 +24,7 @@ func (h FollowerHandler) Routes() chi.Router {
 	r.Delete("/{follower_id}_{followed_id}", h.Unfollow)           // DELETE /api/v1/followers/{follower_id}_{followed_id} - Unfollow a user by: id
 	r.Get("/check/{follower_id}_{followed_id}", h.UserFollowsUser) // GET /api/v1/followers/check/{follower_id}_{followed_id} - Check if a user follows another user by: id
 	r.Get("/{user_id}", h.GetFollowers)                            // GET /api/v1/followers/{id} - Read a list of who follows a user by: user_id
-
-	r.Route("/followed", func(r chi.Router) {
-		r.Get("/{user_id}", h.GetFollowed) // GET /api/v1/followers/followed/{id} - Read a list of who a user follows by: user_id
-	})
+	r.Get("/followed/{user_id}", h.GetFollowed)                    // GET /api/v1/followers/followed/{id} - Read a list of who a user follows by: user_id
 
 	return r
 }
@@ -83,7 +80,7 @@ func (h FollowerHandler) Follow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Usecase.Follow(followerId, followedId)
+	err = h.Usecase.Follow(r.Context(), followerId, followedId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -144,7 +141,7 @@ func (h FollowerHandler) Unfollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Usecase.Unfollow(followerId, followedId)
+	err = h.Usecase.Unfollow(r.Context(), followerId, followedId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -196,7 +193,7 @@ func (h FollowerHandler) UserFollowsUser(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	follows, err := h.Usecase.UserFollowsUser(followerId, followedId)
+	follows, err := h.Usecase.UserFollowsUser(r.Context(), followerId, followedId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -224,7 +221,7 @@ func (h FollowerHandler) UserFollowsUser(w http.ResponseWriter, r *http.Request)
 // @Produce     json
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param       user_id path string true "User ID" Format(uuid)
-// @Success     200 {object} users.Users
+// @Success     200 {object} shared.Users
 // @Failure     400
 // @Failure     401
 // @Failure     500
@@ -251,7 +248,7 @@ func (h FollowerHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	followers, err := h.Usecase.GetFollowers(userId)
+	followers, err := h.Usecase.GetFollowers(r.Context(), userId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -279,7 +276,7 @@ func (h FollowerHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
 // @Produce     json
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param       user_id path string true "User ID" Format(uuid)
-// @Success     200 {object} users.Users
+// @Success     200 {object} shared.Users
 // @Failure     400
 // @Failure     401
 // @Failure     500
@@ -306,7 +303,7 @@ func (h FollowerHandler) GetFollowed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	followed, err := h.Usecase.GetFollowed(userId)
+	followed, err := h.Usecase.GetFollowed(r.Context(), userId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

@@ -15,10 +15,11 @@ import (
 	"y_net/internal/auth"
 	"y_net/internal/logger"
 	"y_net/internal/services/posts"
+	"y_net/internal/services/shared"
 )
 
 type PostHandler struct {
-	Usecase posts.PostUsecaseI
+	Usecase posts.PostUsecase
 }
 
 func (h PostHandler) Routes() chi.Router {
@@ -33,10 +34,6 @@ func (h PostHandler) Routes() chi.Router {
 		r.Delete("/", h.DeletePost) // DELETE /api/v1/posts/{id} - Delete a single post by: id
 	})
 
-	r.Route("/user", func(r chi.Router) {
-		r.Get("/{user_id}", h.ListPostsFromUser) // GET /api/v1/posts/user/{user_id}?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
-	})
-
 	return r
 }
 
@@ -47,8 +44,8 @@ func (h PostHandler) Routes() chi.Router {
 // @Accept      json
 // @Produce     json
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
-// @Param       body body posts.Post true "Post Object"
-// @Success     200 {object} posts.Post
+// @Param       body body shared.Post true "Post Object"
+// @Success     200 {object} shared.Post
 // @Failure     400
 // @Failure     401
 // @Failure     403
@@ -67,7 +64,7 @@ func (h PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var post posts.Post
+	var post shared.Post
 	err := json.NewDecoder(r.Body).Decode(&post)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
@@ -76,7 +73,7 @@ func (h PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if authUser.ID != post.UserID {
+	if authUser.ID != post.User.ID {
 		err := fmt.Errorf("forbidden post create attempt from user: %v", authUser.ID)
 
 		logger.ServerLogger.Warn(err.Error())
@@ -85,7 +82,7 @@ func (h PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.Usecase.Create(post)
+	id, err := h.Usecase.Create(r.Context(), post)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -93,7 +90,7 @@ func (h PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(posts.Post{ID: id})
+	response, err := json.Marshal(shared.Post{ID: id})
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -114,7 +111,7 @@ func (h PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param       limit query int true "limit of pagination"
 // @Param       cursor query string true "cursor for pagination" Format(byte)
-// @Success     200 {object} posts.Posts
+// @Success     200 {object} shared.Posts
 // @Failure     400
 // @Failure     401
 // @Failure     500
@@ -150,7 +147,7 @@ func (h PostHandler) ListPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, err := h.Usecase.GetPosts(limit, lastCreatedAt, lastId)
+	posts, err := h.Usecase.GetPosts(r.Context(), limit, lastCreatedAt, lastId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -178,7 +175,7 @@ func (h PostHandler) ListPosts(w http.ResponseWriter, r *http.Request) {
 // @Produce     json
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param       id path string true "Post ID" Format(uuid)
-// @Success     200 {object} posts.Post
+// @Success     200 {object} shared.Post
 // @Failure     400
 // @Failure     401
 // @Failure     500
@@ -205,7 +202,7 @@ func (h PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := h.Usecase.GetPost(postId)
+	post, err := h.Usecase.GetPost(r.Context(), postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -233,7 +230,7 @@ func (h PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
 // @Accept      json
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param       id path string true "Post ID" Format(uuid)
-// @Param       body body posts.Post true "Post Object"
+// @Param       body body shared.Post true "Post Object"
 // @Success     200
 // @Failure     400
 // @Failure     401
@@ -262,7 +259,7 @@ func (h PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ogPost, err := h.Usecase.GetPost(postId)
+	ogPost, err := h.Usecase.GetPost(r.Context(), postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -270,7 +267,7 @@ func (h PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if authUser.ID != ogPost.UserID {
+	if authUser.ID != ogPost.User.ID {
 		err := fmt.Errorf("forbidden post update attempt from user: %v", authUser.ID)
 
 		logger.ServerLogger.Warn(err.Error())
@@ -279,7 +276,7 @@ func (h PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var post posts.Post
+	var post shared.Post
 	err = json.NewDecoder(r.Body).Decode(&post)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
@@ -288,7 +285,7 @@ func (h PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Usecase.Update(post, postId)
+	err = h.Usecase.Update(r.Context(), post, postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -333,7 +330,7 @@ func (h PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ogPost, err := h.Usecase.GetPost(postId)
+	ogPost, err := h.Usecase.GetPost(r.Context(), postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -341,7 +338,7 @@ func (h PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if authUser.ID != ogPost.UserID {
+	if authUser.ID != ogPost.User.ID {
 		err := fmt.Errorf("forbidden post delete attempt from user: %v", authUser.ID)
 
 		logger.ServerLogger.Warn(err.Error())
@@ -350,7 +347,7 @@ func (h PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Usecase.Delete(postId)
+	err = h.Usecase.Delete(r.Context(), postId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -359,81 +356,6 @@ func (h PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-// ListPostsFromUser godoc
-// @Summary          Read a list of posts by: user_id using pagination
-// @Description      Read a list of posts by: user_id using pagination
-// @Tags             posts
-// @Produce          json
-// @Param            Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
-// @Param            user_id path string true "User ID" Format(uuid)
-// @Param            limit query int true "limit of pagination"
-// @Param            cursor query string true "cursor for pagination" Format(byte)
-// @Success          200 {object} posts.Posts
-// @Failure          400
-// @Failure          401
-// @Failure          500
-// @Router           /posts/user/{user_id} [get]
-func (h PostHandler) ListPostsFromUser(w http.ResponseWriter, r *http.Request) {
-	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
-
-	authUser := auth.ForContext(r.Context())
-	if authUser == nil {
-		err := fmt.Errorf("access denied")
-
-		logger.ServerLogger.Warn(err.Error())
-
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	id := chi.URLParam(r, "user_id")
-	userId, err := uuid.Parse(id)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, "invalid user id", http.StatusBadRequest)
-		return
-	}
-
-	limitStr := r.URL.Query().Get("limit")
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, "invalid posts limit", http.StatusBadRequest)
-		return
-	}
-
-	cursor := r.URL.Query().Get("cursor")
-	lastCreatedAt, lastId, err := decodeCursor(cursor)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, "invalid posts limit", http.StatusBadRequest)
-		return
-	}
-
-	posts, err := h.Usecase.GetFromUser(userId, limit, lastCreatedAt, lastId)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	response, err := json.Marshal(posts)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(response)
 }
 
 func decodeCursor(encodedCursor string) (time.Time, uuid.UUID, error) {
