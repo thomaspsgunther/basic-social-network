@@ -115,7 +115,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (userData: Omit<User, 'id'>) => {
     try {
-      const response = await userApi.create(userData);
+      const response = await loginApi.register(userData);
       const newToken: string = response.data;
       await SecureStore.setItemAsync('token', newToken);
       setToken(newToken);

@@ -86,8 +86,8 @@ func main() {
 		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
 	))
 	r.HandleFunc("/api/v1/", rootFunc)
+	r.Mount("/api/v1/login", api.LoginHandler{Usecase: users.NewUserUsecase()}.Routes())
 	r.Mount("/api/v1/users", api.UserHandler{Usecase: users.NewUserUsecase()}.Routes())
-	r.Mount("/api/v1/login", api.LoginHandler{}.Routes())
 	r.Mount("/api/v1/followers", api.FollowerHandler{Usecase: followers.NewFollowerUsecase()}.Routes())
 	r.Mount("/api/v1/posts", api.PostHandler{Usecase: posts.NewPostUsecase()}.Routes())
 	r.Mount("/api/v1/likes", api.LikeHandler{Usecase: likes.NewLikeUsecase()}.Routes())

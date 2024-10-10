@@ -13,15 +13,71 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type LoginHandler struct{}
+type LoginHandler struct {
+	Usecase users.UserUsecase
+}
 
-func (rs LoginHandler) Routes() chi.Router {
+func (h LoginHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/", rs.Login)                    // POST /api/v1/login - Login user
-	r.Post("/refreshtoken", rs.RefreshToken) // POST /api/v1/login/refreshtoken - Refresh user token
+	r.Post("/register", h.CreateUser)       // POST /api/v1/login/register - Create a new user
+	r.Post("/", h.Login)                    // POST /api/v1/login - Login user
+	r.Post("/refreshtoken", h.RefreshToken) // POST /api/v1/login/refreshtoken - Refresh user token
 
 	return r
+}
+
+// CreateUser   godoc
+// @Summary     Create a new user
+// @Description Create a new user
+// @Tags        login
+// @Accept      json
+// @Produce     json
+// @Param       body body shared.User true "User Object"
+// @Success     200 {object} shared.TokenJson
+// @Failure     400
+// @Failure     401
+// @Failure     500
+// @Router      /login/register [post]
+func (h LoginHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
+
+	var user shared.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	id, err := h.Usecase.Create(r.Context(), user)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tokenStr, err := jwt.GenerateToken(id)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response, err := json.Marshal(shared.TokenJson{Token: tokenStr})
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
 }
 
 // Login        godoc
@@ -36,7 +92,7 @@ func (rs LoginHandler) Routes() chi.Router {
 // @Failure     401
 // @Failure     500
 // @Router      /login [post]
-func (rs LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	var user shared.User
@@ -112,7 +168,7 @@ func (rs LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Failure     401
 // @Failure     500
 // @Router      /login/refreshtoken [post]
-func (rs LoginHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
+func (h LoginHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
 	var token shared.TokenJson

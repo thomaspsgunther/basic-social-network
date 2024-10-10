@@ -2,12 +2,6 @@ import User from '../../../shared/data/models/User';
 import userApi from '../api/userApi';
 
 class UserRepository {
-  async createUser(userData: Omit<User, 'id'>): Promise<string> {
-    const response = await userApi.create(userData);
-    const token: string = response.data;
-    return token;
-  }
-
   async getUsersById(idList: string): Promise<User[]> {
     const response = await userApi.get(idList);
     const users: User[] = response.data;

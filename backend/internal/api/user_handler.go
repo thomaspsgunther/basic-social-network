@@ -14,7 +14,6 @@ import (
 	"y_net/internal/logger"
 	"y_net/internal/services/shared"
 	"y_net/internal/services/users"
-	"y_net/pkg/jwt"
 )
 
 type UserHandler struct {
@@ -24,7 +23,6 @@ type UserHandler struct {
 func (h UserHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/", h.CreateUser)                      // POST /api/v1/users - Create a new user
 	r.Get("/{id_list}", h.GetUsers)                // GET /api/v1/users/{id_list} - Read a list of users by: id_list
 	r.Get("/search/{search_term}", h.SearchUsers)  // GET /api/v1/users/search/{search_term} - Read a list of users by: search_term
 	r.Get("/posts/{user_id}", h.ListPostsFromUser) // GET /api/v1/users/posts/{user_id}?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
@@ -35,59 +33,6 @@ func (h UserHandler) Routes() chi.Router {
 	})
 
 	return r
-}
-
-// CreateUser   godoc
-// @Summary     Create a new user
-// @Description Create a new user
-// @Tags        users
-// @Accept      json
-// @Produce     json
-// @Param       body body shared.User true "User Object"
-// @Success     200 {object} shared.TokenJson
-// @Failure     400
-// @Failure     401
-// @Failure     500
-// @Router      /users [post]
-func (h UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
-
-	var user shared.User
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, "invalid request payload", http.StatusBadRequest)
-		return
-	}
-
-	id, err := h.Usecase.Create(r.Context(), user)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	tokenStr, err := jwt.GenerateToken(id)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	response, err := json.Marshal(shared.TokenJson{Token: tokenStr})
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(response)
 }
 
 // GetUsers     godoc

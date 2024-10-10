@@ -2,10 +2,6 @@ import User from '../../../shared/data/models/User';
 import { axiosInstance } from '../../../shared/data/api/axiosInstance';
 
 const userApi = {
-  create: async (userData: Omit<User, 'id'>) => {
-    const response = await axiosInstance.post('/users', userData);
-    return response;
-  },
   get: async (idList: string) => {
     const response = await axiosInstance.get(`/users/${idList}`);
     return response;

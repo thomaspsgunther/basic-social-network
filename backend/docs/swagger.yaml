@@ -660,6 +660,34 @@ paths:
       summary: Refresh user token
       tags:
       - login
+  /login/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User Object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/shared.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/shared.TokenJson'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: Create a new user
+      tags:
+      - login
   /posts:
     get:
       description: Read a list of posts using pagination
@@ -830,34 +858,6 @@ paths:
       summary: 'Update a single post by: id'
       tags:
       - posts
-  /users:
-    post:
-      consumes:
-      - application/json
-      description: Create a new user
-      parameters:
-      - description: User Object
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/shared.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/shared.TokenJson'
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-      summary: Create a new user
-      tags:
-      - users
   /users/{id_list}:
     get:
       description: 'Read a list of users by: id_list'
