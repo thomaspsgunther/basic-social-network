@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+
 import usersReducer from '../../features/users/presentation/redux/usersSlice';
 
 const store = configureStore({

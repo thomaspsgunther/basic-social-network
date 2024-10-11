@@ -1,5 +1,5 @@
-import { IUserRepository } from '../../domain/repositories/UserRepository';
 import { User } from '../../../shared/data/models/User';
+import { IUserRepository } from '../../domain/repositories/UserRepository';
 import { userApi } from '../api/userApi';
 
 export class UserRepositoryImpl implements IUserRepository {
@@ -18,43 +18,27 @@ export class UserRepositoryImpl implements IUserRepository {
   }
 
   async updateUser(user: User): Promise<boolean> {
-    try {
-      await userApi.update(user);
+    await userApi.update(user);
 
-      return true;
-    } catch (_error) {
-      return false;
-    }
+    return true;
   }
 
   async deleteUser(id: string): Promise<boolean> {
-    try {
-      await userApi.remove(id);
+    await userApi.remove(id);
 
-      return true;
-    } catch (_error) {
-      return false;
-    }
+    return true;
   }
 
   async followUser(followerId: string, followedId: string): Promise<boolean> {
-    try {
-      await userApi.follow(followerId, followedId);
+    await userApi.follow(followerId, followedId);
 
-      return true;
-    } catch (_error) {
-      return false;
-    }
+    return true;
   }
 
   async unfollowUser(followerId: string, followedId: string): Promise<boolean> {
-    try {
-      await userApi.unfollow(followerId, followedId);
+    await userApi.unfollow(followerId, followedId);
 
-      return true;
-    } catch (_error) {
-      return false;
-    }
+    return true;
   }
 
   async userFollowsUser(

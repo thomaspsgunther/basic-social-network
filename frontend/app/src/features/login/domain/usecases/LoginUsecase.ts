@@ -1,5 +1,5 @@
-import { ILoginRepository } from '../repositories/LoginRepository';
 import { User } from '../../../shared/data/models/User';
+import { ILoginRepository } from '../repositories/LoginRepository';
 
 interface ILoginUsecase {
   registerUser(userData: Omit<User, 'id'>): Promise<string>;

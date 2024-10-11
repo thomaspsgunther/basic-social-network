@@ -1,7 +1,8 @@
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+
 import { User } from '../../../shared/data/models/User';
 import { UserRepositoryImpl } from '../../data/repositories/UserRepositoryImpl';
 import { UserUsecaseImpl } from '../../domain/usecases/UserUsecase';
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 const userRepository = new UserRepositoryImpl();
 const userUsecase = new UserUsecaseImpl(userRepository);

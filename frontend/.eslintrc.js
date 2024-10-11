@@ -11,6 +11,9 @@ module.exports = {
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
   ],
+  plugins: [
+    "simple-import-sort",
+  ],
   rules: {
     "react/react-in-jsx-scope": "off", // Not needed with React 17+
     "prettier/prettier": [
@@ -31,6 +34,8 @@ module.exports = {
         // "ignoreRestSiblings": true
       }
     ],
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error",
   },
   settings: {
     react: {

@@ -1,16 +1,17 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import * as SecureStore from 'expo-secure-store';
-import { User } from '../../features/shared/data/models/User';
-import { setAuthToken } from '../axios/axiosInstance';
-import { jwtDecode } from 'jwt-decode';
-import { DecodedToken } from '../../features/shared/data/models/DecodedToken';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/types';
+import * as SecureStore from 'expo-secure-store';
+import { jwtDecode } from 'jwt-decode';
+import React, { createContext, ReactNode, useEffect, useState } from 'react';
+
 import { LoginRepositoryImpl } from '../../features/login/data/repositories/LoginRepositoryImpl';
 import { LoginUsecaseImpl } from '../../features/login/domain/usecases/LoginUsecase';
+import { DecodedToken } from '../../features/shared/data/models/DecodedToken';
+import { User } from '../../features/shared/data/models/User';
 import { UserRepositoryImpl } from '../../features/users/data/repositories/UserRepositoryImpl';
 import { UserUsecaseImpl } from '../../features/users/domain/usecases/UserUsecase';
+import { setAuthToken } from '../axios/axiosInstance';
+import { RootStackParamList } from '../navigation/types';
 
 interface AuthContextType {
   token: string | null;
@@ -19,6 +20,7 @@ interface AuthContextType {
   register: (userData: Omit<User, 'id'>) => Promise<void>;
   login: (userData: Omit<User, 'id'>) => Promise<void>;
   logout: () => Promise<void>;
+  setAuthUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -130,23 +132,17 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const fetchUser = async (token: string) => {
-    try {
-      const decodedToken = decodeToken(token);
-      if (decodedToken != null) {
-        const userList: User[] = await userUsecase.getUsersById(
-          decodedToken.id,
-        );
+    const decodedToken = decodeToken(token);
+    if (decodedToken != null) {
+      const userList: User[] = await userUsecase.getUsersById(decodedToken.id);
 
-        if (!userList) {
-          throw new Error('user not found');
-        }
-
-        setAuthUser(userList[0]);
-      } else {
-        throw new Error('invalid token');
+      if (!userList) {
+        throw new Error('user not found');
       }
-    } catch (_error) {
-      throw new Error('failed to fetch user');
+
+      setAuthUser(userList[0]);
+    } else {
+      throw new Error('invalid token');
     }
   };
 
@@ -166,7 +162,15 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ token, authUser, isAuthenticated, register, login, logout }}
+      value={{
+        token,
+        authUser,
+        isAuthenticated,
+        register,
+        login,
+        logout,
+        setAuthUser,
+      }}
     >
       {children}
     </AuthContext.Provider>

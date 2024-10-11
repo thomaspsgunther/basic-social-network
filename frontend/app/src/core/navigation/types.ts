@@ -3,8 +3,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 // Define your stack navigator types
 export type RootStackParamList = {
   Login: undefined; // No parameters for login
-  Home: undefined; // Other screens
-  Profile: undefined;
+  //   Home: undefined; // Other screens
+  //   Profile: undefined;
   // Add more routes as necessary
 };
 

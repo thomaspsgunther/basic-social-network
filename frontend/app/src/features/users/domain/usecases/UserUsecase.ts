@@ -1,5 +1,5 @@
-import { IUserRepository } from '../repositories/UserRepository';
 import { User } from '../../../shared/data/models/User';
+import { IUserRepository } from '../repositories/UserRepository';
 
 interface IUserUsecase {
   getUsersById(idList: string): Promise<User[]>;

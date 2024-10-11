@@ -1,5 +1,5 @@
-import { ILoginRepository } from '../../domain/repositories/LoginRepository';
 import { User } from '../../../shared/data/models/User';
+import { ILoginRepository } from '../../domain/repositories/LoginRepository';
 import { loginApi } from '../api/loginApi';
 
 export class LoginRepositoryImpl implements ILoginRepository {

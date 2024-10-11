@@ -1,5 +1,5 @@
-import { User } from '../../../shared/data/models/User';
 import { axiosInstance } from '../../../../core/axios/axiosInstance';
+import { User } from '../../../shared/data/models/User';
 
 export const userApi = {
   get: async (idList: string) => {
