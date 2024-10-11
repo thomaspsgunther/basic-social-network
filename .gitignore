@@ -16,6 +16,7 @@ frontend/*.key
 frontend/*.mobileprovision
 frontend/*.orig.*
 frontend/web-build/
+frontend/.env
 
 # macOS
 frontend/.DS_Store

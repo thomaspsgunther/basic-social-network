@@ -76,12 +76,16 @@ func main() {
 	defer io.Close(nil)
 	socketio.ConnectionHandler(io)
 
+	// Define host and port to run on
+	host := os.Getenv("HTTP_HOST")
+	port := os.Getenv("HTTP_PORT")
+
 	// Routes setup
 	r := chi.NewRouter()
 	r.Use(auth.Middleware())
 	r.Handle("/socket.io/", io.ServeHandler(nil))
 	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
+		httpSwagger.URL(fmt.Sprintf("http://%s:%s/swagger/doc.json", host, port)),
 	))
 	r.HandleFunc("/api/v1/", rootFunc)
 	r.Mount("/api/v1/login", api.LoginHandler{Usecase: users.NewUserUsecase()}.Routes())
@@ -90,9 +94,6 @@ func main() {
 	r.Mount("/api/v1/comments", api.CommentHandler{Usecase: comments.NewCommentUsecase()}.Routes())
 
 	// Start the server api
-	host := os.Getenv("HTTP_HOST")
-	port := os.Getenv("HTTP_PORT")
-
 	logger.ServerLogger.Info(fmt.Sprintf("server running on http://%s:%s/api/v1/", host, port))
 	logger.ServerLogger.Info("--------------------------------------------------------------------")
 
