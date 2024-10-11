@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"time"
-	database "y_net/internal/database/postgres"
-	"y_net/internal/services/shared"
+	database "y-net/internal/database/postgres"
+	"y-net/internal/services/shared"
 
 	"github.com/google/uuid"
 )

@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"y_net/internal/logger"
-	"y_net/internal/utils"
+	"y-net/internal/logger"
+	"y-net/internal/utils"
 )
 
 type sqlMigration struct {

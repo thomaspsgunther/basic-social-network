@@ -1,4 +1,4 @@
-module y_net
+module y-net
 
 go 1.23.1
 

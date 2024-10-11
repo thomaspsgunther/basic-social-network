@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
-	"y_net/internal/utils"
+	"y-net/internal/utils"
 )
 
 var (

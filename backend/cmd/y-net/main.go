@@ -13,16 +13,16 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"github.com/zishang520/socket.io/v2/socket"
 
-	_ "y_net/docs"
-	"y_net/internal/api"
-	"y_net/internal/auth"
-	database "y_net/internal/database/postgres"
-	"y_net/internal/logger"
-	"y_net/internal/services/comments"
-	"y_net/internal/services/posts"
-	"y_net/internal/services/users"
-	"y_net/internal/socketio"
-	"y_net/internal/utils"
+	_ "y-net/docs"
+	"y-net/internal/api"
+	"y-net/internal/auth"
+	database "y-net/internal/database/postgres"
+	"y-net/internal/logger"
+	"y-net/internal/services/comments"
+	"y-net/internal/services/posts"
+	"y-net/internal/services/users"
+	"y-net/internal/socketio"
+	"y-net/internal/utils"
 )
 
 // @title        Y API

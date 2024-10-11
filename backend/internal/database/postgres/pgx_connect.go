@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"time"
-	"y_net/internal/logger"
+	"y-net/internal/logger"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

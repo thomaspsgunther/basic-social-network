@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"y_net/internal/logger"
-	"y_net/internal/services/shared"
-	"y_net/internal/services/users"
-	"y_net/pkg/jwt"
+	"y-net/internal/logger"
+	"y-net/internal/services/shared"
+	"y-net/internal/services/users"
+	"y-net/pkg/jwt"
 )
 
 var userCtxKey = &contextKey{"user"}

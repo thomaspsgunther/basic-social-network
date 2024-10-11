@@ -8,9 +8,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"y_net/internal/auth"
-	"y_net/internal/logger"
-	"y_net/internal/services/comments"
+	"y-net/internal/auth"
+	"y-net/internal/logger"
+	"y-net/internal/services/comments"
 )
 
 type CommentHandler struct {
@@ -168,7 +168,7 @@ func (h CommentHandler) GetCommentsFromPost(w http.ResponseWriter, r *http.Reque
 // @Failure      500
 // @Router       /comments/{id} [put]
 func (h CommentHandler) UpdateComment(w http.ResponseWriter, r *http.Request) {
-	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
+	logger.ServerLogger.Info(fmt.Sprintf("new request: put %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
 	if authUser == nil {

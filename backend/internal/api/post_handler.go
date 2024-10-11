@@ -12,10 +12,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"y_net/internal/auth"
-	"y_net/internal/logger"
-	"y_net/internal/services/posts"
-	"y_net/internal/services/shared"
+	"y-net/internal/auth"
+	"y-net/internal/logger"
+	"y-net/internal/services/posts"
+	"y-net/internal/services/shared"
 )
 
 type PostHandler struct {
@@ -484,7 +484,7 @@ func (h PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
 // @Failure     500
 // @Router      /posts/{id} [put]
 func (h PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
-	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
+	logger.ServerLogger.Info(fmt.Sprintf("new request: put %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
 	if authUser == nil {

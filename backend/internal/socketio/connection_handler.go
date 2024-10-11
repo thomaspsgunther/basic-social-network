@@ -5,8 +5,8 @@ import (
 
 	"github.com/zishang520/socket.io/v2/socket"
 
-	"y_net/internal/logger"
-	"y_net/pkg/jwt"
+	"y-net/internal/logger"
+	"y-net/pkg/jwt"
 )
 
 func ConnectionHandler(io *socket.Server) {

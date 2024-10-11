@@ -2,7 +2,7 @@ package socketio
 
 import (
 	"fmt"
-	"y_net/internal/logger"
+	"y-net/internal/logger"
 
 	"github.com/zishang520/socket.io/v2/socket"
 )

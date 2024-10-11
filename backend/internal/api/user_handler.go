@@ -10,10 +10,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"y_net/internal/auth"
-	"y_net/internal/logger"
-	"y_net/internal/services/shared"
-	"y_net/internal/services/users"
+	"y-net/internal/auth"
+	"y-net/internal/logger"
+	"y-net/internal/services/shared"
+	"y-net/internal/services/users"
 )
 
 type UserHandler struct {
@@ -535,7 +535,7 @@ func (h UserHandler) GetFollowed(w http.ResponseWriter, r *http.Request) {
 // @Failure     500
 // @Router      /users/{id} [put]
 func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
+	logger.ServerLogger.Info(fmt.Sprintf("new request: put %s", r.URL))
 
 	authUser := auth.ForContext(r.Context())
 	if authUser == nil {

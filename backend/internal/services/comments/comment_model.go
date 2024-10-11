@@ -2,7 +2,7 @@ package comments
 
 import (
 	"time"
-	"y_net/internal/services/shared"
+	"y-net/internal/services/shared"
 
 	"github.com/google/uuid"
 )

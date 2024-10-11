@@ -1,5 +1,5 @@
-import { axiosInstance } from '../../../shared/data/api/axiosInstance';
 import { User } from '../../../shared/data/models/User';
+import { axiosInstance } from '../../../../core/axios/axiosInstance';
 
 export const loginApi = {
   register: async (userData: Omit<User, 'id'>) => {

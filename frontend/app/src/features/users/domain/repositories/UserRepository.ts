@@ -5,9 +5,9 @@ export interface IUserRepository {
   getUsersBySearch(searchTerm: string): Promise<User[]>;
   updateUser(user: User): Promise<boolean>;
   deleteUser(id: string): Promise<boolean>;
-  //   follow(followerId: string, followedId: string): Promise<boolean>;
-  //   unfollow(followerId: string, followedId: string): Promise<boolean>;
-  //   userFollowsUser(followerId: string, followedId: string): Promise<boolean>;
-  //   getFollowers(id: string): Promise<User[]>;
-  //   getFollowed(id: string): Promise<User[]>;
+  followUser(followerId: string, followedId: string): Promise<boolean>;
+  unfollowUser(followerId: string, followedId: string): Promise<boolean>;
+  userFollowsUser(followerId: string, followedId: string): Promise<boolean>;
+  getUserFollowers(id: string): Promise<User[]>;
+  getUserFollowed(id: string): Promise<User[]>;
 }

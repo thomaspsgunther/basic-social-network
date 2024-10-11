@@ -36,4 +36,48 @@ export class UserRepositoryImpl implements IUserRepository {
       return false;
     }
   }
+
+  async followUser(followerId: string, followedId: string): Promise<boolean> {
+    try {
+      await userApi.follow(followerId, followedId);
+
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  async unfollowUser(followerId: string, followedId: string): Promise<boolean> {
+    try {
+      await userApi.unfollow(followerId, followedId);
+
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  async userFollowsUser(
+    followerId: string,
+    followedId: string,
+  ): Promise<boolean> {
+    const response = await userApi.userFollowsUser(followerId, followedId);
+    const follows: boolean = response.data;
+
+    return follows;
+  }
+
+  async getUserFollowers(id: string): Promise<User[]> {
+    const response = await userApi.getFollowers(id);
+    const users: User[] = response.data;
+
+    return users;
+  }
+
+  async getUserFollowed(id: string): Promise<User[]> {
+    const response = await userApi.getFollowed(id);
+    const users: User[] = response.data;
+
+    return users;
+  }
 }

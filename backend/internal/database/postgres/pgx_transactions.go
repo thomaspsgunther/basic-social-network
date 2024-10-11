@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
-	"y_net/internal/logger"
+	"y-net/internal/logger"
 
 	"github.com/jackc/pgx/v5"
 )

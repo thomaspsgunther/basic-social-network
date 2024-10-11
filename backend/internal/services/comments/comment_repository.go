@@ -3,7 +3,7 @@ package comments
 import (
 	"context"
 	"fmt"
-	database "y_net/internal/database/postgres"
+	database "y-net/internal/database/postgres"
 
 	"github.com/google/uuid"
 )

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 	"time"
-	"y_net/internal/services/shared"
+	"y-net/internal/services/shared"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
