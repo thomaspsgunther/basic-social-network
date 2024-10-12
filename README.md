@@ -22,7 +22,7 @@ For working with the frontend, you'll need [Node.js](https://nodejs.org).
 
 Remember to create a `.env` file based on `.env.example` and adjust it for your own environment.
 
-To run the frontend, first execute the command `npm install` to install the project's dependencies. Once that's done, make sure you have an android emulator installed and running, then execute the command `npx expo run:android` to run the project on the currently running emulator.
+To run the frontend, first execute the command `npm install` to install the project's dependencies. Once that's done, make sure you have an android emulator installed and running, then execute the command `npx expo start --android` to run the project on the currently running emulator.
 
 ## Português
 
@@ -46,4 +46,4 @@ Para trabalhar com o frontend, você precisará do [Node.js](https://nodejs.org)
 
 Lembre-se de criar um arquivo `.env` com base no `.env.example` e ajustá-lo para o seu próprio ambiente.
 
-Para executar o frontend, primeiro execute o comando `npm install` para instalar as dependências do projeto. Uma vez feito isso, certifique-se de que um emulador Android esteja instalado e em execução, então execute o comando `npx expo run:android` para rodar o projeto no emulador atualmente em execução.
+Para executar o frontend, primeiro execute o comando `npm install` para instalar as dependências do projeto. Uma vez feito isso, certifique-se de que um emulador Android esteja instalado e em execução, então execute o comando `npx expo start --android` para rodar o projeto no emulador atualmente em execução.
