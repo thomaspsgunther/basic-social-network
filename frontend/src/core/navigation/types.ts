@@ -1,11 +1,13 @@
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-// Define your stack navigator types
 export type RootStackParamList = {
-  Login: undefined; // No parameters for login
-  Home: undefined; // Other screens
-  //   Profile: undefined;
-  // Add more routes as necessary
+  Login: undefined;
+  Home: undefined;
+};
+
+export type HomeTabParamList = {
+  Feed: undefined;
 };
 
 export type LoginScreenNavigationProp = StackNavigationProp<
@@ -13,7 +15,7 @@ export type LoginScreenNavigationProp = StackNavigationProp<
   'Login'
 >;
 
-// If you have other navigators, you can define them here
-// export type OtherNavigatorProp = StackNavigationProp<OtherStackParamList, 'SomeScreen'>;
-
-// For now, you may just need the Login screen navigation prop
+export type FeedScreenNavigationProp = BottomTabNavigationProp<
+  HomeTabParamList,
+  'Feed'
+>;
