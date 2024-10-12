@@ -66,11 +66,7 @@ function MainNavigator() {
         screenOptions={{ headerShown: false }}
         initialRouteName={isAuthenticated ? 'Home' : 'Login'}
       >
-        <Stack.Screen
-          name="Home"
-          component={TabNavigator}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="Home" component={TabNavigator} />
         <Stack.Screen
           name="Login"
           component={LoginScreen}
