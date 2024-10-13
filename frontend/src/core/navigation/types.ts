@@ -1,13 +1,16 @@
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { StackNavigationProp } from '@react-navigation/stack';
 
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
-  Home: undefined;
+  Tabs: undefined;
 };
 
-export type HomeTabParamList = {
+export type TabParamList = {
+  FeedStack: undefined;
+};
+
+export type FeedStackParamList = {
   Feed: undefined;
 };
 
@@ -21,7 +24,7 @@ export type RegisterScreenNavigationProp = StackNavigationProp<
   'Register'
 >;
 
-export type FeedScreenNavigationProp = BottomTabNavigationProp<
-  HomeTabParamList,
+export type FeedScreenNavigationProp = StackNavigationProp<
+  FeedStackParamList,
   'Feed'
 >;

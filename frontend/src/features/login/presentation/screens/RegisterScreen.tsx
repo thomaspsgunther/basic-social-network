@@ -23,7 +23,7 @@ type Props = {
   route: RouteProp<RootStackParamList, 'Register'>;
 };
 
-const RegisterScreen: React.FC<Props> = ({ navigation }) => {
+export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -55,7 +55,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
       }
 
       register(userData);
-      navigation.navigate('Home');
+      navigation.navigate('Tabs');
     } else {
       console.log('display some alert I guess');
     }
@@ -239,5 +239,3 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
 });
-
-export default RegisterScreen;

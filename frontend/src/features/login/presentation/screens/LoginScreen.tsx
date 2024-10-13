@@ -20,7 +20,7 @@ type Props = {
   route: RouteProp<RootStackParamList, 'Login'>;
 };
 
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
+export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
@@ -38,7 +38,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         password: password,
       };
       login(userData);
-      navigation.navigate('Home');
+      navigation.navigate('Tabs');
     } else {
       console.log('display some alert I guess');
     }
@@ -125,5 +125,3 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
-
-export default LoginScreen;

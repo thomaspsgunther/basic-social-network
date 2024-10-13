@@ -9,20 +9,17 @@ import { Provider } from 'react-redux';
 
 import { AuthContext, AuthProvider } from './src/core/context/AuthContext';
 import { ThemeProvider } from './src/core/context/ThemeContext';
-import {
-  HomeTabParamList,
-  RootStackParamList,
-} from './src/core/navigation/types';
-import store from './src/core/redux/store';
-import LoginScreen from './src/features/login/presentation/screens/LoginScreen';
-import RegisterScreen from './src/features/login/presentation/screens/RegisterScreen';
-import FeedScreen from './src/features/shared/presentation/screens/FeedScreen';
-import LoadingScreen from './src/features/shared/presentation/screens/LoadingScreen';
+import { FeedStackNavigator } from './src/core/navigation/FeedStack';
+import { RootStackParamList, TabParamList } from './src/core/navigation/types';
+import { store } from './src/core/redux/store';
+import { LoginScreen } from './src/features/login/presentation/screens/LoginScreen';
+import { RegisterScreen } from './src/features/login/presentation/screens/RegisterScreen';
+import { LoadingScreen } from './src/features/shared/presentation/screens/LoadingScreen';
 
 const navigationRef =
   React.createRef<NavigationContainerRef<RootStackParamList>>();
 const Stack = createStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator<HomeTabParamList>();
+const Tab = createBottomTabNavigator<TabParamList>();
 
 const App: React.FC = () => {
   return (
@@ -51,11 +48,7 @@ function MainNavigator() {
   function TabNavigator() {
     return (
       <Tab.Navigator>
-        <Tab.Screen
-          name="Feed"
-          component={FeedScreen}
-          options={{ headerShown: false }}
-        />
+        <Tab.Screen name="FeedStack" component={FeedStackNavigator} />
       </Tab.Navigator>
     );
   }
@@ -64,9 +57,9 @@ function MainNavigator() {
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         screenOptions={{ headerShown: false }}
-        initialRouteName={isAuthenticated ? 'Home' : 'Login'}
+        initialRouteName={isAuthenticated ? 'Tabs' : 'Login'}
       >
-        <Stack.Screen name="Home" component={TabNavigator} />
+        <Stack.Screen name="Tabs" component={TabNavigator} />
         <Stack.Screen
           name="Login"
           component={LoginScreen}

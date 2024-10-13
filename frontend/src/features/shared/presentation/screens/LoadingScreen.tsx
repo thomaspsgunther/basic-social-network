@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-const LoadingScreen: React.FC = () => {
+export const LoadingScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Loading...</Text>
@@ -21,5 +21,3 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
 });
-
-export default LoadingScreen;
