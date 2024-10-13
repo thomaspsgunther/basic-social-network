@@ -9,7 +9,7 @@ import { Provider } from 'react-redux';
 
 import { AuthContext, AuthProvider } from './src/core/context/AuthContext';
 import { ThemeProvider } from './src/core/context/ThemeContext';
-import { FeedStackNavigator } from './src/core/navigation/FeedStack';
+import { FeedStack } from './src/core/navigation/FeedStack';
 import { RootStackParamList, TabParamList } from './src/core/navigation/types';
 import { store } from './src/core/redux/store';
 import { LoginScreen } from './src/features/login/presentation/screens/LoginScreen';
@@ -48,7 +48,11 @@ function MainNavigator() {
   function TabNavigator() {
     return (
       <Tab.Navigator>
-        <Tab.Screen name="FeedStack" component={FeedStackNavigator} />
+        <Tab.Screen
+          name="FeedStack"
+          component={FeedStack}
+          options={{ headerShown: false }}
+        />
       </Tab.Navigator>
     );
   }

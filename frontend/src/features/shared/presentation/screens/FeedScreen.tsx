@@ -1,18 +1,9 @@
-import { RouteProp } from '@react-navigation/native';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import {
-  FeedScreenNavigationProp,
-  FeedStackParamList,
-} from '@/src/core/navigation/types';
+import { FeedStackScreenProps } from '@/src/core/navigation/types';
 
-type Props = {
-  navigation: FeedScreenNavigationProp;
-  route: RouteProp<FeedStackParamList, 'Feed'>;
-};
-
-export const FeedScreen: React.FC<Props> = () => {
+export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Welcome to the Feed Screen!</Text>

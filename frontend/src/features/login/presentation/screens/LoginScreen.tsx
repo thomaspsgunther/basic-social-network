@@ -1,4 +1,3 @@
-import { RouteProp } from '@react-navigation/native';
 import React, { useContext, useState } from 'react';
 import {
   StyleSheet,
@@ -9,18 +8,12 @@ import {
 } from 'react-native';
 
 import { AuthContext } from '@/src/core/context/AuthContext';
-import {
-  LoginScreenNavigationProp,
-  RootStackParamList,
-} from '@/src/core/navigation/types';
+import { RootStackScreenProps } from '@/src/core/navigation/types';
 import { User } from '@/src/features/shared/data/models/User';
 
-type Props = {
-  navigation: LoginScreenNavigationProp;
-  route: RouteProp<RootStackParamList, 'Login'>;
-};
-
-export const LoginScreen: React.FC<Props> = ({ navigation }) => {
+export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
+  navigation,
+}) => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 

@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { RouteProp } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useContext, useState } from 'react';
 import {
@@ -12,18 +11,12 @@ import {
 } from 'react-native';
 
 import { AuthContext } from '@/src/core/context/AuthContext';
-import {
-  RegisterScreenNavigationProp,
-  RootStackParamList,
-} from '@/src/core/navigation/types';
+import { RootStackScreenProps } from '@/src/core/navigation/types';
 import { User } from '@/src/features/shared/data/models/User';
 
-type Props = {
-  navigation: RegisterScreenNavigationProp;
-  route: RouteProp<RootStackParamList, 'Register'>;
-};
-
-export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
+export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
+  navigation,
+}) => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
