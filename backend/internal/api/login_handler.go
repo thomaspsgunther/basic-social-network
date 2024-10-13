@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type LoginHandler struct {
@@ -53,6 +54,11 @@ func (h LoginHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	id, err := h.Usecase.Create(r.Context(), user)
 	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			if pgErr.Code == "23505" {
+				err = &users.UserAlreadyExistsError{}
+			}
+		}
 		logger.ServerLogger.Error(err.Error())
 
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -107,11 +113,6 @@ func (h LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			err = &users.WrongUsernameOrPasswordError{}
-
-			logger.ServerLogger.Warn(err.Error())
-
-			http.Error(w, err.Error(), http.StatusUnauthorized)
-			return
 		}
 		logger.ServerLogger.Error(err.Error())
 

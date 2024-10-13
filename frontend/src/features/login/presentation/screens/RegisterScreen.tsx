@@ -2,7 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useContext, useState } from 'react';
 import {
+  Alert,
   Image,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
@@ -17,6 +19,7 @@ import { User } from '@/src/features/shared/data/models/User';
 export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   navigation,
 }) => {
+  const [loading, setLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -24,33 +27,56 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   const [avatar, setAvatar] = useState<string | null>(null);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
 
+  const isDisabled = username.trim() === '' || password.trim() === '';
+
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('feedscreen must be used within an authprovider');
   }
 
-  const { register } = context;
+  const { register, logout } = context;
 
-  const handleRegister = () => {
-    if (username && password) {
-      const userData: Omit<User, 'id'> = {
-        username: username,
-        password: password,
-      };
-      if (email) {
-        userData.email = email;
-      }
-      if (fullName) {
-        userData.fullName = fullName;
-      }
-      if (avatar) {
-        userData.avatar = avatar;
-      }
+  const handleRegister = async () => {
+    setLoading(true);
+    Keyboard.dismiss();
+    try {
+      if (username && password) {
+        const userData: Omit<User, 'id'> = {
+          username: username,
+          password: password,
+        };
+        if (email) {
+          userData.email = email;
+        }
+        if (fullName) {
+          userData.fullName = fullName;
+        }
+        if (avatar) {
+          userData.avatar = avatar;
+        }
 
-      register(userData);
-      navigation.navigate('Tabs');
-    } else {
-      console.log('display some alert I guess');
+        await register(userData);
+        navigation.navigate('Tabs');
+      } else {
+        setLoading(false);
+        Alert.alert(
+          'Oops, algo deu errado',
+          'Nome de usuário e senha precisam estar preenchidos',
+        );
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setLoading(false);
+        logout();
+        if (error.message.trim() === 'user already exists') {
+          Alert.alert(
+            'Oops, algo deu errado',
+            'Esse nome de usuário já é utilizado',
+          );
+        } else {
+          Alert.alert('Oops, algo deu errado', 'Por favor, tente novamente');
+        }
+      }
     }
   };
 
@@ -151,15 +177,23 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
 
       <TextInput
         style={styles.input}
-        placeholder="Nome Completo (opcional)"
+        placeholder="Nome completo (opcional)"
         placeholderTextColor="#DDD"
         value={fullName}
         onChangeText={setFullName}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Cadastrar</Text>
-      </TouchableOpacity>
+      {!loading ? (
+        <TouchableOpacity
+          style={isDisabled ? styles.buttonDisabled : styles.button}
+          onPress={handleRegister}
+          disabled={isDisabled}
+        >
+          <Text style={styles.buttonText}>Cadastrar</Text>
+        </TouchableOpacity>
+      ) : (
+        <Text style={styles.buttonText}>Cadastrando...</Text>
+      )}
     </View>
   );
 };
@@ -195,6 +229,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginBottom: 20,
     width: '80%',
+  },
+  buttonDisabled: {
+    backgroundColor: 'gray' as string,
+    borderRadius: 5,
+    marginBottom: 15,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
   buttonText: {
     color: '#fff' as string,

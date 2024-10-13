@@ -51,7 +51,7 @@ func (r *userRepositoryImpl) create(ctx context.Context, user shared.User) (uuid
 		user.Username, user.Password, user.Email, user.FullName, user.Description, user.Avatar,
 	).Scan(&id)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("failed to insert user: %w", err)
+		return uuid.Nil, err
 	}
 
 	return id, nil

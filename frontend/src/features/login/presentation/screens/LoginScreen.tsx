@@ -1,5 +1,7 @@
 import React, { useContext, useState } from 'react';
 import {
+  Alert,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
@@ -14,26 +16,47 @@ import { User } from '@/src/features/shared/data/models/User';
 export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
   navigation,
 }) => {
+  const [loading, setLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+
+  const isDisabled = username.trim() === '' || password.trim() === '';
 
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('loginscreen must be used within an authprovider');
   }
 
-  const { login } = context;
+  const { login, logout } = context;
 
-  const handleLogin = () => {
-    if (username && password) {
-      const userData: Omit<User, 'id'> = {
-        username: username,
-        password: password,
-      };
-      login(userData);
-      navigation.navigate('Tabs');
-    } else {
-      console.log('display some alert I guess');
+  const handleLogin = async () => {
+    setLoading(true);
+    Keyboard.dismiss();
+    try {
+      if (username && password) {
+        const userData: Omit<User, 'id'> = {
+          username: username,
+          password: password,
+        };
+        await login(userData);
+        navigation.navigate('Tabs');
+      } else {
+        setLoading(false);
+        Alert.alert(
+          'Oops, algo deu errado',
+          'Usuário e senha precisam estar preenchidos',
+        );
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setLoading(false);
+        logout();
+        if (error.message.trim() === 'wrong username or password') {
+          Alert.alert('Oops, algo deu errado', 'Usuário ou senha incorretos');
+        } else {
+          Alert.alert('Oops, algo deu errado', 'Por favor, tente novamente');
+        }
+      }
     }
   };
 
@@ -62,16 +85,28 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Entrar</Text>
-      </TouchableOpacity>
+      {!loading ? (
+        <TouchableOpacity
+          style={isDisabled ? styles.buttonDisabled : styles.button}
+          onPress={handleLogin}
+          disabled={isDisabled}
+        >
+          <Text style={styles.buttonText}>Entrar</Text>
+        </TouchableOpacity>
+      ) : (
+        <Text style={styles.buttonText}>Entrando...</Text>
+      )}
 
-      <TouchableOpacity
-        style={styles.signUpButton}
-        onPress={handleSignUpRedirect}
-      >
-        <Text style={styles.signUpText}>Não é cadastrado? Cadastre-se!</Text>
-      </TouchableOpacity>
+      {!loading ? (
+        <TouchableOpacity
+          style={styles.signUpButton}
+          onPress={handleSignUpRedirect}
+        >
+          <Text style={styles.signUpText}>
+            Ainda não tem conta? Cadastre-se aqui!
+          </Text>
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 };
@@ -79,6 +114,13 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
 const styles = StyleSheet.create({
   button: {
     backgroundColor: '#8A2BE2' as string,
+    borderRadius: 5,
+    marginBottom: 15,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: 'gray' as string,
     borderRadius: 5,
     marginBottom: 15,
     paddingHorizontal: 20,

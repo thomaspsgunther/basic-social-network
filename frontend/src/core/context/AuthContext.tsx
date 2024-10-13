@@ -57,11 +57,11 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
               return;
             }
 
-            setToken(storedToken);
             setAuthToken(storedToken);
+            await fetchUser(storedToken);
+            setToken(storedToken);
             setRefreshTimerLogic(storedToken);
             setIsAuthenticated(true);
-            await fetchUser(storedToken);
           } else {
             logout();
           }
@@ -84,22 +84,22 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
 
   const register = async (userData: Omit<User, 'id'>) => {
     const newToken = await loginUsecase.registerUser(userData);
+    setAuthToken(newToken);
+    await fetchUser(newToken);
     await SecureStore.setItemAsync('token', newToken);
     setToken(newToken);
-    setAuthToken(newToken);
     setRefreshTimerLogic(newToken);
     setIsAuthenticated(true);
-    await fetchUser(newToken);
   };
 
   const login = async (userData: Omit<User, 'id'>) => {
     const newToken = await loginUsecase.loginUser(userData);
+    setAuthToken(newToken);
+    await fetchUser(newToken);
     await SecureStore.setItemAsync('token', newToken);
     setToken(newToken);
-    setAuthToken(newToken);
     setRefreshTimerLogic(newToken);
     setIsAuthenticated(true);
-    await fetchUser(newToken);
   };
 
   const refreshToken = async (token: string) => {
@@ -139,7 +139,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
     if (decodedToken != null) {
       const userList: User[] = await userUsecase.getUsersById(decodedToken.id);
 
-      if (!userList) {
+      if (!userList || userList.length === 0) {
         throw new Error('user not found');
       }
 

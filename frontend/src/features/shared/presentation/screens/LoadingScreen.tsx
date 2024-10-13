@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 export const LoadingScreen: React.FC = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Loading...</Text>
+      <Text style={styles.text}>Carregando...</Text>
     </View>
   );
 };
