@@ -362,7 +362,7 @@ func (h PostHandler) UserLikedPost(w http.ResponseWriter, r *http.Request) {
 // GetLikes         godoc
 // @Summary         Read a list of users who liked a post by: post_id
 // @Description     Read a list of users who liked a post by: post_id
-// @Tags            likes
+// @Tags            posts
 // @Produce         json
 // @Param           Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param           post_id path string true "Post ID" Format(uuid)

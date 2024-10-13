@@ -1,5 +1,5 @@
 import { RouteProp } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,24 +8,44 @@ import {
   View,
 } from 'react-native';
 
+import { AuthContext } from '@/src/core/context/AuthContext';
 import {
   LoginScreenNavigationProp,
   RootStackParamList,
 } from '@/src/core/navigation/types';
+import { User } from '@/src/features/shared/data/models/User';
 
 type Props = {
   navigation: LoginScreenNavigationProp;
   route: RouteProp<RootStackParamList, 'Login'>;
 };
 
-const LoginScreen: React.FC<Props> = () => {
+const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
-  const handleLogin = () => {};
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('loginscreen must be used within an authprovider');
+  }
+
+  const { login } = context;
+
+  const handleLogin = () => {
+    if (username && password) {
+      const userData: Omit<User, 'id'> = {
+        username: username,
+        password: password,
+      };
+      login(userData);
+      navigation.navigate('Home');
+    } else {
+      console.log('display some alert I guess');
+    }
+  };
 
   const handleSignUpRedirect = () => {
-    // Redirect to sign up screen
+    navigation.navigate('Register');
   };
 
   return (
@@ -34,7 +54,7 @@ const LoginScreen: React.FC<Props> = () => {
 
       <TextInput
         style={styles.input}
-        placeholder="Digite seu nome de usuário"
+        placeholder="Usuário"
         placeholderTextColor="#DDD"
         value={username}
         onChangeText={setUsername}
@@ -42,7 +62,7 @@ const LoginScreen: React.FC<Props> = () => {
 
       <TextInput
         style={styles.input}
-        placeholder="Digite sua senha"
+        placeholder="Senha"
         placeholderTextColor="#DDD"
         secureTextEntry={true}
         value={password}

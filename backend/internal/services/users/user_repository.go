@@ -74,14 +74,16 @@ func (r *userRepositoryImpl) get(ctx context.Context, idList []uuid.UUID) ([]sha
 	}()
 
 	var placeholders []string
-	for i := 0; i < len(idList); i++ {
-		placeholders = append(placeholders, fmt.Sprintf("$%d", len(idList)+1))
+	args := make([]interface{}, len(idList))
+	for i, id := range idList {
+		placeholders = append(placeholders, fmt.Sprintf("$%d", i+1))
+		args[i] = id
 	}
 
 	placeholdersClause := strings.Join(placeholders, ", ")
 	query := fmt.Sprintf("SELECT id, username, full_name, avatar FROM users WHERE id IN (%s)", placeholdersClause)
 
-	rows, err := tx.Query(ctx, query, idList)
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select users: %w", err)
 	}

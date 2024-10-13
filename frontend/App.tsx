@@ -15,6 +15,7 @@ import {
 } from './src/core/navigation/types';
 import store from './src/core/redux/store';
 import LoginScreen from './src/features/login/presentation/screens/LoginScreen';
+import RegisterScreen from './src/features/login/presentation/screens/RegisterScreen';
 import FeedScreen from './src/features/shared/presentation/screens/FeedScreen';
 import LoadingScreen from './src/features/shared/presentation/screens/LoadingScreen';
 
@@ -37,7 +38,6 @@ const App: React.FC = () => {
 
 function MainNavigator() {
   const context = useContext(AuthContext);
-
   if (!context) {
     throw new Error('mainnavigator must be used within an authprovider');
   }
@@ -70,6 +70,11 @@ function MainNavigator() {
         <Stack.Screen
           name="Login"
           component={LoginScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Register"
+          component={RegisterScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

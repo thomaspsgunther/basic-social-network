@@ -26,16 +26,13 @@ func (h UserHandler) Routes() chi.Router {
 	r.Get("/{id_list}", h.GetUsers)                                        // GET /api/v1/users/{id_list} - Read a list of users by: id_list
 	r.Get("/search/{search_term}", h.SearchUsers)                          // GET /api/v1/users/search/{search_term} - Read a list of users by: search_term
 	r.Get("/posts/{user_id}", h.ListPostsFromUser)                         // GET /api/v1/users/posts/{user_id}?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
+	r.Put("/{id}", h.UpdateUser)                                           // PUT /api/v1/users/{id} - Update a single user by: id
+	r.Delete("/{id}", h.DeleteUser)                                        // DELETE /api/v1/users/{id} - Delete a single user by: id
 	r.Post("/follow/{follower_id}_{followed_id}", h.Follow)                // POST /api/v1/users/follow/{follower_id}_{followed_id} - Follow a user by: id
 	r.Delete("/unfollow/{follower_id}_{followed_id}", h.Unfollow)          // DELETE /api/v1/users/unfollow/{follower_id}_{followed_id} - Unfollow a user by: id
 	r.Get("/checkfollower/{follower_id}_{followed_id}", h.UserFollowsUser) // GET /api/v1/users/checkfollower/{follower_id}_{followed_id} - Check if a user follows another user by: id
 	r.Get("/followers/{id}", h.GetFollowers)                               // GET /api/v1/users/followers/{id} - Read a list of who follows a user by: user_id
 	r.Get("/followed/{id}", h.GetFollowed)                                 // GET /api/v1/users/followed/{id} - Read a list of who a user follows by: user_id
-
-	r.Route("/{id}", func(r chi.Router) {
-		r.Put("/", h.UpdateUser)    // PUT /api/v1/users/{id} - Update a single user by: id
-		r.Delete("/", h.DeleteUser) // DELETE /api/v1/users/{id} - Delete a single user by: id
-	})
 
 	return r
 }
@@ -66,7 +63,7 @@ func (h UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	idListOG := chi.URLParam(r, "id_list")
-	idListStr := strings.Split(idListOG, ",")
+	idListStr := strings.Split(idListOG, "_")
 
 	var idList []uuid.UUID
 	for _, id := range idListStr {
@@ -223,6 +220,125 @@ func (h UserHandler) ListPostsFromUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
+}
+
+// UpdateUser   godoc
+// @Summary     Update a single user by: id
+// @Description Update a single user by: id
+// @Tags        users
+// @Accept      json
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       id path string true "User ID" Format(uuid)
+// @Param       body body shared.User true "User Object"
+// @Success     200
+// @Failure     400
+// @Failure     401
+// @Failure     403
+// @Failure     500
+// @Router      /users/{id} [put]
+func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	logger.ServerLogger.Info(fmt.Sprintf("new request: put %s", r.URL))
+
+	authUser := auth.ForContext(r.Context())
+	if authUser == nil {
+		err := fmt.Errorf("access denied")
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	id := chi.URLParam(r, "id")
+	userId, err := uuid.Parse(id)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return
+	}
+
+	if authUser.ID != userId {
+		err := fmt.Errorf("forbidden user update attempt from user: %v", authUser.ID)
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	var user shared.User
+	err = json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	err = h.Usecase.Update(r.Context(), user, userId)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// DeleteUser   godoc
+// @Summary     Delete a single user by: id
+// @Description Delete a single user by: id
+// @Tags        users
+// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param       id path string true "User ID" Format(uuid)
+// @Success     200
+// @Failure     400
+// @Failure     401
+// @Failure     403
+// @Failure     500
+// @Router      /users/{id} [delete]
+func (h UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	logger.ServerLogger.Info(fmt.Sprintf("new request: delete %s", r.URL))
+
+	authUser := auth.ForContext(r.Context())
+	if authUser == nil {
+		err := fmt.Errorf("access denied")
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	id := chi.URLParam(r, "id")
+	userId, err := uuid.Parse(id)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return
+	}
+
+	if authUser.ID != userId {
+		err := fmt.Errorf("forbidden user delete attempt from user: %v", authUser.ID)
+
+		logger.ServerLogger.Warn(err.Error())
+
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	err = h.Usecase.Delete(r.Context(), userId)
+	if err != nil {
+		logger.ServerLogger.Error(err.Error())
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 // Follow       godoc
@@ -518,123 +634,4 @@ func (h UserHandler) GetFollowed(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
-}
-
-// UpdateUser   godoc
-// @Summary     Update a single user by: id
-// @Description Update a single user by: id
-// @Tags        users
-// @Accept      json
-// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
-// @Param       id path string true "User ID" Format(uuid)
-// @Param       body body shared.User true "User Object"
-// @Success     200
-// @Failure     400
-// @Failure     401
-// @Failure     403
-// @Failure     500
-// @Router      /users/{id} [put]
-func (h UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	logger.ServerLogger.Info(fmt.Sprintf("new request: put %s", r.URL))
-
-	authUser := auth.ForContext(r.Context())
-	if authUser == nil {
-		err := fmt.Errorf("access denied")
-
-		logger.ServerLogger.Warn(err.Error())
-
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	id := chi.URLParam(r, "id")
-	userId, err := uuid.Parse(id)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, "invalid user id", http.StatusBadRequest)
-		return
-	}
-
-	if authUser.ID != userId {
-		err := fmt.Errorf("forbidden user update attempt from user: %v", authUser.ID)
-
-		logger.ServerLogger.Warn(err.Error())
-
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	var user shared.User
-	err = json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, "invalid request payload", http.StatusBadRequest)
-		return
-	}
-
-	err = h.Usecase.Update(r.Context(), user, userId)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
-// DeleteUser   godoc
-// @Summary     Delete a single user by: id
-// @Description Delete a single user by: id
-// @Tags        users
-// @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
-// @Param       id path string true "User ID" Format(uuid)
-// @Success     200
-// @Failure     400
-// @Failure     401
-// @Failure     403
-// @Failure     500
-// @Router      /users/{id} [delete]
-func (h UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	logger.ServerLogger.Info(fmt.Sprintf("new request: delete %s", r.URL))
-
-	authUser := auth.ForContext(r.Context())
-	if authUser == nil {
-		err := fmt.Errorf("access denied")
-
-		logger.ServerLogger.Warn(err.Error())
-
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	id := chi.URLParam(r, "id")
-	userId, err := uuid.Parse(id)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, "invalid user id", http.StatusBadRequest)
-		return
-	}
-
-	if authUser.ID != userId {
-		err := fmt.Errorf("forbidden user delete attempt from user: %v", authUser.ID)
-
-		logger.ServerLogger.Warn(err.Error())
-
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
-
-	err = h.Usecase.Delete(r.Context(), userId)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
 }

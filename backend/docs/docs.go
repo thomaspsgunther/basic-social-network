@@ -600,7 +600,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "likes"
+                    "posts"
                 ],
                 "summary": "Read a list of users who liked a post by: post_id",
                 "parameters": [

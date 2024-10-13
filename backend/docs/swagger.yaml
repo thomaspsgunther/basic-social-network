@@ -613,7 +613,7 @@ paths:
           description: Internal Server Error
       summary: 'Read a list of users who liked a post by: post_id'
       tags:
-      - likes
+      - posts
   /posts/likes/{user_id}_{post_id}:
     delete:
       description: 'Unlike a post by: id'

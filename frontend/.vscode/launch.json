@@ -5,8 +5,7 @@
       "request": "launch",
       "name": "Run Expo Android",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["expo", "start"],
-      "args": ["--android"],
+      "runtimeArgs": ["expo", "run:android"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     }
