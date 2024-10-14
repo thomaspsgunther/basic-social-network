@@ -78,7 +78,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
 
       <TextInput
         style={styles.input}
-        placeholder="Usuário"
+        placeholder="Nome de usuário"
         placeholderTextColor="#DDD"
         value={username}
         onChangeText={setUsername}
@@ -86,7 +86,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
 
       <View style={styles.passwordContainer}>
         <TextInput
-          style={styles.input}
+          style={styles.inputPassword}
           placeholder="Senha"
           placeholderTextColor="#DDD"
           secureTextEntry={!isPasswordVisible}
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#8A2BE2' as string,
     borderRadius: 5,
-    marginBottom: 20,
+    marginBottom: 30,
     marginTop: 10,
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     backgroundColor: 'gray' as string,
     borderRadius: 5,
-    marginBottom: 20,
+    marginBottom: 30,
     marginTop: 10,
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -160,15 +160,20 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   icon: {
-    marginBottom: 15,
     marginLeft: 12,
   },
   input: {
+    backgroundColor: '#250a4e' as string,
     borderColor: '#9b59b6' as string,
     borderRadius: 5,
     borderWidth: 1,
     color: '#fff' as string,
     marginBottom: 20,
+    padding: 10,
+    width: '85%',
+  },
+  inputPassword: {
+    color: '#fff' as string,
     padding: 10,
     width: '85%',
   },
@@ -180,7 +185,12 @@ const styles = StyleSheet.create({
   },
   passwordContainer: {
     alignItems: 'center',
+    backgroundColor: '#250a4e' as string,
+    borderColor: '#9b59b6' as string,
+    borderRadius: 5,
+    borderWidth: 1,
     flexDirection: 'row',
+    marginBottom: 20,
     width: '85%',
   },
   signUpButton: {
@@ -188,7 +198,7 @@ const styles = StyleSheet.create({
   },
   signUpText: {
     color: '#dda0dd' as string,
-    fontSize: 16,
+    fontSize: 18,
     textDecorationLine: 'underline',
   },
 });

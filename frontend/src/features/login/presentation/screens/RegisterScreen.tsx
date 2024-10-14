@@ -48,6 +48,14 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
           username: username,
           password: password,
         };
+        if (email && !isValidEmail(email)) {
+          setLoading(false);
+          Alert.alert(
+            'Oops, algo deu errado',
+            'Por favor, insira um email válido',
+          );
+          return;
+        }
         if (email) {
           userData.email = email;
         }
@@ -86,6 +94,11 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
         }
       }
     }
+  };
+
+  const isValidEmail = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
   };
 
   const selectImageFromLibrary = async () => {
@@ -190,7 +203,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
 
       <View style={styles.passwordContainer}>
         <TextInput
-          style={styles.input}
+          style={styles.inputPassword}
           placeholder="Senha"
           placeholderTextColor="#DDD"
           secureTextEntry={!isPasswordVisible}
@@ -300,7 +313,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   icon: {
-    marginBottom: 15,
     marginLeft: 12,
   },
   iconButton: {
@@ -313,11 +325,17 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   input: {
+    backgroundColor: '#250a4e' as string,
     borderColor: '#9b59b6' as string,
     borderRadius: 5,
     borderWidth: 1,
     color: '#fff' as string,
     marginBottom: 20,
+    padding: 10,
+    width: '85%',
+  },
+  inputPassword: {
+    color: '#fff' as string,
     padding: 10,
     width: '85%',
   },
@@ -329,7 +347,12 @@ const styles = StyleSheet.create({
   },
   passwordContainer: {
     alignItems: 'center',
+    backgroundColor: '#250a4e' as string,
+    borderColor: '#9b59b6' as string,
+    borderRadius: 5,
+    borderWidth: 1,
     flexDirection: 'row',
+    marginBottom: 20,
     width: '85%',
   },
   trashIconContainer: {

@@ -1,10 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
+
+import splash from '../../../../../assets/images/splash.png';
 
 export const LoadingScreen: React.FC = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Carregando...</Text>
+      <Image source={splash} style={styles.image}></Image>
     </View>
   );
 };
@@ -16,8 +18,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  text: {
-    color: '#fff' as string,
-    fontSize: 24,
+  image: {
+    resizeMode: 'center',
   },
 });
