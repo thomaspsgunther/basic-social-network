@@ -20,18 +20,19 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   navigation,
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [username, setUsername] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [fullName, setFullName] = useState<string>('');
   const [avatar, setAvatar] = useState<string | null>(null);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>('');
+  const [fullName, setFullName] = useState<string>('');
 
   const isDisabled = username.trim() === '' || password.trim() === '';
 
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('feedscreen must be used within an authprovider');
+    throw new Error('registerscreen must be used within an authprovider');
   }
 
   const { register, logout } = context;
@@ -83,9 +84,11 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   const selectImageFromLibrary = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
-
     if (permissionResult.granted === false) {
-      alert('permission to access camera roll is required!');
+      Alert.alert(
+        'Oops, algo deu errado',
+        'O aplicativo precisa de permissão para acessar a galeria',
+      );
       return;
     }
 
@@ -96,18 +99,19 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
     });
 
     if (!result.canceled) {
-      const base64String = result.assets[0].base64;
-      const imageType = result.assets[0].type || 'image/jpeg';
-      setAvatar(base64String || null);
-      setAvatarUri(`data:${imageType};base64,${base64String}`);
+      const { base64, type } = result.assets[0];
+      setAvatar(base64 || null);
+      setAvatarUri(`data:${type};base64,${base64}`);
     }
   };
 
   const takePhoto = async () => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-
     if (permissionResult.granted === false) {
-      alert('permission to access the camera is required!');
+      Alert.alert(
+        'Oops, algo deu errado',
+        'O aplicativo precisa de permissão para acessar a câmera',
+      );
       return;
     }
 
@@ -117,24 +121,43 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
     });
 
     if (!result.canceled) {
-      const base64String = result.assets[0].base64;
-      const imageType = result.assets[0].type || 'image/jpeg';
-      setAvatar(base64String || null);
-      setAvatarUri(`data:${imageType};base64,${base64String}`);
+      const { base64, type } = result.assets[0];
+      setAvatar(base64 || null);
+      setAvatarUri(`data:${type};base64,${base64}`);
     }
+  };
+
+  const clearAvatar = () => {
+    setAvatar(null);
+    setAvatarUri(null);
   };
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.backButton}
+      >
+        <Ionicons name="arrow-back" size={34} color="#fff" />
+      </TouchableOpacity>
+
       <Text style={styles.logo}>y</Text>
 
-      <TouchableOpacity onPress={takePhoto}>
+      <TouchableOpacity onPress={takePhoto} style={styles.avatarContainer}>
         {avatarUri ? (
           <Image source={{ uri: avatarUri }} style={styles.avatar} />
         ) : (
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.avatarPlaceholderText}>Tire uma foto!</Text>
           </View>
+        )}
+        {avatarUri && (
+          <TouchableOpacity
+            onPress={clearAvatar}
+            style={styles.trashIconContainer}
+          >
+            <Ionicons name="trash" size={24} color="red" />
+          </TouchableOpacity>
         )}
       </TouchableOpacity>
 
@@ -158,14 +181,26 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
         onChangeText={setUsername}
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        placeholderTextColor="#DDD"
-        secureTextEntry={true}
-        value={password}
-        onChangeText={setPassword}
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Senha"
+          placeholderTextColor="#DDD"
+          secureTextEntry={!isPasswordVisible}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TouchableOpacity
+          onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+        >
+          <Ionicons
+            name={isPasswordVisible ? 'eye-off' : 'eye'}
+            size={26}
+            color="#ddd"
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+      </View>
 
       <TextInput
         style={styles.input}
@@ -200,29 +235,37 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
 
 const styles = StyleSheet.create({
   avatar: {
-    borderRadius: 50,
-    height: 100,
+    borderRadius: 100,
+    height: 140,
+    width: 140,
+  },
+  avatarContainer: {
     marginBottom: 20,
-    width: 100,
+    position: 'relative',
   },
   avatarPlaceholder: {
     alignItems: 'center',
     backgroundColor: '#ccc' as string,
-    borderRadius: 50,
-    height: 100,
+    borderRadius: 100,
+    height: 140,
     justifyContent: 'center',
-    marginBottom: 20,
-    width: 100,
+    width: 140,
   },
   avatarPlaceholderText: {
     color: '#777' as string,
   },
+  backButton: {
+    left: 20,
+    position: 'absolute',
+    top: 40,
+    zIndex: 1,
+  },
   button: {
     backgroundColor: '#8A2BE2' as string,
     borderRadius: 5,
-    marginBottom: 15,
+    marginTop: 10,
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 12,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -233,13 +276,13 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     backgroundColor: 'gray' as string,
     borderRadius: 5,
-    marginBottom: 15,
+    marginTop: 10,
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 12,
   },
   buttonText: {
     color: '#fff' as string,
-    fontSize: 18,
+    fontSize: 20,
     textAlign: 'center',
   },
   container: {
@@ -247,6 +290,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#310d6b' as string,
     flex: 1,
     justifyContent: 'center',
+    padding: 20,
+  },
+  icon: {
+    marginBottom: 15,
+    marginLeft: 12,
   },
   iconButton: {
     alignItems: 'center',
@@ -254,7 +302,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     flex: 1,
     justifyContent: 'center',
-    margin: 10,
+    margin: 5,
     padding: 10,
   },
   input: {
@@ -264,12 +312,25 @@ const styles = StyleSheet.create({
     color: '#fff' as string,
     marginBottom: 20,
     padding: 10,
-    width: '80%',
+    width: '85%',
   },
   logo: {
     color: '#fff' as string,
-    fontSize: 32,
+    fontSize: 50,
     fontWeight: 'bold',
-    marginBottom: 40,
+    marginBottom: 50,
+  },
+  passwordContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    width: '85%',
+  },
+  trashIconContainer: {
+    backgroundColor: 'white' as string,
+    borderRadius: 15,
+    padding: 5,
+    position: 'absolute',
+    right: 5,
+    top: 5,
   },
 });
