@@ -1,4 +1,7 @@
-import { NavigationContainerRef } from '@react-navigation/native';
+import {
+  CommonActions,
+  NavigationContainerRef,
+} from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
 import React, { createContext, ReactNode, useEffect, useState } from 'react';
@@ -111,7 +114,12 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
       setIsAuthenticated(true);
     } catch (_error) {
       logout();
-      navigationRef.current?.navigate('Login');
+      navigationRef.current?.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        }),
+      );
     }
   };
 

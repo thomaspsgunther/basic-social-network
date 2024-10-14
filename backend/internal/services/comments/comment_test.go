@@ -27,7 +27,7 @@ func TestCreateComment(t *testing.T) {
 
 	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{User: &user, PostID: postId, Description: "This is a comment."}
+	comment := Comment{User: &user, PostID: postId, Message: "This is a comment."}
 
 	id, err := ts.usecase.Create(context.Background(), comment)
 	assert.NoError(t, err)
@@ -37,7 +37,7 @@ func TestCreateComment(t *testing.T) {
 func TestCreateCommentEmptyUserAndNilPostID(t *testing.T) {
 	ts := setup()
 
-	comment := Comment{User: &shared.User{}, PostID: uuid.Nil, Description: "This is a comment."}
+	comment := Comment{User: &shared.User{}, PostID: uuid.Nil, Message: "This is a comment."}
 
 	id, err := ts.usecase.Create(context.Background(), comment)
 	assert.Error(t, err)
@@ -49,7 +49,7 @@ func TestCreateCommentEmptyDescription(t *testing.T) {
 
 	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{User: &user, PostID: postId, Description: ""}
+	comment := Comment{User: &user, PostID: postId, Message: ""}
 
 	id, err := ts.usecase.Create(context.Background(), comment)
 	assert.Error(t, err)
@@ -61,22 +61,22 @@ func TestUpdateComment(t *testing.T) {
 
 	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{User: &user, PostID: postId, Description: "This is a comment."}
+	comment := Comment{User: &user, PostID: postId, Message: "This is a comment."}
 	id, _ := ts.usecase.Create(context.Background(), comment)
 
-	comment.Description = "Updated comment."
+	comment.Message = "Updated comment."
 	err := ts.usecase.Update(context.Background(), comment, id)
 	assert.NoError(t, err)
 
 	updatedComment, err := ts.usecase.Get(context.Background(), id)
 	assert.NoError(t, err)
-	assert.Equal(t, "Updated comment.", updatedComment.Description)
+	assert.Equal(t, "Updated comment.", updatedComment.Message)
 }
 
 func TestUpdateCommentNotFound(t *testing.T) {
 	ts := setup()
 
-	comment := Comment{Description: "This is a comment."}
+	comment := Comment{Message: "This is a comment."}
 	id := uuid.New()
 
 	err := ts.usecase.Update(context.Background(), comment, id)
@@ -89,7 +89,7 @@ func TestLikeComment(t *testing.T) {
 
 	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{User: &user, PostID: postId, Description: "This is a comment."}
+	comment := Comment{User: &user, PostID: postId, Message: "This is a comment."}
 	id, _ := ts.usecase.Create(context.Background(), comment)
 
 	err := ts.usecase.Like(context.Background(), id)
@@ -115,7 +115,7 @@ func TestUnlikeComment(t *testing.T) {
 
 	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{User: &user, PostID: postId, Description: "This is a comment."}
+	comment := Comment{User: &user, PostID: postId, Message: "This is a comment."}
 	id, _ := ts.usecase.Create(context.Background(), comment)
 
 	_ = ts.usecase.Like(context.Background(), id)
@@ -142,7 +142,7 @@ func TestDeleteComment(t *testing.T) {
 
 	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{User: &user, PostID: postId, Description: "This is a comment."}
+	comment := Comment{User: &user, PostID: postId, Message: "This is a comment."}
 	id, _ := ts.usecase.Create(context.Background(), comment)
 
 	err := ts.usecase.Delete(context.Background(), id)
@@ -167,8 +167,8 @@ func TestGetFromPost(t *testing.T) {
 	ts := setup()
 
 	postID := uuid.New()
-	comment1 := Comment{Description: "First comment", PostID: postID}
-	comment2 := Comment{Description: "Second comment", PostID: postID}
+	comment1 := Comment{Message: "First comment", PostID: postID}
+	comment2 := Comment{Message: "Second comment", PostID: postID}
 	_, _ = ts.usecase.Create(context.Background(), comment1)
 	_, _ = ts.usecase.Create(context.Background(), comment2)
 
@@ -182,12 +182,12 @@ func TestGetComment(t *testing.T) {
 
 	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
-	comment := Comment{User: &user, PostID: postId, Description: "This is a comment."}
+	comment := Comment{User: &user, PostID: postId, Message: "This is a comment."}
 	id, _ := ts.usecase.Create(context.Background(), comment)
 
 	retrievedComment, err := ts.usecase.Get(context.Background(), id)
 	assert.NoError(t, err)
-	assert.Equal(t, comment.Description, retrievedComment.Description)
+	assert.Equal(t, comment.Message, retrievedComment.Message)
 }
 
 func TestGetCommentNotFound(t *testing.T) {

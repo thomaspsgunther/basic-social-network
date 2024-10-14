@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
+import { CommonActions } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useContext, useState } from 'react';
 import {
   Alert,
   Image,
   Keyboard,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -57,7 +59,12 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
         }
 
         await register(userData);
-        navigation.navigate('Tabs');
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'Tabs' }],
+          }),
+        );
       } else {
         setLoading(false);
         Alert.alert(
@@ -133,7 +140,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         style={styles.backButton}
@@ -229,7 +236,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
       ) : (
         <Text style={styles.buttonText}>Cadastrando...</Text>
       )}
-    </View>
+    </ScrollView>
   );
 };
 
@@ -318,7 +325,7 @@ const styles = StyleSheet.create({
     color: '#fff' as string,
     fontSize: 50,
     fontWeight: 'bold',
-    marginBottom: 50,
+    marginBottom: 30,
   },
   passwordContainer: {
     alignItems: 'center',

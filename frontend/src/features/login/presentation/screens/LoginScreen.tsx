@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { CommonActions } from '@react-navigation/native';
 import React, { useContext, useState } from 'react';
 import {
   Alert,
@@ -41,7 +42,12 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
           password: password,
         };
         await login(userData);
-        navigation.navigate('Tabs');
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'Tabs' }],
+          }),
+        );
       } else {
         setLoading(false);
         Alert.alert(
@@ -168,7 +174,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     color: '#fff' as string,
-    fontSize: 50,
+    fontSize: 100,
     fontWeight: 'bold',
     marginBottom: 50,
   },

@@ -68,6 +68,9 @@ func (u *postUsecaseImpl) GetPost(ctx context.Context, id uuid.UUID) (shared.Pos
 }
 
 func (u *postUsecaseImpl) Update(ctx context.Context, post shared.Post, id uuid.UUID) error {
+	if (post.User == &shared.User{}) {
+		return fmt.Errorf("user must not be empty")
+	}
 	if post.Image == "" {
 		return fmt.Errorf("post image must not be empty")
 	}

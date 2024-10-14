@@ -1398,14 +1398,14 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "description": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
                 "likeCount": {
                     "type": "integer"
+                },
+                "message": {
+                    "type": "string"
                 },
                 "postId": {
                     "type": "string"

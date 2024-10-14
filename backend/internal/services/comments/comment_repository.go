@@ -39,8 +39,8 @@ func (r *commentRepositoryImpl) create(ctx context.Context, comment Comment) (uu
 	var id uuid.UUID
 	err = tx.QueryRow(
 		ctx,
-		"INSERT INTO comments (user_id, post_id, description) VALUES ($1, $2, $3) RETURNING id",
-		comment.User.ID, comment.PostID, comment.Description,
+		"INSERT INTO comments (user_id, post_id, message) VALUES ($1, $2, $3) RETURNING id",
+		comment.User.ID, comment.PostID, comment.Message,
 	).Scan(&id)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to insert comment: %w", err)
@@ -66,7 +66,7 @@ func (r *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUI
 	}()
 
 	query := `
-		SELECT c.id, c.user_id, u.username, u.avatar, c.image, c.description, c.like_count, c.created_at
+		SELECT c.id, c.user_id, u.username, u.avatar, c.image, c.message, c.like_count, c.created_at
 		FROM comments c
 		INNER JOIN users u ON c.user_id = u.id
 		WHERE post_id = $1
@@ -82,7 +82,7 @@ func (r *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUI
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
-		err := rows.Scan(&comment.ID, &comment.User.ID, &comment.User.Username, &comment.User.Avatar, &comment.Description, &comment.LikeCount, &comment.CreatedAt)
+		err := rows.Scan(&comment.ID, &comment.User.ID, &comment.User.Username, &comment.User.Avatar, &comment.Message, &comment.LikeCount, &comment.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan comment: %w", err)
 		}
@@ -141,8 +141,8 @@ func (r *commentRepositoryImpl) update(ctx context.Context, comment Comment, id 
 
 	_, err = tx.Exec(
 		ctx,
-		"UPDATE comments SET description = $1 WHERE id = $1",
-		comment.Description, id,
+		"UPDATE comments SET message = $1 WHERE id = $1",
+		comment.Message, id,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to update comment: %w", err)

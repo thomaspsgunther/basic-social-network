@@ -12,10 +12,10 @@ type Comments struct {
 }
 
 type Comment struct {
-	ID          uuid.UUID    `json:"id"`
-	User        *shared.User `json:"user"`
-	PostID      uuid.UUID    `json:"postId"`
-	Description string       `json:"description"`
-	LikeCount   int          `json:"likeCount"`
-	CreatedAt   time.Time    `json:"createdAt"`
+	ID        uuid.UUID    `json:"id"`
+	User      *shared.User `json:"user"`
+	PostID    uuid.UUID    `json:"postId"`
+	Message   string       `json:"message"`
+	LikeCount int          `json:"likeCount"`
+	CreatedAt time.Time    `json:"createdAt"`
 }

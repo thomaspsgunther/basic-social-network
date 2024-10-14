@@ -37,7 +37,7 @@ func (u *commentUsecaseImpl) Create(ctx context.Context, comment Comment) (uuid.
 	if comment.PostID == uuid.Nil {
 		return uuid.Nil, fmt.Errorf("postid must not be empty")
 	}
-	if comment.Description == "" {
+	if comment.Message == "" {
 		return uuid.Nil, fmt.Errorf("comment text must not be empty")
 	}
 
@@ -68,6 +68,16 @@ func (u *commentUsecaseImpl) Get(ctx context.Context, id uuid.UUID) (Comment, er
 }
 
 func (u *commentUsecaseImpl) Update(ctx context.Context, comment Comment, id uuid.UUID) error {
+	if (comment.User == &shared.User{}) {
+		return fmt.Errorf("user must not be empty")
+	}
+	if comment.PostID == uuid.Nil {
+		return fmt.Errorf("postid must not be empty")
+	}
+	if comment.Message == "" {
+		return fmt.Errorf("comment text must not be empty")
+	}
+
 	err := u.repository.update(ctx, comment, id)
 	if err != nil {
 		return err
