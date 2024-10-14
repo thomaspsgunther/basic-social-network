@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons'; // Import Ionicons
+import { Ionicons } from '@expo/vector-icons';
 import React, { useContext, useState } from 'react';
 import {
   Alert,
