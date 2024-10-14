@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 	"y-net/internal/logger"
 
@@ -33,8 +34,14 @@ func PgxClose() {
 }
 
 func postgresConfig() (*pgxpool.Config, error) {
-	const defaultMaxConns = int32(100)
-	const defaultMinConns = int32(30)
+	defaultMaxConns, err := strconv.ParseInt(os.Getenv("PG_CONN_MAX"), 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create a pgxpool config: %w", err)
+	}
+	defaultMinConns, err := strconv.ParseInt(os.Getenv("PG_CONN_MIN"), 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create a pgxpool config: %w", err)
+	}
 	const defaultMaxConnLifetime = time.Hour
 	const defaultMaxConnIdleTime = time.Minute * 30
 	const defaultHealthCheckPeriod = time.Minute
@@ -51,11 +58,11 @@ func postgresConfig() (*pgxpool.Config, error) {
 
 	dbConfig, err := pgxpool.ParseConfig(databaseConn)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create a pgxpool config, error: %w", err)
+		return nil, fmt.Errorf("failed to create a pgxpool config: %w", err)
 	}
 
-	dbConfig.MaxConns = defaultMaxConns
-	dbConfig.MinConns = defaultMinConns
+	dbConfig.MaxConns = int32(defaultMaxConns)
+	dbConfig.MinConns = int32(defaultMinConns)
 	dbConfig.MaxConnLifetime = defaultMaxConnLifetime
 	dbConfig.MaxConnIdleTime = defaultMaxConnIdleTime
 	dbConfig.HealthCheckPeriod = defaultHealthCheckPeriod
