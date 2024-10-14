@@ -52,7 +52,7 @@ func InitLogger(rotationFrequency string) error {
 	}
 
 	// Prepare the initial log file name with date, hour, and minute
-	initialLogFileName := fmt.Sprintf("server-%s.log", time.Now().Format("2006-01-02_15-04"))
+	initialLogFileName := fmt.Sprintf("server_%s.log", time.Now().Format("2006-01-02_15-04"))
 	currentLogFileName = initialLogFileName
 	initialLogFilePath := filepath.Join(logDir, initialLogFileName)
 
@@ -122,7 +122,7 @@ func rotateLogFile() error {
 	}
 
 	// Prepare the new log file name with the current timestamp
-	newLogFileName := fmt.Sprintf("server-%s.log", time.Now().Format("2006-01-02_15-04"))
+	newLogFileName := fmt.Sprintf("server_%s.log", time.Now().Format("2006-01-02_15-04"))
 	newLogFilePath := filepath.Join(logDir, newLogFileName)
 
 	// Create a new log file with the timestamp
