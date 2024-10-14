@@ -36,7 +36,7 @@ Tudo em `backend/internal/database/postgres/migrations/000001_init.sql` precisa 
 
 Lembre-se de criar um arquivo `.env` com base no `.env.example` e ajustá-lo para o seu próprio ambiente.
 
-Para executar o backend, primeiro execute o comando `go mod tidy` para garantir que você tenha as dependências do projeto instaladas e prontas para uso, em seguida, execute o comando `go run ./cmd/y-net/main.g`.
+Para executar o backend, primeiro execute o comando `go mod tidy` para garantir que você tenha as dependências do projeto instaladas e prontas para uso, em seguida, execute o comando `go run ./cmd/y-net/main.go`.
 
 A documentação está disponível através do Swagger. Acesse `host:port/swagger/index.html` para visualizá-la.
 
