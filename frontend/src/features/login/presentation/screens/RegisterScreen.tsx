@@ -275,9 +275,9 @@ const styles = StyleSheet.create({
     color: '#777' as string,
   },
   backButton: {
-    left: 20,
+    left: 15,
     position: 'absolute',
-    top: 40,
+    top: 35,
     zIndex: 1,
   },
   button: {

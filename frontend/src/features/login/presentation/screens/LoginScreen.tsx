@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { CommonActions } from '@react-navigation/native';
+import Constants from 'expo-constants';
 import React, { useContext, useState } from 'react';
 import {
   Alert,
@@ -127,6 +128,8 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
           </Text>
         </TouchableOpacity>
       ) : null}
+
+      <Text style={styles.versionText}>v{Constants.expoConfig?.version}</Text>
     </View>
   );
 };
@@ -200,5 +203,12 @@ const styles = StyleSheet.create({
     color: '#dda0dd' as string,
     fontSize: 18,
     textDecorationLine: 'underline',
+  },
+  versionText: {
+    bottom: 15,
+    color: '#fff' as string,
+    fontSize: 14,
+    position: 'absolute',
+    right: 20,
   },
 });
