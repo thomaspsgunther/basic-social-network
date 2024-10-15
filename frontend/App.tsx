@@ -9,7 +9,7 @@ import { Provider } from 'react-redux';
 
 import { AuthContext, AuthProvider } from './src/core/context/AuthContext';
 import { ThemeProvider } from './src/core/context/ThemeContext';
-import ErrorAlert from './src/core/errors/ErrorAlert';
+import { ErrorAlert } from './src/core/errors/ErrorAlert';
 import { FeedStack } from './src/core/navigation/FeedStack';
 import { RootStackParamList, TabParamList } from './src/core/navigation/types';
 import { store } from './src/core/redux/store';

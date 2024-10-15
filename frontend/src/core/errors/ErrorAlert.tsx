@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { clearError } from './errorsSlice';
 
-const ErrorAlert: React.FC = () => {
+export const ErrorAlert: React.FC = () => {
   const error = useSelector((state: RootState) => state.errors);
   const dispatch = useDispatch();
 
@@ -19,5 +19,3 @@ const ErrorAlert: React.FC = () => {
 
   return null;
 };
-
-export default ErrorAlert;
