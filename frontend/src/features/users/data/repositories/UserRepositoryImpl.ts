@@ -47,7 +47,7 @@ export class UserRepositoryImpl implements IUserRepository {
     followedId: string,
   ): Promise<boolean> {
     const response = await userApi.userFollowsUser(followerId, followedId);
-    const follows: boolean = response.data;
+    const follows: boolean = response.data.follows;
 
     return follows;
   }
