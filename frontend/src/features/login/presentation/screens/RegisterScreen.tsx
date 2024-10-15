@@ -3,6 +3,7 @@ import { CommonActions } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useContext, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Keyboard,
@@ -247,7 +248,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
           <Text style={styles.buttonText}>Cadastrar</Text>
         </TouchableOpacity>
       ) : (
-        <Text style={styles.buttonText}>Cadastrando...</Text>
+        <ActivityIndicator size="large" color="#FFFFFF" />
       )}
     </ScrollView>
   );

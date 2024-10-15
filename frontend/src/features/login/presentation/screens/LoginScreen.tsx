@@ -3,6 +3,7 @@ import { CommonActions } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import React, { useContext, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Keyboard,
   StyleSheet,
@@ -115,7 +116,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
           <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
       ) : (
-        <Text style={styles.buttonText}>Entrando...</Text>
+        <ActivityIndicator size="large" color="#FFFFFF" />
       )}
 
       {!loading ? (
