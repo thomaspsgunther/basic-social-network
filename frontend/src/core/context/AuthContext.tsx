@@ -115,9 +115,12 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
       setAuthToken(newToken);
       setIsAuthenticated(true);
     } catch (_error) {
-      Alert.alert('Oops, algo deu errado', '', [
-        { text: 'OK', onPress: () => logoutAndLeave() },
-      ]);
+      Alert.alert(
+        'Oops, algo deu errado',
+        '',
+        [{ text: 'OK', onPress: () => logoutAndLeave() }],
+        { cancelable: false },
+      );
     }
   };
 
