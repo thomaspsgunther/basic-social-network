@@ -5,6 +5,7 @@ import {
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
 import React, { createContext, ReactNode, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 
 import { LoginRepositoryImpl } from '@/src/features/login/data/repositories/LoginRepositoryImpl';
 import { LoginUsecaseImpl } from '@/src/features/login/domain/usecases/LoginUsecase';
@@ -113,6 +114,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
       setAuthToken(newToken);
       setIsAuthenticated(true);
     } catch (_error) {
+      Alert.alert('Oops, algo deu errado');
       logout();
       navigationRef.current?.dispatch(
         CommonActions.reset({
