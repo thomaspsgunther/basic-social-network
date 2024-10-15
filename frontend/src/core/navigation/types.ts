@@ -10,10 +10,21 @@ export type RootStackParamList = {
 
 export type TabParamList = {
   FeedStack: undefined;
+  CreatePostStack: undefined;
+  SearchUserStack: undefined;
+  CurrentUserProfileStack: undefined;
 };
 
 export type FeedStackParamList = {
   Feed: undefined;
+  PostDetail: undefined;
+  UserProfile: undefined;
+};
+
+export type CreatePostStackParamList = {
+  CreatePost: undefined;
+  PostDetail: undefined;
+  UserProfile: undefined;
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
@@ -26,3 +37,7 @@ export type TabScreenProps<T extends keyof TabParamList> = CompositeScreenProps<
 
 export type FeedStackScreenProps<T extends keyof FeedStackParamList> =
   StackScreenProps<FeedStackParamList, T>;
+
+export type CreatePostStackScreenProps<
+  T extends keyof CreatePostStackParamList,
+> = StackScreenProps<CreatePostStackParamList, T>;

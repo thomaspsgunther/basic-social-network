@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 
 const lightTheme = StyleSheet.create({
   button: {
-    backgroundColor: '#8A2BE2' as string,
+    backgroundColor: '#310d6b' as string,
     borderRadius: 5,
     marginBottom: 20,
     marginTop: 10,
@@ -28,11 +28,14 @@ const lightTheme = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
+  text: {
+    color: 'black' as string,
+  },
 });
 
 const darkTheme = StyleSheet.create({
   button: {
-    backgroundColor: '#8A2BE2' as string,
+    backgroundColor: '#310d6b' as string,
     borderRadius: 5,
     marginBottom: 20,
     marginTop: 10,
@@ -57,6 +60,9 @@ const darkTheme = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
+  },
+  text: {
+    color: 'white' as string,
   },
 });
 
