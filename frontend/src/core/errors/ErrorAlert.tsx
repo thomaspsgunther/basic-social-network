@@ -11,9 +11,12 @@ export const ErrorAlert: React.FC = () => {
 
   React.useEffect(() => {
     if (error && error.message) {
-      Alert.alert('Oops, algo deu errado', '', [
-        { text: 'OK', onPress: () => dispatch(clearError()) },
-      ]);
+      Alert.alert(
+        'Oops, algo deu errado',
+        '',
+        [{ text: 'OK', onPress: () => dispatch(clearError()) }],
+        { cancelable: false },
+      );
     }
   }, [error, dispatch]);
 
