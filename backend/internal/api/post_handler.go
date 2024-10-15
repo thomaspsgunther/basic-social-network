@@ -114,7 +114,7 @@ func (h PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 // @Produce     json
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param       limit query int true "limit of pagination"
-// @Param       cursor query string true "cursor for pagination" Format(byte)
+// @Param       cursor query string false "cursor for pagination" Format(byte)
 // @Success     200 {object} shared.Posts
 // @Failure     400
 // @Failure     401
@@ -142,21 +142,32 @@ func (h PostHandler) ListPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var posts []shared.Post
 	cursor := r.URL.Query().Get("cursor")
-	lastCreatedAt, lastId, err := decodeCursor(cursor)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
+	if cursor != "" {
+		lastCreatedAt, lastId, err := decodeCursor(cursor)
+		if err != nil {
+			logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, "invalid posts limit", http.StatusBadRequest)
-		return
-	}
+			http.Error(w, "invalid posts cursor", http.StatusBadRequest)
+			return
+		}
 
-	posts, err := h.Usecase.GetPosts(r.Context(), limit, lastCreatedAt, lastId)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
+		posts, err = h.Usecase.GetPosts(r.Context(), limit, lastCreatedAt, lastId)
+		if err != nil {
+			logger.ServerLogger.Error(err.Error())
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else {
+		posts, err = h.Usecase.GetPosts(r.Context(), limit, time.Time{}, uuid.Nil)
+		if err != nil {
+			logger.ServerLogger.Error(err.Error())
+
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	response, err := json.Marshal(posts)

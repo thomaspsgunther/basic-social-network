@@ -69,15 +69,31 @@ func (r *postRepositoryImpl) getPosts(ctx context.Context, limit int, lastCreate
 		database.HandleTransaction(tx, err)
 	}()
 
-	query := `
-		SELECT p.id, p.user_id, u.username, u.avatar, p.image, p.description, p.like_count, p.comment_count, p.created_at
-		FROM posts p
-		INNER JOIN users u ON p.user_id = u.id
-		WHERE (created_at < $1 OR (created_at = $1 AND id < $2))
-		ORDER BY created_at DESC, id DESC
-		LIMIT $3
-	`
-	rows, err := tx.Query(ctx, query, lastCreatedAt, lastId, limit)
+	var query string
+	var args []interface{}
+
+	if lastCreatedAt.IsZero() && lastId == uuid.Nil {
+		query = `
+			SELECT p.id, p.user_id, u.username, u.avatar, p.image, p.description, p.like_count, p.comment_count, p.created_at
+			FROM posts p
+			INNER JOIN users u ON p.user_id = u.id
+			ORDER BY created_at DESC, id DESC
+			LIMIT $1
+		`
+		args = append(args, limit)
+	} else {
+		query = `
+			SELECT p.id, p.user_id, u.username, u.avatar, p.image, p.description, p.like_count, p.comment_count, p.created_at
+			FROM posts p
+			INNER JOIN users u ON p.user_id = u.id
+			WHERE (created_at < $1 OR (created_at = $1 AND id < $2))
+			ORDER BY created_at DESC, id DESC
+			LIMIT $3
+		`
+		args = append(args, lastCreatedAt, lastId, limit)
+	}
+
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select posts: %w", err)
 	}

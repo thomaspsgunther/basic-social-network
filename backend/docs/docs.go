@@ -463,8 +463,7 @@ const docTemplate = `{
                         "format": "byte",
                         "description": "cursor for pagination",
                         "name": "cursor",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1125,8 +1124,7 @@ const docTemplate = `{
                         "format": "byte",
                         "description": "cursor for pagination",
                         "name": "cursor",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {

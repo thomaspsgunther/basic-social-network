@@ -160,16 +160,31 @@ func (r *userRepositoryImpl) getPostsFromUser(ctx context.Context, userId uuid.U
 		database.HandleTransaction(tx, err)
 	}()
 
-	query := `
-        SELECT id, image
-        FROM posts
-        WHERE user_id = $1
-        AND (created_at < $2 OR (created_at = $2 AND id < $3))
-        ORDER BY created_at DESC, id DESC
-        LIMIT $4
-    `
+	var query string
+	var args []interface{}
 
-	rows, err := tx.Query(ctx, query, userId, lastCreatedAt, lastId, limit)
+	if lastCreatedAt.IsZero() && lastId == uuid.Nil {
+		query = `
+			SELECT id, image
+			FROM posts
+			WHERE user_id = $1
+			ORDER BY created_at DESC, id DESC
+			LIMIT $2
+		`
+		args = append(args, userId, limit)
+	} else {
+		query = `
+			SELECT id, image
+			FROM posts
+			WHERE user_id = $1
+			AND (created_at < $2 OR (created_at = $2 AND id < $3))
+			ORDER BY created_at DESC, id DESC
+			LIMIT $4
+		`
+		args = append(args, userId, lastCreatedAt, lastId, limit)
+	}
+
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select posts: %w", err)
 	}

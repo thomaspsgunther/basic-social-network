@@ -393,7 +393,6 @@ paths:
         format: byte
         in: query
         name: cursor
-        required: true
         type: string
       produces:
       - application/json
@@ -946,7 +945,6 @@ paths:
         format: byte
         in: query
         name: cursor
-        required: true
         type: string
       produces:
       - application/json
