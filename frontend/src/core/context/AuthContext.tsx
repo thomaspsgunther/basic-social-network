@@ -114,14 +114,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
       setAuthToken(newToken);
       setIsAuthenticated(true);
     } catch (_error) {
-      Alert.alert('Oops, algo deu errado');
-      logout();
-      navigationRef.current?.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        }),
-      );
+      Alert.alert('Oops, algo deu errado', '', [
+        { text: 'OK', onPress: () => logoutAndLeave() },
+      ]);
     }
   };
 
@@ -132,6 +127,16 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
     setRefreshTimer(null);
     setIsAuthenticated(false);
     setAuthUser(null);
+  };
+
+  const logoutAndLeave = async () => {
+    logout();
+    navigationRef.current?.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      }),
+    );
   };
 
   const decodeToken = (token: string): DecodedToken | null => {
