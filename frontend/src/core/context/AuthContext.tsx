@@ -24,6 +24,7 @@ interface AuthContextType {
   register: (userData: Omit<User, 'id'>) => Promise<void>;
   login: (userData: Omit<User, 'id'>) => Promise<void>;
   logout: () => Promise<void>;
+  logoutAndLeave: () => Promise<void>;
   setAuthUser: (user: User) => void;
 }
 
@@ -187,6 +188,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
         register,
         login,
         logout,
+        logoutAndLeave,
         setAuthUser,
       }}
     >
