@@ -11,11 +11,11 @@ type Posts struct {
 }
 
 type Post struct {
-	ID           uuid.UUID `json:"id"`
-	User         *User     `json:"user"`
-	Image        string    `json:"image"`
-	Description  *string   `json:"description"`
-	LikeCount    int       `json:"likeCount"`
-	CommentCount int       `json:"commentCount"`
-	CreatedAt    time.Time `json:"createdAt"`
+	ID           uuid.UUID `json:"id,omitempty"`
+	User         *User     `json:"user,omitempty"`
+	Image        string    `json:"image,omitempty"`
+	Description  *string   `json:"description,omitempty"`
+	LikeCount    int       `json:"likeCount,omitempty"`
+	CommentCount int       `json:"commentCount,omitempty"`
+	CreatedAt    time.Time `json:"createdAt,omitempty"`
 }

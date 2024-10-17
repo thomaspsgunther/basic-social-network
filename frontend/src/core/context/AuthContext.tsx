@@ -5,7 +5,7 @@ import {
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
 import React, { createContext, ReactNode, useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 import { LoginRepositoryImpl } from '@/src/features/login/data/repositories/LoginRepositoryImpl';
 import { LoginUsecaseImpl } from '@/src/features/login/domain/usecases/LoginUsecase';
@@ -49,36 +49,40 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
   const userUsecase = new UserUsecaseImpl(userRepository);
 
   useEffect(() => {
-    const loadStoredToken = async () => {
-      try {
-        const storedToken = await SecureStore.getItemAsync('token');
-        if (storedToken) {
-          const decodedToken = decodeToken(storedToken);
-          if (decodedToken != null && decodedToken.exp) {
-            const currentTime = Math.floor(Date.now() / 1000);
-            if (decodedToken.exp < currentTime) {
+    if (Platform.OS !== 'web') {
+      const loadStoredToken = async () => {
+        try {
+          const storedToken = await SecureStore.getItemAsync('token');
+          if (storedToken) {
+            const decodedToken = decodeToken(storedToken);
+            if (decodedToken != null && decodedToken.exp) {
+              const currentTime = Math.floor(Date.now() / 1000);
+              if (decodedToken.exp < currentTime) {
+                logout();
+
+                return;
+              }
+
+              setAuthToken(storedToken);
+              await fetchUser(storedToken);
+              setToken(storedToken);
+              setRefreshTimerLogic(storedToken);
+              setIsAuthenticated(true);
+            } else {
               logout();
-
-              return;
             }
-
-            setAuthToken(storedToken);
-            await fetchUser(storedToken);
-            setToken(storedToken);
-            setRefreshTimerLogic(storedToken);
-            setIsAuthenticated(true);
           } else {
             logout();
           }
-        } else {
+        } catch (_error) {
           logout();
         }
-      } catch (_error) {
-        logout();
-      }
-    };
+      };
 
-    loadStoredToken();
+      loadStoredToken();
+    } else {
+      setIsAuthenticated(false);
+    }
 
     return () => {
       if (refreshTimer) {
@@ -91,7 +95,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
     const newToken = await loginUsecase.registerUser(userData);
     setAuthToken(newToken);
     await fetchUser(newToken);
-    await SecureStore.setItemAsync('token', newToken);
+    if (Platform.OS !== 'web') {
+      await SecureStore.setItemAsync('token', newToken);
+    }
     setToken(newToken);
     setRefreshTimerLogic(newToken);
     setIsAuthenticated(true);
@@ -101,7 +107,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
     const newToken = await loginUsecase.loginUser(userData);
     setAuthToken(newToken);
     await fetchUser(newToken);
-    await SecureStore.setItemAsync('token', newToken);
+    if (Platform.OS !== 'web') {
+      await SecureStore.setItemAsync('token', newToken);
+    }
     setToken(newToken);
     setRefreshTimerLogic(newToken);
     setIsAuthenticated(true);
@@ -110,7 +118,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
   const refreshToken = async (token: string) => {
     try {
       const newToken = await loginUsecase.refreshToken(token);
-      await SecureStore.setItemAsync('token', newToken);
+      if (Platform.OS !== 'web') {
+        await SecureStore.setItemAsync('token', newToken);
+      }
       setToken(newToken);
       setAuthToken(newToken);
       setIsAuthenticated(true);
@@ -125,7 +135,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
   };
 
   const logout = async () => {
-    await SecureStore.deleteItemAsync('token');
+    if (Platform.OS !== 'web') {
+      await SecureStore.deleteItemAsync('token');
+    }
     setToken(null);
     setAuthToken(null);
     setRefreshTimer(null);

@@ -7,16 +7,16 @@ type Users struct {
 }
 
 type User struct {
-	ID            uuid.UUID `json:"id"`
-	Username      string    `json:"username"`
+	ID            uuid.UUID `json:"id,omitempty"`
+	Username      string    `json:"username,omitempty"`
 	Password      string    `json:"password,omitempty"`
-	Email         *string   `json:"email"`
-	FullName      *string   `json:"fullName"`
-	Description   *string   `json:"description"`
-	Avatar        *string   `json:"avatar"`
-	FollowerCount int       `json:"followerCount"`
+	Email         *string   `json:"email,omitempty"`
+	FullName      *string   `json:"fullName,omitempty"`
+	Description   *string   `json:"description,omitempty"`
+	Avatar        *string   `json:"avatar,omitempty"`
+	FollowerCount int       `json:"followerCount,omitempty"`
 }
 
 type TokenJson struct {
-	Token string `json:"token"`
+	Token string `json:"token,omitempty"`
 }
