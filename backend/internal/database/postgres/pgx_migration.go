@@ -16,8 +16,8 @@ type sqlMigration struct {
 	query string
 }
 
-func PgxMigration() error {
-	conn, err := Postgres.Acquire(context.Background())
+func PgxMigration(ctx context.Context) error {
+	conn, err := Postgres.Acquire(ctx)
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func PgxMigration() error {
 
 	logger.ServerLogger.Info("checking for migrations")
 
-	rows, err := conn.Query(context.Background(), "SELECT file FROM migrations")
+	rows, err := conn.Query(ctx, "SELECT file FROM migrations")
 	if err != nil {
 		return fmt.Errorf("error querying migrations table: %w", err)
 	}
@@ -54,13 +54,13 @@ func PgxMigration() error {
 	logger.ServerLogger.Info(fmt.Sprintf("number of migrations: %v", len(migrations)))
 
 	// Run migrations in a transaction
-	tx, err := conn.Begin(context.Background())
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer func() {
-		HandleTransaction(tx, err)
+		HandleTransaction(ctx, tx, err)
 	}()
 
 	for _, migration := range migrations {
@@ -73,12 +73,12 @@ func PgxMigration() error {
 				continue
 			}
 
-			if _, err := tx.Exec(context.Background(), query); err != nil {
+			if _, err := tx.Exec(ctx, query); err != nil {
 				return fmt.Errorf("failed to execute query %s: %w", query, err)
 			}
 		}
 
-		if _, err := tx.Exec(context.Background(), "INSERT INTO migrations (file) VALUES ($1)", migration.file); err != nil {
+		if _, err := tx.Exec(ctx, "INSERT INTO migrations (file) VALUES ($1)", migration.file); err != nil {
 			return fmt.Errorf("failed to insert migration record: %w", err)
 		}
 	}

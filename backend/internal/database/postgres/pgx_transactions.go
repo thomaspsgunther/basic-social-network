@@ -9,15 +9,15 @@ import (
 )
 
 // HandleTransaction commits a DB transaction if the queries were successful or rolls back if not
-func HandleTransaction(tx pgx.Tx, err error) {
+func HandleTransaction(ctx context.Context, tx pgx.Tx, err error) {
 	if r := recover(); r != nil {
-		tx.Rollback(context.Background())
+		tx.Rollback(ctx)
 
 		logger.ServerLogger.Error(fmt.Sprintf("panic occurred during transaction: %v", r))
 	} else if err != nil {
-		tx.Rollback(context.Background())
+		tx.Rollback(ctx)
 	} else {
-		if err = tx.Commit(context.Background()); err != nil {
+		if err = tx.Commit(ctx); err != nil {
 			logger.ServerLogger.Error("failed to commit transaction: " + err.Error())
 		}
 	}

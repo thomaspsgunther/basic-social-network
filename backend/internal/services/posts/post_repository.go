@@ -37,7 +37,7 @@ func (r *postRepositoryImpl) create(ctx context.Context, post shared.Post) (uuid
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	var id uuid.UUID
@@ -66,7 +66,7 @@ func (r *postRepositoryImpl) getPosts(ctx context.Context, limit int, lastCreate
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	var query string
@@ -128,7 +128,7 @@ func (r *postRepositoryImpl) getPost(ctx context.Context, id uuid.UUID) (shared.
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	query := `
@@ -164,7 +164,7 @@ func (r *postRepositoryImpl) update(ctx context.Context, post shared.Post, id uu
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	_, err = tx.Exec(
@@ -192,7 +192,7 @@ func (r *postRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	_, err = tx.Exec(ctx, "DELETE FROM posts WHERE id = $1", id)
@@ -216,7 +216,7 @@ func (i *postRepositoryImpl) like(ctx context.Context, userId uuid.UUID, postId 
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	_, err = tx.Exec(
@@ -244,7 +244,7 @@ func (i *postRepositoryImpl) unlike(ctx context.Context, userId uuid.UUID, postI
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	_, err = tx.Exec(ctx, "DELETE FROM likes WHERE user_id = $1 AND post_id = $2", userId, postId)
@@ -268,7 +268,7 @@ func (i *postRepositoryImpl) userLikedPost(ctx context.Context, userId uuid.UUID
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	var exists bool
@@ -293,7 +293,7 @@ func (i *postRepositoryImpl) getLikes(ctx context.Context, id uuid.UUID) ([]shar
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	rows, err := tx.Query(ctx, "SELECT u.id, u.username, u.full_name, u.avatar FROM likes l JOIN users u ON l.user_id = u.id WHERE l.post_id = $1", id)

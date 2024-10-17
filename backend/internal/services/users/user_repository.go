@@ -41,7 +41,7 @@ func (r *userRepositoryImpl) create(ctx context.Context, user shared.User) (uuid
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	var id uuid.UUID
@@ -70,7 +70,7 @@ func (r *userRepositoryImpl) get(ctx context.Context, idList []uuid.UUID) ([]sha
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	var placeholders []string
@@ -117,7 +117,7 @@ func (r *userRepositoryImpl) getBySearch(ctx context.Context, searchStr string) 
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	query := "SELECT id, username, full_name, avatar FROM users WHERE username ILIKE $1 OR full_name ILIKE $1"
@@ -157,7 +157,7 @@ func (r *userRepositoryImpl) getPostsFromUser(ctx context.Context, userId uuid.U
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	var query string
@@ -218,7 +218,7 @@ func (r *userRepositoryImpl) update(ctx context.Context, user shared.User, id uu
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	if user.Password != "" {
@@ -257,7 +257,7 @@ func (r *userRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	_, err = tx.Exec(ctx, "DELETE FROM users WHERE id = $1", id)
@@ -281,7 +281,7 @@ func (r *userRepositoryImpl) follow(ctx context.Context, followerId uuid.UUID, f
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	_, err = tx.Exec(
@@ -309,7 +309,7 @@ func (r *userRepositoryImpl) unfollow(ctx context.Context, followerId uuid.UUID,
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	_, err = tx.Exec(ctx, "DELETE FROM followers WHERE follower_id = $1 AND followed_id = $2", followerId, followedId)
@@ -333,7 +333,7 @@ func (r *userRepositoryImpl) userFollowsUser(ctx context.Context, followerId uui
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	var exists bool
@@ -358,7 +358,7 @@ func (r *userRepositoryImpl) getFollowers(ctx context.Context, id uuid.UUID) ([]
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	rows, err := tx.Query(ctx, "SELECT u.id, u.username, u.full_name, u.avatar FROM followers f JOIN users u ON f.follower_id = u.id WHERE f.followed_id = $1", id)
@@ -395,7 +395,7 @@ func (r *userRepositoryImpl) getFollowed(ctx context.Context, id uuid.UUID) ([]s
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	rows, err := tx.Query(ctx, "SELECT u.id, u.username, u.full_name, u.avatar FROM followers f JOIN users u ON f.followed_id = u.id WHERE f.follower_id = $1", id)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -64,7 +65,7 @@ func main() {
 		}
 		defer database.PgxClose()
 
-		err = database.PgxMigration()
+		err = database.PgxMigration(context.Background())
 		if err != nil {
 			logger.ServerLogger.Info("--------------------------------------------------------------------")
 			logger.ServerLogger.Fatalf("failed PostgreSQL migrations: %v", err)

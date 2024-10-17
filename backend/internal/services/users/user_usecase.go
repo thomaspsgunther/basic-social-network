@@ -172,7 +172,7 @@ func Authenticate(ctx context.Context, user shared.User) (bool, error) {
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	var hashedPassword string
@@ -198,7 +198,7 @@ func GetUsernameByUserID(ctx context.Context, id uuid.UUID) (string, error) {
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	var username string
@@ -224,7 +224,7 @@ func GetUserIdByUsername(ctx context.Context, username string) (uuid.UUID, error
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	var id uuid.UUID

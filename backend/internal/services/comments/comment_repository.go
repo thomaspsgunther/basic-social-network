@@ -33,7 +33,7 @@ func (r *commentRepositoryImpl) create(ctx context.Context, comment Comment) (uu
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	var id uuid.UUID
@@ -62,7 +62,7 @@ func (r *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUI
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	query := `
@@ -108,7 +108,7 @@ func (r *commentRepositoryImpl) get(ctx context.Context, id uuid.UUID) (Comment,
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	var comment Comment
@@ -136,7 +136,7 @@ func (r *commentRepositoryImpl) update(ctx context.Context, comment Comment, id 
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	_, err = tx.Exec(
@@ -164,7 +164,7 @@ func (r *commentRepositoryImpl) like(ctx context.Context, id uuid.UUID) error {
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	_, err = tx.Exec(
@@ -192,7 +192,7 @@ func (r *commentRepositoryImpl) unlike(ctx context.Context, id uuid.UUID) error 
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	_, err = tx.Exec(
@@ -220,7 +220,7 @@ func (r *commentRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error 
 	}
 
 	defer func() {
-		database.HandleTransaction(tx, err)
+		database.HandleTransaction(ctx, tx, err)
 	}()
 
 	_, err = tx.Exec(ctx, "DELETE FROM comments WHERE id = $1", id)
