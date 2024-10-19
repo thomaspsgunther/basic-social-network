@@ -6,6 +6,9 @@ import { IPostRepository } from '../repositories/PostRepository';
 interface IPostUsecase {
   createPost(post: Omit<Post, 'id'>): Promise<Post>;
   listPosts(limit: number, cursor?: string): Promise<Post[]>;
+  getPost(id: string): Promise<Post>;
+  updatePost(post: Post): Promise<boolean>;
+  deletePost(id: string): Promise<boolean>;
   likePost(userId: string, postId: string): Promise<boolean>;
   unlikePost(userId: string, postId: string): Promise<boolean>;
   checkIfUserLikedPost(userId: string, postId: string): Promise<boolean>;
@@ -29,6 +32,24 @@ export class PostUsecaseImpl implements IPostUsecase {
     const posts: Post[] = await this.repository.listPosts(limit, cursor);
 
     return posts;
+  }
+
+  async getPost(id: string): Promise<Post> {
+    const post: Post = await this.repository.getPost(id);
+
+    return post;
+  }
+
+  async updatePost(post: Post): Promise<boolean> {
+    await this.repository.updatePost(post);
+
+    return true;
+  }
+
+  async deletePost(id: string): Promise<boolean> {
+    await this.repository.deletePost(id);
+
+    return true;
   }
 
   async likePost(userId: string, postId: string): Promise<boolean> {

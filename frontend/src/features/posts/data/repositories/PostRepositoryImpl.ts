@@ -19,6 +19,25 @@ export class PostRepositoryImpl implements IPostRepository {
     return posts;
   }
 
+  async getPost(id: string): Promise<Post> {
+    const response = await postApi.get(id);
+    const post: Post = response.data;
+
+    return post;
+  }
+
+  async updatePost(post: Post): Promise<boolean> {
+    await postApi.update(post);
+
+    return true;
+  }
+
+  async deletePost(id: string): Promise<boolean> {
+    await postApi.remove(id);
+
+    return true;
+  }
+
   async likePost(userId: string, postId: string): Promise<boolean> {
     await postApi.like(userId, postId);
 

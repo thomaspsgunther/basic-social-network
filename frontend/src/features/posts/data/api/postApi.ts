@@ -3,11 +3,10 @@ import { Post } from '@/src/features/shared/data/models/Post';
 
 export const postApi = {
   create: async (post: Omit<Post, 'id'>) => {
-    const response = await axiosInstance.post(`/posts`, post);
+    const response = await axiosInstance.post('/posts', post);
 
     return response;
   },
-
   list: async (limit: number, cursor?: string) => {
     if (cursor) {
       const response = await axiosInstance.get(
@@ -21,7 +20,21 @@ export const postApi = {
       return response;
     }
   },
+  get: async (id: string) => {
+    const response = await axiosInstance.get(`/posts/${id}`);
 
+    return response;
+  },
+  update: async (post: Post) => {
+    const response = await axiosInstance.put(`/posts/${post.id}`, post);
+
+    return response;
+  },
+  remove: async (id: string) => {
+    const response = await axiosInstance.delete(`/posts${id}`);
+
+    return response;
+  },
   like: async (userId: string, postId: string) => {
     const response = await axiosInstance.post(
       `/posts/likes/${userId}_${postId}`,
@@ -29,7 +42,6 @@ export const postApi = {
 
     return response;
   },
-
   unlike: async (userId: string, postId: string) => {
     const response = await axiosInstance.delete(
       `/posts/likes/${userId}_${postId}`,
@@ -37,7 +49,6 @@ export const postApi = {
 
     return response;
   },
-
   checkLiked: async (userId: string, postId: string) => {
     const response = await axiosInstance.get(
       `/posts/check/${userId}_${postId}`,
@@ -45,7 +56,6 @@ export const postApi = {
 
     return response;
   },
-
   getLikes: async (postId: string) => {
     const response = await axiosInstance.get(`/posts/likes/${postId}`);
 
