@@ -1,4 +1,6 @@
 import { Post } from '@/src/features/shared/data/models/Post';
+import { User } from '@/src/features/shared/data/models/User';
+
 import { IPostRepository } from '../../domain/repositories/PostRepository';
 import { postApi } from '../api/postApi';
 
@@ -10,7 +12,7 @@ export class PostRepositoryImpl implements IPostRepository {
     return createdPost;
   }
 
-  async listPosts(limit: number, cursor: string = ''): Promise<Post[]> {
+  async listPosts(limit: number, cursor?: string): Promise<Post[]> {
     const response = await postApi.list(limit, cursor);
     const posts: Post[] = response.data;
 
@@ -19,11 +21,13 @@ export class PostRepositoryImpl implements IPostRepository {
 
   async likePost(userId: string, postId: string): Promise<boolean> {
     await postApi.like(userId, postId);
+
     return true;
   }
 
   async unlikePost(userId: string, postId: string): Promise<boolean> {
     await postApi.unlike(userId, postId);
+
     return true;
   }
 
@@ -34,10 +38,10 @@ export class PostRepositoryImpl implements IPostRepository {
     return liked;
   }
 
-  async getLikes(postId: string): Promise<string[]> {
+  async getLikes(postId: string): Promise<User[]> {
     const response = await postApi.getLikes(postId);
-    const userIds: string[] = response.data.likes;
+    const users: User[] = response.data.likes;
 
-    return userIds;
+    return users;
   }
 }
