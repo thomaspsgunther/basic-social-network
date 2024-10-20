@@ -44,6 +44,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
           password: password,
         };
         await login(userData);
+        setIsLoading(false);
         navigation.dispatch(
           CommonActions.reset({
             index: 0,

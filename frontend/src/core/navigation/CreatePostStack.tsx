@@ -2,6 +2,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
 
 import { CreatePostScreen } from '@/src/features/posts/presentation/screens/CreatePostScreen';
+import { PostDetailScreen } from '@/src/features/posts/presentation/screens/PostDetailScreen';
 
 import { CreatePostStackParamList } from './types';
 
@@ -14,6 +15,7 @@ export const CreatePostStack = () => {
       initialRouteName="CreatePost"
     >
       <Stack.Screen name="CreatePost" component={CreatePostScreen} />
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
     </Stack.Navigator>
   );
 };

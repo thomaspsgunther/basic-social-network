@@ -18,7 +18,7 @@ export function TabNavigator() {
 
           switch (route.name) {
             case 'FeedStack':
-              iconName = 'list';
+              iconName = 'home';
               break;
             case 'CreatePostStack':
               iconName = 'add-circle-outline';

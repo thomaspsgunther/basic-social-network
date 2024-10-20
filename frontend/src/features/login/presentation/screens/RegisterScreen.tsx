@@ -32,7 +32,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   const [email, setEmail] = useState<string>('');
   const [fullName, setFullName] = useState<string>('');
 
-  const isDisabled = username.trim() === '' || password.trim() === '';
+  const isDisabled: boolean = username.trim() === '' || password.trim() === '';
 
   const context = useContext(AuthContext);
   if (!context) {
@@ -69,6 +69,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
         }
 
         await register(userData);
+        setIsLoading(false);
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
@@ -119,7 +120,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
       quality: 1,
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets && result.assets.length > 0) {
       try {
         await cropImage(result.assets[0].uri);
       } catch (_error) {
@@ -145,7 +146,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
       quality: 1,
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets && result.assets.length > 0) {
       try {
         await cropImage(result.assets[0].uri);
       } catch (_error) {
@@ -158,10 +159,15 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   };
 
   const cropImage = async (uri: string) => {
-    const cropWidth = 1080;
-    const cropHeight = 1080;
+    let cropWidth = 1080;
+    let cropHeight = 1080;
 
     const { width, height } = await ImageManipulator.manipulateAsync(uri);
+
+    if (width < cropWidth || height < cropHeight) {
+      cropWidth = 720;
+      cropHeight = 720;
+    }
 
     const cropX = (width - cropWidth) / 2;
     const cropY = (height - cropHeight) / 2;
@@ -207,7 +213,11 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
 
       <TouchableOpacity onPress={takePhoto} style={styles.avatarContainer}>
         {avatarUri ? (
-          <Image source={{ uri: avatarUri }} style={styles.avatar} />
+          <Image
+            source={{ uri: avatarUri }}
+            style={styles.avatar}
+            resizeMode="contain"
+          />
         ) : (
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.avatarPlaceholderText}>Tire uma foto!</Text>
