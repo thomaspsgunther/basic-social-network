@@ -22,7 +22,7 @@ import { User } from '@/src/features/shared/data/models/User';
 export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   navigation,
 }) => {
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [username, setUsername] = useState<string>('');
@@ -41,7 +41,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   const { register, logout } = context;
 
   const handleRegister = async () => {
-    setLoading(true);
+    setIsLoading(true);
     Keyboard.dismiss();
     try {
       if (username && password) {
@@ -50,7 +50,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
           password: password,
         };
         if (email && !isValidEmail(email)) {
-          setLoading(false);
+          setIsLoading(false);
           Alert.alert(
             'Oops, algo deu errado',
             'Por favor, insira um email válido',
@@ -75,7 +75,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
           }),
         );
       } else {
-        setLoading(false);
+        setIsLoading(false);
         Alert.alert(
           'Oops, algo deu errado',
           'Nome de usuário e senha precisam estar preenchidos',
@@ -83,7 +83,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
       }
     } catch (error) {
       if (error instanceof Error) {
-        setLoading(false);
+        setIsLoading(false);
         logout();
         if (error.message.trim() === 'user already exists') {
           Alert.alert(
@@ -239,7 +239,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
         onChangeText={setFullName}
       />
 
-      {!loading ? (
+      {!isLoading ? (
         <TouchableOpacity
           style={isDisabled ? styles.buttonDisabled : styles.button}
           onPress={handleRegister}

@@ -7,9 +7,9 @@ import { jwtDecode } from 'jwt-decode';
 import React, { createContext, ReactNode, useEffect, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 
+import { DecodedToken } from '@/src/features/login/data/models/DecodedToken';
 import { LoginRepositoryImpl } from '@/src/features/login/data/repositories/LoginRepositoryImpl';
 import { LoginUsecaseImpl } from '@/src/features/login/domain/usecases/LoginUsecase';
-import { DecodedToken } from '@/src/features/shared/data/models/DecodedToken';
 import { User } from '@/src/features/shared/data/models/User';
 import { UserRepositoryImpl } from '@/src/features/users/data/repositories/UserRepositoryImpl';
 import { UserUsecaseImpl } from '@/src/features/users/domain/usecases/UserUsecase';

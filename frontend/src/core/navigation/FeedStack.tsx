@@ -9,12 +9,11 @@ const Stack = createStackNavigator<FeedStackParamList>();
 
 export const FeedStack = () => {
   return (
-    <Stack.Navigator initialRouteName="Feed">
-      <Stack.Screen
-        name="Feed"
-        component={FeedScreen}
-        options={{ headerShown: false }}
-      />
+    <Stack.Navigator
+      screenOptions={{ headerShown: false }}
+      initialRouteName="Feed"
+    >
+      <Stack.Screen name="Feed" component={FeedScreen} />
     </Stack.Navigator>
   );
 };

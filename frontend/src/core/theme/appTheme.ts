@@ -1,6 +1,14 @@
 import { StyleSheet } from 'react-native';
 
 const lightTheme = StyleSheet.create({
+  bottomTabBar: {
+    backgroundColor: '#F7F7F7' as string,
+    borderTopColor: 'darkgray' as string,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+  },
   button: {
     backgroundColor: '#310d6b' as string,
     borderRadius: 5,
@@ -34,6 +42,14 @@ const lightTheme = StyleSheet.create({
 });
 
 const darkTheme = StyleSheet.create({
+  bottomTabBar: {
+    backgroundColor: '#1C1C1C' as string,
+    borderTopColor: 'lightgray' as string,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+  },
   button: {
     backgroundColor: '#310d6b' as string,
     borderRadius: 5,

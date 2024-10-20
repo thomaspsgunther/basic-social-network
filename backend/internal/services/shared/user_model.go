@@ -16,7 +16,3 @@ type User struct {
 	Avatar        *string   `json:"avatar,omitempty"`
 	FollowerCount int       `json:"followerCount,omitempty"`
 }
-
-type TokenJson struct {
-	Token string `json:"token,omitempty"`
-}

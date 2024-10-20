@@ -20,7 +20,7 @@ import { User } from '@/src/features/shared/data/models/User';
 export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
   navigation,
 }) => {
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
@@ -35,7 +35,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
   const { login, logout } = context;
 
   const handleLogin = async () => {
-    setLoading(true);
+    setIsLoading(true);
     Keyboard.dismiss();
     try {
       if (username && password) {
@@ -51,7 +51,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
           }),
         );
       } else {
-        setLoading(false);
+        setIsLoading(false);
         Alert.alert(
           'Oops, algo deu errado',
           'Usuário e senha precisam estar preenchidos',
@@ -59,7 +59,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
       }
     } catch (error) {
       if (error instanceof Error) {
-        setLoading(false);
+        setIsLoading(false);
         logout();
         if (error.message.trim() === 'wrong username or password') {
           Alert.alert('Oops, algo deu errado', 'Usuário ou senha incorretos');
@@ -107,7 +107,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
         </TouchableOpacity>
       </View>
 
-      {!loading ? (
+      {!isLoading ? (
         <TouchableOpacity
           style={isDisabled ? styles.buttonDisabled : styles.button}
           onPress={handleLogin}
@@ -119,7 +119,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
         <ActivityIndicator size="large" color="#FFFFFF" />
       )}
 
-      {!loading ? (
+      {!isLoading ? (
         <TouchableOpacity
           style={styles.signUpButton}
           onPress={handleSignUpRedirect}
