@@ -1,3 +1,4 @@
+import { Post } from '@/src/features/shared/data/models/Post';
 import { User } from '@/src/features/shared/data/models/User';
 
 import { IUserRepository } from '../../domain/repositories/UserRepository';
@@ -16,6 +17,17 @@ export class UserRepositoryImpl implements IUserRepository {
     const users: User[] = response.data;
 
     return users;
+  }
+
+  async getUserPosts(
+    id: string,
+    limit: number,
+    cursor?: string,
+  ): Promise<Post[]> {
+    const response = await userApi.getPosts(id, limit, cursor);
+    const posts: Post[] = response.data;
+
+    return posts;
   }
 
   async updateUser(user: User): Promise<boolean> {

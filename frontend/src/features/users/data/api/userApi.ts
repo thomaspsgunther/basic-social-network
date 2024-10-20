@@ -12,6 +12,21 @@ export const userApi = {
 
     return response;
   },
+  getPosts: async (id: string, limit: number, cursor?: string) => {
+    if (cursor) {
+      const response = await axiosInstance.get(
+        `/users/posts/${id}?limit=${limit}&cursor=${cursor}`,
+      );
+
+      return response;
+    } else {
+      const response = await axiosInstance.get(
+        `/users/posts/${id}?limit=${limit}`,
+      );
+
+      return response;
+    }
+  },
   update: async (user: User) => {
     const response = await axiosInstance.put(`/users/${user.id}`, user);
 

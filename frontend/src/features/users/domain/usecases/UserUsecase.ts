@@ -1,3 +1,4 @@
+import { Post } from '@/src/features/shared/data/models/Post';
 import { User } from '@/src/features/shared/data/models/User';
 
 import { IUserRepository } from '../repositories/UserRepository';
@@ -33,7 +34,21 @@ export class UserUsecaseImpl implements IUserUsecase {
     return users;
   }
 
+  async getUserPosts(
+    id: string,
+    limit: number,
+    cursor?: string,
+  ): Promise<Post[]> {
+    const posts: Post[] = await this.repository.getUserPosts(id, limit, cursor);
+
+    return posts;
+  }
+
   async updateUser(user: User): Promise<boolean> {
+    if (!user.username) {
+      throw new Error('username is required');
+    }
+
     const didUpdate: boolean = await this.repository.updateUser(user);
 
     return didUpdate;
