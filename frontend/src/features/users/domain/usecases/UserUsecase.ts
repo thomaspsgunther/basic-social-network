@@ -6,6 +6,7 @@ import { IUserRepository } from '../repositories/UserRepository';
 interface IUserUsecase {
   getUsersById(idList: string): Promise<User[]>;
   getUsersBySearch(searchTerm: string): Promise<User[]>;
+  listUserPosts(id: string, limit: number, cursor?: string): Promise<Post[]>;
   updateUser(user: User): Promise<boolean>;
   deleteUser(id: string): Promise<boolean>;
   followUser(followerId: string, followedId: string): Promise<boolean>;
@@ -34,12 +35,16 @@ export class UserUsecaseImpl implements IUserUsecase {
     return users;
   }
 
-  async getUserPosts(
+  async listUserPosts(
     id: string,
     limit: number,
     cursor?: string,
   ): Promise<Post[]> {
-    const posts: Post[] = await this.repository.getUserPosts(id, limit, cursor);
+    const posts: Post[] = await this.repository.listUserPosts(
+      id,
+      limit,
+      cursor,
+    );
 
     return posts;
   }

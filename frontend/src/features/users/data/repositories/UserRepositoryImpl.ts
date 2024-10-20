@@ -19,12 +19,12 @@ export class UserRepositoryImpl implements IUserRepository {
     return users;
   }
 
-  async getUserPosts(
+  async listUserPosts(
     id: string,
     limit: number,
     cursor?: string,
   ): Promise<Post[]> {
-    const response = await userApi.getPosts(id, limit, cursor);
+    const response = await userApi.listPosts(id, limit, cursor);
     const posts: Post[] = response.data;
 
     return posts;
