@@ -23,7 +23,7 @@ const CustomTabBar = ({
           ? options.tabBarIcon({
               focused: isFocused,
               color: isFocused ? '#310d6b' : 'gray',
-              size: 24,
+              size: 28,
             })
           : null;
 

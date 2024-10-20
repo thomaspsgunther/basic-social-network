@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { CommonActions } from '@react-navigation/native';
+import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useContext, useState } from 'react';
 import {
@@ -115,14 +116,18 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
-      base64: true,
       quality: 1,
     });
 
     if (!result.canceled) {
-      const { base64, type } = result.assets[0];
-      setAvatar(base64 || null);
-      setAvatarUri(`data:${type};base64,${base64}`);
+      try {
+        await cropImage(result.assets[0].uri);
+      } catch (_error) {
+        Alert.alert(
+          'Oops, algo deu errado',
+          'Por favor, tente selecionar uma imagem novamente',
+        );
+      }
     }
   };
 
@@ -137,14 +142,50 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      base64: true,
       quality: 1,
     });
 
     if (!result.canceled) {
-      const { base64, type } = result.assets[0];
-      setAvatar(base64 || null);
-      setAvatarUri(`data:${type};base64,${base64}`);
+      try {
+        await cropImage(result.assets[0].uri);
+      } catch (_error) {
+        Alert.alert(
+          'Oops, algo deu errado',
+          'Por favor, tente tirar uma foto novamente',
+        );
+      }
+    }
+  };
+
+  const cropImage = async (uri: string) => {
+    const cropWidth = 1080;
+    const cropHeight = 1080;
+
+    const { width, height } = await ImageManipulator.manipulateAsync(uri);
+
+    const cropX = (width - cropWidth) / 2;
+    const cropY = (height - cropHeight) / 2;
+
+    const cropData = {
+      crop: {
+        originX: cropX,
+        originY: cropY,
+        width: cropWidth,
+        height: cropHeight,
+      },
+    };
+
+    const result = await ImageManipulator.manipulateAsync(uri, [cropData], {
+      compress: 0.8,
+      format: ImageManipulator.SaveFormat.JPEG,
+      base64: true,
+    });
+
+    if (result.base64) {
+      setAvatarUri(result.uri);
+      setAvatar(result.base64);
+    } else {
+      throw new Error('error converting image to base64');
     }
   };
 

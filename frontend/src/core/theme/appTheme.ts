@@ -7,7 +7,7 @@ const lightTheme = StyleSheet.create({
     borderTopWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 10,
+    paddingVertical: 8,
   },
   button: {
     backgroundColor: '#310d6b' as string,
@@ -48,7 +48,7 @@ const darkTheme = StyleSheet.create({
     borderTopWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 10,
+    paddingVertical: 8,
   },
   button: {
     backgroundColor: '#310d6b' as string,
