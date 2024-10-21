@@ -20,12 +20,15 @@ type CommentHandler struct {
 func (h CommentHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/", h.CreateComment)               // POST /api/v1/comments - Create a new comment
-	r.Get("/{post_id}", h.GetCommentsFromPost) // GET /api/v1/comments/{post_id} - Read a list of comments by: post_id
-	r.Put("/{id}", h.UpdateComment)            // PUT /api/v1/comments/{id} - Update a single comment by: id
-	r.Delete("/{id}", h.DeleteComment)         // DELETE /api/v1/comments/{id} - Delete a single comment by: id
-	r.Post("/like/{id}", h.LikeComment)        // POST /api/v1/comments/like/{id} - Like a single comment by: id
-	r.Post("/unlike/{id}", h.UnlikeComment)    // POST /api/v1/comments/unlike/{id} - Unlike a single comment by: id
+	r.Post("/", h.CreateComment)                    // POST /api/v1/comments - Create a new comment
+	r.Get("/post/{post_id}", h.GetCommentsFromPost) // GET /api/v1/comments/post/{post_id} - Read a list of comments by: post_id
+
+	r.Route("/{id}", func(r chi.Router) {
+		r.Put("/", h.UpdateComment)        // PUT /api/v1/comments/{id} - Update a single comment by: id
+		r.Delete("/", h.DeleteComment)     // DELETE /api/v1/comments/{id} - Delete a single comment by: id
+		r.Post("/like", h.LikeComment)     // POST /api/v1/comments/{id}/like - Like a single comment by: id
+		r.Post("/unlike", h.UnlikeComment) // POST /api/v1/comments/{id}/unlike - Unlike a single comment by: id
+	})
 
 	return r
 }
@@ -106,7 +109,7 @@ func (h CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 // @Success            200 {object} comments.Comments
 // @Failure            401
 // @Failure            500
-// @Router             /comments/{post_id} [get]
+// @Router             /comments/post/{post_id} [get]
 func (h CommentHandler) GetCommentsFromPost(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 
@@ -290,7 +293,7 @@ func (h CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 // @Failure      401
 // @Failure      403
 // @Failure      500
-// @Router       /comments/like/{id} [post]
+// @Router       /comments/{id}/like [post]
 func (h CommentHandler) LikeComment(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 
@@ -335,7 +338,7 @@ func (h CommentHandler) LikeComment(w http.ResponseWriter, r *http.Request) {
 // @Failure      401
 // @Failure      403
 // @Failure      500
-// @Router       /comments/unlike/{id} [post]
+// @Router       /comments/{id}/unlike [post]
 func (h CommentHandler) UnlikeComment(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
 

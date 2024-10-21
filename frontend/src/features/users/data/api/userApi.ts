@@ -15,13 +15,13 @@ export const userApi = {
   listPosts: async (id: string, limit: number, cursor?: string) => {
     if (cursor) {
       const response = await axiosInstance.get(
-        `/users/posts/${id}?limit=${limit}&cursor=${cursor}`,
+        `/users/${id}/posts?limit=${limit}&cursor=${cursor}`,
       );
 
       return response;
     } else {
       const response = await axiosInstance.get(
-        `/users/posts/${id}?limit=${limit}`,
+        `/users/${id}/posts?limit=${limit}`,
       );
 
       return response;
@@ -59,12 +59,12 @@ export const userApi = {
     return response;
   },
   getFollowers: async (id: string) => {
-    const response = await axiosInstance.get(`/users/followers/${id}`);
+    const response = await axiosInstance.get(`/users/${id}/followers}`);
 
     return response;
   },
   getFollowed: async (id: string) => {
-    const response = await axiosInstance.get(`/users/followed/${id}`);
+    const response = await axiosInstance.get(`/users/${id}/followed`);
 
     return response;
   },

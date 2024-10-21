@@ -30,7 +30,7 @@ func (h PostHandler) Routes() chi.Router {
 	r.Post("/likes/{user_id}_{post_id}", h.Like)         // POST /api/v1/posts/likes/{user_id}_{post_id} - Like a post by: id
 	r.Delete("/likes/{user_id}_{post_id}", h.Unlike)     // DELETE /api/v1/posts/likes/{user_id}_{post_id} - Unlike a post by: id
 	r.Get("/check/{user_id}_{post_id}", h.UserLikedPost) // GET /api/v1/posts/checkliked/{user_id}_{post_id} - Check if a user has liked a post by: id
-	r.Get("/likes/{id}", h.GetLikes)                     // GET /api/v1/posts/likes/{id} - Read a list of users who liked a post by: post_id
+	r.Get("/{id}/likes", h.GetLikes)                     // GET /api/v1/posts/{id}/likes - Read a list of users who liked a post by: post_id
 
 	r.Route("/{id}", func(r chi.Router) {
 		r.Get("/", h.GetPost)       // GET /api/v1/posts/{id} - Read a single post by: id
@@ -381,7 +381,7 @@ func (h PostHandler) UserLikedPost(w http.ResponseWriter, r *http.Request) {
 // @Failure         400
 // @Failure         401
 // @Failure         500
-// @Router          /posts/likes/{id} [get]
+// @Router          /posts/{id}/likes [get]
 func (h PostHandler) GetLikes(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 

@@ -56,8 +56,8 @@ export const postApi = {
 
     return response;
   },
-  getLikes: async (postId: string) => {
-    const response = await axiosInstance.get(`/posts/likes/${postId}`);
+  getLikes: async (id: string) => {
+    const response = await axiosInstance.get(`/posts/${id}/likes`);
 
     return response;
   },

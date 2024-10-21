@@ -81,8 +81,8 @@ export class PostUsecaseImpl implements IPostUsecase {
     return liked;
   }
 
-  async getLikes(postId: string): Promise<User[]> {
-    const users: User[] = await this.repository.getLikes(postId);
+  async getLikes(id: string): Promise<User[]> {
+    const users: User[] = await this.repository.getLikes(id);
 
     return users;
   }

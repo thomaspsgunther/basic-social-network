@@ -10,5 +10,5 @@ export interface IPostRepository {
   likePost(userId: string, postId: string): Promise<boolean>;
   unlikePost(userId: string, postId: string): Promise<boolean>;
   checkIfUserLikedPost(userId: string, postId: string): Promise<boolean>;
-  getLikes(postId: string): Promise<User[]>;
+  getLikes(id: string): Promise<User[]>;
 }

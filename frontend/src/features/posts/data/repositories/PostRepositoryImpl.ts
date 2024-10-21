@@ -57,8 +57,8 @@ export class PostRepositoryImpl implements IPostRepository {
     return liked;
   }
 
-  async getLikes(postId: string): Promise<User[]> {
-    const response = await postApi.getLikes(postId);
+  async getLikes(id: string): Promise<User[]> {
+    const response = await postApi.getLikes(id);
     const users: User[] = response.data.likes;
 
     return users;
