@@ -25,7 +25,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
   const [password, setPassword] = useState<string>('');
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
 
-  const isDisabled = username.trim() === '' || password.trim() === '';
+  const isDisabled: boolean = username.trim() === '' || password.trim() === '';
 
   const context = useContext(AuthContext);
   if (!context) {
@@ -162,10 +162,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#310d6b' as string,
     flex: 1,
     justifyContent: 'center',
-    padding: 20,
   },
   icon: {
-    marginLeft: 12,
+    marginLeft: 35,
   },
   input: {
     backgroundColor: '#250a4e' as string,
@@ -175,12 +174,12 @@ const styles = StyleSheet.create({
     color: '#fff' as string,
     marginBottom: 20,
     padding: 10,
-    width: '85%',
+    width: '76%',
   },
   inputPassword: {
     color: '#fff' as string,
     padding: 10,
-    width: '85%',
+    width: '76%',
   },
   logo: {
     color: '#fff' as string,
@@ -196,7 +195,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
     marginBottom: 20,
-    width: '85%',
+    width: '76%',
   },
   signUpButton: {
     marginTop: 10,

@@ -34,7 +34,6 @@ const lightTheme = StyleSheet.create({
     backgroundColor: '#F7F7F7' as string,
     flex: 1,
     justifyContent: 'center',
-    padding: 20,
   },
   filledIconButton: {
     alignItems: 'center',
@@ -53,7 +52,7 @@ const lightTheme = StyleSheet.create({
     color: 'black' as string,
     marginBottom: 20,
     padding: 10,
-    width: '85%',
+    width: '76%',
   },
 
   largeInput: {
@@ -65,7 +64,7 @@ const lightTheme = StyleSheet.create({
     height: 100,
     marginBottom: 20,
     padding: 10,
-    width: '85%',
+    width: '76%',
   },
   loadingOverlay: {
     alignItems: 'center',
@@ -126,7 +125,6 @@ const darkTheme = StyleSheet.create({
     backgroundColor: '#1C1C1C' as string,
     flex: 1,
     justifyContent: 'center',
-    padding: 20,
   },
   filledIconButton: {
     alignItems: 'center',
@@ -145,7 +143,7 @@ const darkTheme = StyleSheet.create({
     color: 'white' as string,
     marginBottom: 20,
     padding: 10,
-    width: '85%',
+    width: '76%',
   },
   largeInput: {
     backgroundColor: '#2A2A2A' as string,
@@ -156,7 +154,7 @@ const darkTheme = StyleSheet.create({
     height: 100,
     marginBottom: 20,
     padding: 10,
-    width: '85%',
+    width: '76%',
   },
   loadingOverlay: {
     alignItems: 'center',

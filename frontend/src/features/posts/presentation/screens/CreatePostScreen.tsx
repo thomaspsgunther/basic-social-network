@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginVertical: 208,
-    width: '80%',
+    width: '76%',
   },
   image: {
     height: '100%',
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     height: 400,
     marginVertical: 40,
     position: 'relative',
-    width: '100%',
+    width: '90%',
   },
   trashIconContainer: {
     backgroundColor: 'white' as string,

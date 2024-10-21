@@ -362,10 +362,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#310d6b' as string,
     flex: 1,
     justifyContent: 'center',
-    padding: 20,
   },
   icon: {
-    marginLeft: 12,
+    marginLeft: 35,
   },
   iconButton: {
     alignItems: 'center',
@@ -384,12 +383,12 @@ const styles = StyleSheet.create({
     color: '#fff' as string,
     marginBottom: 20,
     padding: 10,
-    width: '85%',
+    width: '76%',
   },
   inputPassword: {
     color: '#fff' as string,
     padding: 10,
-    width: '85%',
+    width: '76%',
   },
   logo: {
     color: '#fff' as string,
@@ -405,7 +404,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
     marginBottom: 20,
-    width: '85%',
+    width: '76%',
   },
   trashIconContainer: {
     backgroundColor: 'white' as string,
