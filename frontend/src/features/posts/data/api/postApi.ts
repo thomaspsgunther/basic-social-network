@@ -51,7 +51,7 @@ export const postApi = {
   },
   checkLiked: async (userId: string, postId: string) => {
     const response = await axiosInstance.get(
-      `/posts/check/${userId}_${postId}`,
+      `/posts/checkliked/${userId}_${postId}`,
     );
 
     return response;

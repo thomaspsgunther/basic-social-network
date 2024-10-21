@@ -25,12 +25,12 @@ type PostHandler struct {
 func (h PostHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Post("/", h.CreatePost)                            // POST /api/v1/posts - Create a new post
-	r.Get("/", h.ListPosts)                              // GET /api/v1/posts?limit=10&cursor=base64string - Read a list of posts using pagination
-	r.Post("/likes/{user_id}_{post_id}", h.Like)         // POST /api/v1/posts/likes/{user_id}_{post_id} - Like a post by: id
-	r.Delete("/likes/{user_id}_{post_id}", h.Unlike)     // DELETE /api/v1/posts/likes/{user_id}_{post_id} - Unlike a post by: id
-	r.Get("/check/{user_id}_{post_id}", h.UserLikedPost) // GET /api/v1/posts/checkliked/{user_id}_{post_id} - Check if a user has liked a post by: id
-	r.Get("/{id}/likes", h.GetLikes)                     // GET /api/v1/posts/{id}/likes - Read a list of users who liked a post by: post_id
+	r.Post("/", h.CreatePost)                                 // POST /api/v1/posts - Create a new post
+	r.Get("/", h.ListPosts)                                   // GET /api/v1/posts?limit=10&cursor=base64string - Read a list of posts using pagination
+	r.Post("/likes/{user_id}_{post_id}", h.Like)              // POST /api/v1/posts/likes/{user_id}_{post_id} - Like a post by: id
+	r.Delete("/likes/{user_id}_{post_id}", h.Unlike)          // DELETE /api/v1/posts/likes/{user_id}_{post_id} - Unlike a post by: id
+	r.Get("/checkliked/{user_id}_{post_id}", h.UserLikedPost) // GET /api/v1/posts/checkliked/{user_id}_{post_id} - Check if a user has liked a post by: id
+	r.Get("/{id}/likes", h.GetLikes)                          // GET /api/v1/posts/{id}/likes - Read a list of users who liked a post by: post_id
 
 	r.Route("/{id}", func(r chi.Router) {
 		r.Get("/", h.GetPost)       // GET /api/v1/posts/{id} - Read a single post by: id
