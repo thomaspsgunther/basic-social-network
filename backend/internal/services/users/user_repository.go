@@ -92,7 +92,7 @@ func (r *userRepositoryImpl) get(ctx context.Context, idList []uuid.UUID) ([]sha
 	var users []shared.User
 	for rows.Next() {
 		var user shared.User
-		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
+		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar, &user.PostCount, &user.FollowerCount, &user.FollowedCount); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
 		users = append(users, user)
