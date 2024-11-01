@@ -6,7 +6,9 @@ CREATE TABLE IF NOT EXISTS users (
     full_name text,
     description text,
     avatar text,
+    post_count int DEFAULT 0,
     follower_count int DEFAULT 0,
+    followed_count int DEFAULT 0,
 
     created_at timestamp DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated_at timestamp DEFAULT (NOW() AT TIME ZONE 'utc')

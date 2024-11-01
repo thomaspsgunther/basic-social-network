@@ -14,5 +14,7 @@ type User struct {
 	FullName      *string   `json:"fullName,omitempty"`
 	Description   *string   `json:"description,omitempty"`
 	Avatar        *string   `json:"avatar,omitempty"`
+	PostCount     int       `json:"postCount,omitempty"`
 	FollowerCount int       `json:"followerCount,omitempty"`
+	FollowedCount int       `json:"followedCount,omitempty"`
 }

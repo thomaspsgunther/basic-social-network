@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS migrations (
 --    $$ LANGUAGE 'plpgsql';
 
    
--- -- Update followers
+-- -- Update follower count
 -- CREATE OR REPLACE FUNCTION update_follower_counts()
 --     RETURNS TRIGGER AS $$
 --     BEGIN
@@ -30,7 +30,42 @@ CREATE TABLE IF NOT EXISTS migrations (
 --     END;
 --     $$ LANGUAGE 'plpgsql';
 
--- -- Update likes
+
+-- -- Update followed count
+-- CREATE OR REPLACE FUNCTION update_followed_counts()
+--     RETURNS TRIGGER AS $$
+--     BEGIN
+--         UPDATE users u
+--         SET followed_count = (
+--             SELECT COUNT(*)
+--             FROM followers f
+--             WHERE f.follower_id = u.id
+--         )
+--         WHERE EXISTS (SELECT 1 FROM users WHERE id = u.id);
+
+--         RETURN NULL;
+--     END;
+--     $$ LANGUAGE 'plpgsql';
+
+
+-- -- Update post count
+-- CREATE OR REPLACE FUNCTION update_post_counts()
+--     RETURNS TRIGGER AS $$
+--     BEGIN
+--         UPDATE users u
+--         SET post_count = (
+--             SELECT COUNT(*)
+--             FROM posts p
+--             WHERE p.user_id = u.id
+--         )
+--         WHERE EXISTS (SELECT 1 FROM users WHERE id = u.id);
+
+--         RETURN NULL;
+--     END;
+--     $$ LANGUAGE 'plpgsql';
+
+
+-- -- Update like count
 -- CREATE OR REPLACE FUNCTION update_like_counts()
 --     RETURNS TRIGGER AS $$
 --     BEGIN
@@ -46,7 +81,8 @@ CREATE TABLE IF NOT EXISTS migrations (
 --     END;
 --     $$ LANGUAGE 'plpgsql';
 
--- -- Update comments
+
+-- -- Update comment count
 -- CREATE OR REPLACE FUNCTION update_comment_counts()
 --     RETURNS TRIGGER AS $$
 --     BEGIN

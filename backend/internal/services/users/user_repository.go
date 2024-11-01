@@ -81,7 +81,7 @@ func (r *userRepositoryImpl) get(ctx context.Context, idList []uuid.UUID) ([]sha
 	}
 
 	placeholdersClause := strings.Join(placeholders, ", ")
-	query := fmt.Sprintf("SELECT id, username, full_name, avatar FROM users WHERE id IN (%s)", placeholdersClause)
+	query := fmt.Sprintf("SELECT id, username, full_name, avatar, post_count, follower_count, followed_count FROM users WHERE id IN (%s)", placeholdersClause)
 
 	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {

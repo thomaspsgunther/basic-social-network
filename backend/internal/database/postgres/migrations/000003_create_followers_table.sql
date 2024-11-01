@@ -7,3 +7,4 @@ CREATE TABLE IF NOT EXISTS followers (
     PRIMARY KEY (follower_id, followed_id)
 );
 CREATE TRIGGER update_follower_count_trigger AFTER INSERT OR DELETE ON followers FOR EACH STATEMENT EXECUTE FUNCTION update_follower_counts();
+CREATE TRIGGER update_followed_count_trigger AFTER INSERT OR DELETE ON followers FOR EACH STATEMENT EXECUTE FUNCTION update_followed_counts();
