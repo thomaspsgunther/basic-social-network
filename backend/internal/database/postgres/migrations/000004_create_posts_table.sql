@@ -11,4 +11,5 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 CREATE INDEX IF NOT EXISTS idx_posts_pagination ON posts (created_at, id);
 CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
+CREATE TRIGGER update_post_count_trigger AFTER INSERT OR DELETE ON posts FOR EACH STATEMENT EXECUTE FUNCTION update_post_counts();
 CREATE TRIGGER update_modified_time BEFORE UPDATE ON posts FOR EACH ROW EXECUTE FUNCTION update_modified_column();
