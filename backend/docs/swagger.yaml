@@ -64,6 +64,8 @@ definitions:
         type: string
       email:
         type: string
+      followedCount:
+        type: integer
       followerCount:
         type: integer
       fullName:
@@ -72,6 +74,8 @@ definitions:
         type: string
       password:
         type: string
+      postCount:
+        type: integer
       username:
         type: string
     type: object

@@ -1489,6 +1489,9 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "followedCount": {
+                    "type": "integer"
+                },
                 "followerCount": {
                     "type": "integer"
                 },
@@ -1500,6 +1503,9 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string"
+                },
+                "postCount": {
+                    "type": "integer"
                 },
                 "username": {
                     "type": "string"
