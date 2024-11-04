@@ -2,6 +2,7 @@
 backend/logs/*.log
 backend/logs/*.gz
 backend/.env
+backend/tmp/
 
 # frontend
 
