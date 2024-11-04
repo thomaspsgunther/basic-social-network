@@ -8,7 +8,6 @@ import (
 	"time"
 	"y-net/internal/logger"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -67,17 +66,6 @@ func postgresConfig() (*pgxpool.Config, error) {
 	dbConfig.MaxConnIdleTime = defaultMaxConnIdleTime
 	dbConfig.HealthCheckPeriod = defaultHealthCheckPeriod
 	dbConfig.ConnConfig.ConnectTimeout = defaultConnectTimeout
-
-	dbConfig.BeforeAcquire = func(ctx context.Context, c *pgx.Conn) bool {
-		return true
-	}
-
-	dbConfig.AfterRelease = func(c *pgx.Conn) bool {
-		return true
-	}
-
-	dbConfig.BeforeClose = func(c *pgx.Conn) {
-	}
 
 	return dbConfig, nil
 }

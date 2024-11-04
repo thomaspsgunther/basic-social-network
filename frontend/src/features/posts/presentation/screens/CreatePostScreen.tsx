@@ -16,6 +16,7 @@ import {
 import { AuthContext } from '@/src/core/context/AuthContext';
 import { useTheme } from '@/src/core/context/ThemeContext';
 import { CreatePostStackScreenProps } from '@/src/core/navigation/types';
+import { appColors } from '@/src/core/theme/appColors';
 import { darkTheme, lightTheme } from '@/src/core/theme/appTheme';
 import { Post } from '@/src/features/shared/data/models/Post';
 
@@ -43,6 +44,7 @@ export const CreatePostScreen: React.FC<
 
   const { isDarkMode } = useTheme();
   const currentTheme = isDarkMode ? darkTheme : lightTheme;
+  const currentColors = isDarkMode ? appColors.dark : appColors.light;
 
   const handlePost = async () => {
     setIsLoading(true);
@@ -58,11 +60,11 @@ export const CreatePostScreen: React.FC<
             post.description = description;
           }
 
-          const _newPost = await postUsecase.createPost(post);
+          const newPost = await postUsecase.createPost(post);
           clearImage();
           setDescription('');
           setIsLoading(false);
-          navigation.navigate('PostDetail');
+          navigation.navigate('PostDetail', { postId: newPost.id });
         } else {
           setIsLoading(false);
           Alert.alert('Oops, algo deu errado');
@@ -177,10 +179,7 @@ export const CreatePostScreen: React.FC<
     <View style={currentTheme.container}>
       {isLoading && (
         <View style={currentTheme.loadingOverlay}>
-          <ActivityIndicator
-            size="large"
-            color={isDarkMode ? '#5a3e9b' : '#310d6b'}
-          />
+          <ActivityIndicator size="large" color={currentColors.primary} />
         </View>
       )}
 
@@ -228,7 +227,7 @@ export const CreatePostScreen: React.FC<
         textAlignVertical="top"
       />
 
-      {!isLoading ? (
+      {!isLoading && (
         <TouchableOpacity
           style={styles.bottomIconButton}
           onPress={handlePost}
@@ -237,10 +236,10 @@ export const CreatePostScreen: React.FC<
           <Ionicons
             name="send"
             size={45}
-            color={isDisabled ? 'gray' : isDarkMode ? 'white' : 'black'}
+            color={isDisabled ? currentColors.disabled : currentColors.icon}
           />
         </TouchableOpacity>
-      ) : null}
+      )}
     </View>
   );
 };

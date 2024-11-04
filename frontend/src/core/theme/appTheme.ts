@@ -1,16 +1,24 @@
 import { StyleSheet } from 'react-native';
 
+import { appColors } from './appColors';
+
 const lightTheme = StyleSheet.create({
+  backButton: {
+    left: 15,
+    position: 'absolute',
+    top: 35,
+    zIndex: 1,
+  },
   bottomTabBar: {
-    backgroundColor: '#F7F7F7' as string,
-    borderTopColor: 'darkgray' as string,
+    backgroundColor: appColors.light.background,
+    borderTopColor: appColors.light.border,
     borderTopWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 8,
   },
   button: {
-    backgroundColor: '#310d6b' as string,
+    backgroundColor: appColors.light.primary,
     borderRadius: 5,
     marginBottom: 20,
     marginTop: 10,
@@ -18,7 +26,7 @@ const lightTheme = StyleSheet.create({
     paddingVertical: 12,
   },
   buttonDisabled: {
-    backgroundColor: 'gray' as string,
+    backgroundColor: appColors.light.disabled,
     borderRadius: 5,
     marginBottom: 20,
     marginTop: 10,
@@ -31,13 +39,13 @@ const lightTheme = StyleSheet.create({
   },
   container: {
     alignItems: 'center',
-    backgroundColor: '#F7F7F7' as string,
+    backgroundColor: appColors.light.background,
     flex: 1,
     justifyContent: 'center',
   },
   filledIconButton: {
     alignItems: 'center',
-    backgroundColor: '#310d6b' as string,
+    backgroundColor: appColors.light.primary,
     borderRadius: 5,
     flex: 1,
     justifyContent: 'center',
@@ -45,22 +53,22 @@ const lightTheme = StyleSheet.create({
     padding: 10,
   },
   input: {
-    backgroundColor: '#E0E0E0' as string,
-    borderColor: 'darkgray' as string,
+    backgroundColor: appColors.light.input,
+    borderColor: appColors.light.border,
     borderRadius: 5,
     borderWidth: 1,
-    color: 'black' as string,
+    color: appColors.light.text,
     marginBottom: 20,
     padding: 10,
     width: '76%',
   },
 
   largeInput: {
-    backgroundColor: '#E0E0E0' as string,
-    borderColor: 'darkgray' as string,
+    backgroundColor: appColors.light.input,
+    borderColor: appColors.light.border,
     borderRadius: 5,
     borderWidth: 1,
-    color: 'black' as string,
+    color: appColors.light.text,
     height: 100,
     marginBottom: 20,
     padding: 10,
@@ -68,7 +76,7 @@ const lightTheme = StyleSheet.create({
   },
   loadingOverlay: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)' as string,
+    backgroundColor: appColors.light.overlay,
     bottom: 0,
     justifyContent: 'center',
     left: 0,
@@ -78,30 +86,43 @@ const lightTheme = StyleSheet.create({
     zIndex: 1000,
   },
   text: {
-    color: 'black' as string,
+    color: appColors.light.text,
   },
   titleText: {
     alignItems: 'center',
-    color: 'black' as string,
+    color: appColors.light.text,
     fontSize: 26,
     justifyContent: 'center',
     position: 'absolute',
     top: 35,
     zIndex: 1,
   },
+  topRow: {
+    flexDirection: 'row',
+    position: 'absolute',
+    right: 15,
+    top: 35,
+    zIndex: 1,
+  },
 });
 
 const darkTheme = StyleSheet.create({
+  backButton: {
+    left: 15,
+    position: 'absolute',
+    top: 35,
+    zIndex: 1,
+  },
   bottomTabBar: {
-    backgroundColor: '#1C1C1C' as string,
-    borderTopColor: 'lightgray' as string,
+    backgroundColor: appColors.dark.background,
+    borderTopColor: appColors.dark.border,
     borderTopWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 8,
   },
   button: {
-    backgroundColor: '#5a3e9b' as string,
+    backgroundColor: appColors.dark.primary,
     borderRadius: 5,
     marginBottom: 20,
     marginTop: 10,
@@ -109,7 +130,7 @@ const darkTheme = StyleSheet.create({
     paddingVertical: 12,
   },
   buttonDisabled: {
-    backgroundColor: 'gray' as string,
+    backgroundColor: appColors.dark.disabled,
     borderRadius: 5,
     marginBottom: 20,
     marginTop: 10,
@@ -122,13 +143,13 @@ const darkTheme = StyleSheet.create({
   },
   container: {
     alignItems: 'center',
-    backgroundColor: '#1C1C1C' as string,
+    backgroundColor: appColors.dark.background,
     flex: 1,
     justifyContent: 'center',
   },
   filledIconButton: {
     alignItems: 'center',
-    backgroundColor: '#5a3e9b' as string,
+    backgroundColor: appColors.dark.primary,
     borderRadius: 5,
     flex: 1,
     justifyContent: 'center',
@@ -136,21 +157,22 @@ const darkTheme = StyleSheet.create({
     padding: 10,
   },
   input: {
-    backgroundColor: '#2A2A2A' as string,
-    borderColor: 'lightgray' as string,
+    backgroundColor: appColors.dark.input,
+    borderColor: appColors.dark.border,
     borderRadius: 5,
     borderWidth: 1,
-    color: 'white' as string,
+    color: appColors.dark.text,
     marginBottom: 20,
     padding: 10,
     width: '76%',
   },
+
   largeInput: {
-    backgroundColor: '#2A2A2A' as string,
-    borderColor: 'lightgray' as string,
+    backgroundColor: appColors.dark.input,
+    borderColor: appColors.dark.border,
     borderRadius: 5,
     borderWidth: 1,
-    color: 'white' as string,
+    color: appColors.dark.text,
     height: 100,
     marginBottom: 20,
     padding: 10,
@@ -158,7 +180,7 @@ const darkTheme = StyleSheet.create({
   },
   loadingOverlay: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)' as string,
+    backgroundColor: appColors.dark.overlay,
     bottom: 0,
     justifyContent: 'center',
     left: 0,
@@ -168,14 +190,21 @@ const darkTheme = StyleSheet.create({
     zIndex: 1000,
   },
   text: {
-    color: 'white' as string,
+    color: appColors.dark.text,
   },
   titleText: {
     alignItems: 'center',
-    color: 'white' as string,
+    color: appColors.dark.text,
     fontSize: 26,
     justifyContent: 'center',
     position: 'absolute',
+    top: 35,
+    zIndex: 1,
+  },
+  topRow: {
+    flexDirection: 'row',
+    position: 'absolute',
+    right: 15,
     top: 35,
     zIndex: 1,
   },

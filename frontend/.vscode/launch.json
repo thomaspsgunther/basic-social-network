@@ -3,9 +3,19 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run Expo Android",
+      "name": "Run Expo (Android)",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["expo", "run:android"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Expo (Web)",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["expo", "start"],
+      "args": ["--web"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     }

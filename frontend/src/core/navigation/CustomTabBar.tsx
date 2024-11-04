@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '../context/ThemeContext';
+import { appColors } from '../theme/appColors';
 import { darkTheme, lightTheme } from '../theme/appTheme';
 
 const CustomTabBar = ({
@@ -12,6 +13,7 @@ const CustomTabBar = ({
 }: BottomTabBarProps) => {
   const { isDarkMode } = useTheme();
   const currentTheme = isDarkMode ? darkTheme : lightTheme;
+  const currentColors = isDarkMode ? appColors.dark : appColors.light;
 
   return (
     <View style={currentTheme.bottomTabBar}>
@@ -19,20 +21,13 @@ const CustomTabBar = ({
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
 
-        const iconName = options.tabBarIcon
-          ? options.tabBarIcon({
-              focused: isFocused,
-              color: isDarkMode
-                ? isFocused
-                  ? '#5a3e9b'
-                  : 'gray'
-                : isFocused
-                  ? '#310d6b'
-                  : 'gray',
-              size: 32,
-            })
-          : null;
-
+        const iconName =
+          options.tabBarIcon &&
+          options.tabBarIcon({
+            focused: isFocused,
+            color: isFocused ? currentColors.primary : currentColors.unfocused,
+            size: 32,
+          });
         const onPress = () => {
           const event = navigation.emit({
             type: 'tabPress',

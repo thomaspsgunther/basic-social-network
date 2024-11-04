@@ -1,18 +1,127 @@
-import { useNavigation } from '@react-navigation/native';
-import React from 'react';
-import { Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import React, { useContext, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
+import {
+  IconDropdown,
+  IconDropdownOption,
+} from '@/src/core/components/iconDropdown';
+import { AuthContext } from '@/src/core/context/AuthContext';
 import { useTheme } from '@/src/core/context/ThemeContext';
+import { FeedStackParamList } from '@/src/core/navigation/types';
+import { appColors } from '@/src/core/theme/appColors';
 import { darkTheme, lightTheme } from '@/src/core/theme/appTheme';
+import { Post } from '@/src/features/shared/data/models/Post';
+
+import { PostRepositoryImpl } from '../../data/repositories/PostRepositoryImpl';
+import { PostUsecaseImpl } from '../../domain/usecases/PostUsecase';
 
 export const PostDetailScreen: React.FC = () => {
-  const _navigation = useNavigation();
+  const navigation = useNavigation();
+
+  const route = useRoute<RouteProp<FeedStackParamList, 'PostDetail'>>();
+  const { postId } = route.params;
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [post, setPost] = useState<Post>();
+  const postRepository = new PostRepositoryImpl();
+  const postUsecase = new PostUsecaseImpl(postRepository);
+
+  const canGoBack = navigation.canGoBack();
+
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('postdetailscreen must be used within an authprovider');
+  }
+
+  const { authUser } = context;
+
   const { isDarkMode } = useTheme();
   const currentTheme = isDarkMode ? darkTheme : lightTheme;
+  const currentColors = isDarkMode ? appColors.dark : appColors.light;
+
+  useEffect(() => {
+    const loadPost = async () => {
+      setIsLoading(true);
+      try {
+        const mainPost: Post = await postUsecase.getPost(postId);
+        if (mainPost) {
+          setIsLoading(false);
+          setPost(mainPost);
+        } else {
+          setIsLoading(false);
+          throw new Error('missing post');
+        }
+      } catch (_error) {
+        setIsLoading(false);
+        Alert.alert('Oops, algo deu errado');
+      }
+    };
+
+    if (!post) {
+      loadPost();
+    }
+  }, [post]);
+
+  const options: IconDropdownOption[] = [
+    {
+      label: 'Excluir Post',
+      iconName: 'trash',
+    },
+  ];
 
   return (
     <View style={currentTheme.container}>
-      <Text style={currentTheme.text}>Publicação</Text>
+      {canGoBack && (
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={currentTheme.backButton}
+        >
+          <Ionicons name="arrow-back" size={34} color={currentColors.icon} />
+        </TouchableOpacity>
+      )}
+      {!isLoading ? (
+        post && (
+          <>
+            {authUser && post.user && authUser.id === post.user.id && (
+              <View style={currentTheme.topRow}>
+                <IconDropdown options={options}></IconDropdown>
+              </View>
+            )}
+
+            <View style={styles.imageContainer}>
+              <Image
+                source={{ uri: `data:image/jpeg;base64,${post.image}` }}
+                style={styles.image}
+                resizeMode="contain"
+              />
+            </View>
+          </>
+        )
+      ) : (
+        <ActivityIndicator size="large" color={currentColors.primary} />
+      )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  image: {
+    height: '100%',
+    width: '100%',
+  },
+  imageContainer: {
+    height: 400,
+    marginVertical: 40,
+    position: 'relative',
+    width: '100%',
+  },
+});

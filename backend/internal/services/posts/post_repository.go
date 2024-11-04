@@ -77,7 +77,7 @@ func (r *postRepositoryImpl) getPosts(ctx context.Context, limit int, lastCreate
 			SELECT p.id, p.user_id, u.username, u.avatar, p.image, p.description, p.like_count, p.comment_count, p.created_at
 			FROM posts p
 			INNER JOIN users u ON p.user_id = u.id
-			ORDER BY created_at DESC, id DESC
+			ORDER BY p.created_at DESC, p.id DESC
 			LIMIT $1
 		`
 		args = append(args, limit)
@@ -86,8 +86,8 @@ func (r *postRepositoryImpl) getPosts(ctx context.Context, limit int, lastCreate
 			SELECT p.id, p.user_id, u.username, u.avatar, p.image, p.description, p.like_count, p.comment_count, p.created_at
 			FROM posts p
 			INNER JOIN users u ON p.user_id = u.id
-			WHERE (created_at < $1 OR (created_at = $1 AND id < $2))
-			ORDER BY created_at DESC, id DESC
+			WHERE (p.created_at < $1 OR (p.created_at = $1 AND p.id < $2))
+			ORDER BY p.created_at DESC, p.id DESC
 			LIMIT $3
 		`
 		args = append(args, lastCreatedAt, lastId, limit)
@@ -135,7 +135,7 @@ func (r *postRepositoryImpl) getPost(ctx context.Context, id uuid.UUID) (shared.
 		SELECT p.id, p.user_id, u.username, u.avatar, p.image, p.description, p.like_count, p.comment_count, p.created_at
 		FROM posts p
 		INNER JOIN users u ON p.user_id = u.id
-		WHERE id = $1
+		WHERE p.id = $1
 	`
 
 	var post shared.Post
@@ -143,7 +143,7 @@ func (r *postRepositoryImpl) getPost(ctx context.Context, id uuid.UUID) (shared.
 		ctx,
 		query,
 		id,
-	).Scan(&post.ID, &post.User.ID, &post.User.Username, &post.User.Avatar, &post.Image, &post.Description, &post.LikeCount)
+	).Scan(&post.ID, &post.User.ID, &post.User.Username, &post.User.Avatar, &post.Image, &post.Description, &post.LikeCount, &post.CommentCount, &post.CreatedAt)
 	if err != nil {
 		return shared.Post{}, fmt.Errorf("failed to scan post: %w", err)
 	}

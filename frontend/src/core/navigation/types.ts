@@ -17,13 +17,13 @@ export type TabParamList = {
 
 export type FeedStackParamList = {
   Feed: undefined;
-  PostDetail: undefined;
+  PostDetail: { postId: string };
   UserProfile: undefined;
 };
 
 export type CreatePostStackParamList = {
   CreatePost: undefined;
-  PostDetail: undefined;
+  PostDetail: { postId: string };
   UserProfile: undefined;
 };
 

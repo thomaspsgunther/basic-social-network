@@ -32,6 +32,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   const [email, setEmail] = useState<string>('');
   const [fullName, setFullName] = useState<string>('');
 
+  const canGoBack = navigation.canGoBack();
   const isDisabled: boolean = username.trim() === '' || password.trim() === '';
 
   const context = useContext(AuthContext);
@@ -202,12 +203,14 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={styles.backButton}
-      >
-        <Ionicons name="arrow-back" size={34} color="#fff" />
-      </TouchableOpacity>
+      {canGoBack && (
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={34} color="#fff" />
+        </TouchableOpacity>
+      )}
 
       <Text style={styles.logo}>y</Text>
 

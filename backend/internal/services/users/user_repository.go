@@ -165,7 +165,7 @@ func (r *userRepositoryImpl) getPostsFromUser(ctx context.Context, userId uuid.U
 
 	if lastCreatedAt.IsZero() && lastId == uuid.Nil {
 		query = `
-			SELECT id, image
+			SELECT id, image, created_at
 			FROM posts
 			WHERE user_id = $1
 			ORDER BY created_at DESC, id DESC
@@ -174,7 +174,7 @@ func (r *userRepositoryImpl) getPostsFromUser(ctx context.Context, userId uuid.U
 		args = append(args, userId, limit)
 	} else {
 		query = `
-			SELECT id, image
+			SELECT id, image, created_at
 			FROM posts
 			WHERE user_id = $1
 			AND (created_at < $2 OR (created_at = $2 AND id < $3))
@@ -193,7 +193,7 @@ func (r *userRepositoryImpl) getPostsFromUser(ctx context.Context, userId uuid.U
 	var posts []shared.Post
 	for rows.Next() {
 		var post shared.Post
-		if err := rows.Scan(&post.ID, &post.Image); err != nil {
+		if err := rows.Scan(&post.ID, &post.Image, &post.CreatedAt); err != nil {
 			return nil, fmt.Errorf("failed to scan post: %w", err)
 		}
 		posts = append(posts, post)
