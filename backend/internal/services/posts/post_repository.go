@@ -25,13 +25,7 @@ type iPostRepository interface {
 type postRepositoryImpl struct{}
 
 func (r *postRepositoryImpl) create(ctx context.Context, post shared.Post) (uuid.UUID, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -54,13 +48,7 @@ func (r *postRepositoryImpl) create(ctx context.Context, post shared.Post) (uuid
 }
 
 func (r *postRepositoryImpl) getPosts(ctx context.Context, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]shared.Post, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -116,13 +104,7 @@ func (r *postRepositoryImpl) getPosts(ctx context.Context, limit int, lastCreate
 }
 
 func (r *postRepositoryImpl) getPost(ctx context.Context, id uuid.UUID) (shared.Post, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return shared.Post{}, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return shared.Post{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -152,13 +134,7 @@ func (r *postRepositoryImpl) getPost(ctx context.Context, id uuid.UUID) (shared.
 }
 
 func (r *postRepositoryImpl) update(ctx context.Context, post shared.Post, id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -180,13 +156,7 @@ func (r *postRepositoryImpl) update(ctx context.Context, post shared.Post, id uu
 }
 
 func (r *postRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -204,13 +174,7 @@ func (r *postRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error {
 }
 
 func (i *postRepositoryImpl) like(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -232,13 +196,7 @@ func (i *postRepositoryImpl) like(ctx context.Context, userId uuid.UUID, postId 
 }
 
 func (i *postRepositoryImpl) unlike(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -256,13 +214,7 @@ func (i *postRepositoryImpl) unlike(ctx context.Context, userId uuid.UUID, postI
 }
 
 func (i *postRepositoryImpl) userLikedPost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) (bool, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return false, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -281,13 +233,7 @@ func (i *postRepositoryImpl) userLikedPost(ctx context.Context, userId uuid.UUID
 }
 
 func (i *postRepositoryImpl) getLikes(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}

@@ -21,13 +21,7 @@ type iCommentRepository interface {
 type commentRepositoryImpl struct{}
 
 func (r *commentRepositoryImpl) create(ctx context.Context, comment Comment) (uuid.UUID, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -50,13 +44,7 @@ func (r *commentRepositoryImpl) create(ctx context.Context, comment Comment) (uu
 }
 
 func (r *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -96,13 +84,7 @@ func (r *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUI
 }
 
 func (r *commentRepositoryImpl) get(ctx context.Context, id uuid.UUID) (Comment, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return Comment{}, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return Comment{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -124,13 +106,7 @@ func (r *commentRepositoryImpl) get(ctx context.Context, id uuid.UUID) (Comment,
 }
 
 func (r *commentRepositoryImpl) update(ctx context.Context, comment Comment, id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -152,13 +128,7 @@ func (r *commentRepositoryImpl) update(ctx context.Context, comment Comment, id 
 }
 
 func (r *commentRepositoryImpl) like(ctx context.Context, id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -180,13 +150,7 @@ func (r *commentRepositoryImpl) like(ctx context.Context, id uuid.UUID) error {
 }
 
 func (r *commentRepositoryImpl) unlike(ctx context.Context, id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -208,13 +172,7 @@ func (r *commentRepositoryImpl) unlike(ctx context.Context, id uuid.UUID) error 
 }
 
 func (r *commentRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}

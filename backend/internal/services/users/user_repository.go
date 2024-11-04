@@ -29,13 +29,7 @@ type iUserRepository interface {
 type userRepositoryImpl struct{}
 
 func (r *userRepositoryImpl) create(ctx context.Context, user shared.User) (uuid.UUID, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -58,13 +52,7 @@ func (r *userRepositoryImpl) create(ctx context.Context, user shared.User) (uuid
 }
 
 func (r *userRepositoryImpl) get(ctx context.Context, idList []uuid.UUID) ([]shared.User, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -105,13 +93,7 @@ func (r *userRepositoryImpl) get(ctx context.Context, idList []uuid.UUID) ([]sha
 }
 
 func (r *userRepositoryImpl) getBySearch(ctx context.Context, searchStr string) ([]shared.User, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -146,13 +128,7 @@ func (r *userRepositoryImpl) getBySearch(ctx context.Context, searchStr string) 
 }
 
 func (r *userRepositoryImpl) getPostsFromUser(ctx context.Context, userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]shared.Post, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -206,13 +182,7 @@ func (r *userRepositoryImpl) getPostsFromUser(ctx context.Context, userId uuid.U
 }
 
 func (r *userRepositoryImpl) update(ctx context.Context, user shared.User, id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -245,13 +215,7 @@ func (r *userRepositoryImpl) update(ctx context.Context, user shared.User, id uu
 }
 
 func (r *userRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -269,13 +233,7 @@ func (r *userRepositoryImpl) delete(ctx context.Context, id uuid.UUID) error {
 }
 
 func (r *userRepositoryImpl) follow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -297,13 +255,7 @@ func (r *userRepositoryImpl) follow(ctx context.Context, followerId uuid.UUID, f
 }
 
 func (r *userRepositoryImpl) unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -321,13 +273,7 @@ func (r *userRepositoryImpl) unfollow(ctx context.Context, followerId uuid.UUID,
 }
 
 func (r *userRepositoryImpl) userFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return false, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -346,13 +292,7 @@ func (r *userRepositoryImpl) userFollowsUser(ctx context.Context, followerId uui
 }
 
 func (r *userRepositoryImpl) getFollowers(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -383,13 +323,7 @@ func (r *userRepositoryImpl) getFollowers(ctx context.Context, id uuid.UUID) ([]
 }
 
 func (r *userRepositoryImpl) getFollowed(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
-	conn, err := database.Postgres.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}

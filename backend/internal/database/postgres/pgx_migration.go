@@ -17,18 +17,12 @@ type sqlMigration struct {
 }
 
 func PgxMigration(ctx context.Context) error {
-	conn, err := Postgres.Acquire(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
 	// Check previous migrations
 	var existingMigrations []string
 
 	logger.ServerLogger.Info("checking for migrations")
 
-	rows, err := conn.Query(ctx, "SELECT file FROM migrations")
+	rows, err := Postgres.Query(ctx, "SELECT file FROM migrations")
 	if err != nil {
 		return fmt.Errorf("error querying migrations table: %w", err)
 	}
@@ -54,7 +48,7 @@ func PgxMigration(ctx context.Context) error {
 	logger.ServerLogger.Info(fmt.Sprintf("number of migrations: %v", len(migrations)))
 
 	// Run migrations in a transaction
-	tx, err := conn.Begin(ctx)
+	tx, err := Postgres.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
