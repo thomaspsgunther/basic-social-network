@@ -2,7 +2,7 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import { useTheme } from '../context/ThemeContext';
+import { useAppTheme } from '../context/ThemeContext';
 import { appColors } from '../theme/appColors';
 import { darkTheme, lightTheme } from '../theme/appTheme';
 
@@ -11,7 +11,7 @@ const CustomTabBar = ({
   descriptors,
   navigation,
 }: BottomTabBarProps) => {
-  const { isDarkMode } = useTheme();
+  const { isDarkMode } = useAppTheme();
   const currentTheme = isDarkMode ? darkTheme : lightTheme;
   const currentColors = isDarkMode ? appColors.dark : appColors.light;
 

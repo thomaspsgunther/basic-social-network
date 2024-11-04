@@ -40,10 +40,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   );
 };
 
-export const useTheme = (): ThemeContextType => {
+export const useAppTheme = (): ThemeContextType => {
   const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error('usetheme must be used within a themeprovider');
+    throw new Error('useapptheme must be used within a themeprovider');
   }
 
   return context;

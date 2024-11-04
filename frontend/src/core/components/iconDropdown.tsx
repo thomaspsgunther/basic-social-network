@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Dimensions,
   Modal,
   StyleSheet,
   Text,
@@ -9,8 +10,8 @@ import {
   View,
 } from 'react-native';
 
-// import { useTheme } from '../context/ThemeContext';
-// import { appColors } from '../theme/appColors';
+import { useAppTheme } from '../context/ThemeContext';
+import { appColors } from '../theme/appColors';
 
 export interface IconDropdownOption {
   label: string;
@@ -22,16 +23,79 @@ interface IconDropdownProps {
   options: IconDropdownOption[];
 }
 
-// const { isDarkMode } = useTheme();
-// const currentColors = isDarkMode ? appColors.dark : appColors.light;
+const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
 export const IconDropdown: React.FC<IconDropdownProps> = ({ options }) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
+  const [modalSize, setModalSize] = useState({ width: 0, height: 0 });
+
+  const { isDarkMode } = useAppTheme();
+  const currentColors = isDarkMode ? appColors.dark : appColors.light;
+
+  const styles = StyleSheet.create({
+    icon: {
+      marginRight: 10,
+    },
+    item: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      padding: 10,
+    },
+    itemText: {
+      color: currentColors.text,
+      fontSize: 16,
+    },
+    modalContainer: {
+      backgroundColor: currentColors.background,
+      borderRadius: 8,
+      elevation: 5,
+      padding: 10,
+      position: 'absolute',
+      shadowColor: currentColors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+    },
+    overlay: {
+      flex: 1,
+    },
+  });
+
+  const iconRef = useRef<TouchableOpacity | null>(null);
+  const modalRef = useRef<View | null>(null);
+
+  const handlePress = () => {
+    if (iconRef.current) {
+      iconRef.current.measure((_, __, ___, height, px, py) => {
+        setModalPosition({ top: py + height - 20, left: px + 20 });
+        setModalVisible(true);
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (modalVisible && modalSize.height > 0) {
+      const calculatedTop = Math.min(
+        modalPosition.top,
+        screenHeight - modalSize.height - 20,
+      );
+      const calculatedLeft = Math.min(
+        modalPosition.left,
+        screenWidth - modalSize.width - 20,
+      );
+      setModalPosition({ top: calculatedTop, left: calculatedLeft });
+    }
+  }, [modalVisible, modalSize]);
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={() => setModalVisible(true)}>
-        <Ionicons name="ellipsis-vertical" size={24} color="#000" />
+    <View>
+      <TouchableOpacity ref={iconRef} onPress={handlePress}>
+        <Ionicons
+          name="ellipsis-vertical"
+          size={34}
+          color={currentColors.icon}
+        />
       </TouchableOpacity>
 
       <Modal
@@ -43,7 +107,17 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({ options }) => {
         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
           <View style={styles.overlay} />
         </TouchableWithoutFeedback>
-        <View style={styles.modalContainer}>
+        <View
+          ref={modalRef}
+          style={[
+            styles.modalContainer,
+            { top: modalPosition.top, left: modalPosition.left },
+          ]}
+          onLayout={(event) => {
+            const { width, height } = event.nativeEvent.layout;
+            setModalSize({ width, height });
+          }}
+        >
           {options.map((option, index) => (
             <TouchableOpacity
               key={index}
@@ -58,8 +132,8 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({ options }) => {
               {option.iconName && (
                 <Ionicons
                   name={option.iconName}
-                  size={20}
-                  color="#000"
+                  size={24}
+                  color={currentColors.icon}
                   style={styles.icon}
                 />
               )}
@@ -71,39 +145,3 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({ options }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-  },
-  icon: {
-    marginRight: 10,
-  },
-  item: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    padding: 10,
-  },
-  itemText: {
-    fontSize: 16,
-  },
-  modalContainer: {
-    // backgroundColor: currentColors.background,
-    borderRadius: 8,
-    elevation: 5,
-    padding: 10,
-    position: 'absolute',
-    right: 20,
-    // shadowColor: currentColors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    top: 40,
-  },
-  overlay: {
-    // backgroundColor: currentColors.overlay,
-    flex: 1,
-  },
-});

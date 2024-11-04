@@ -5,7 +5,9 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -15,7 +17,7 @@ import {
   IconDropdownOption,
 } from '@/src/core/components/iconDropdown';
 import { AuthContext } from '@/src/core/context/AuthContext';
-import { useTheme } from '@/src/core/context/ThemeContext';
+import { useAppTheme } from '@/src/core/context/ThemeContext';
 import { FeedStackParamList } from '@/src/core/navigation/types';
 import { appColors } from '@/src/core/theme/appColors';
 import { darkTheme, lightTheme } from '@/src/core/theme/appTheme';
@@ -44,7 +46,7 @@ export const PostDetailScreen: React.FC = () => {
 
   const { authUser } = context;
 
-  const { isDarkMode } = useTheme();
+  const { isDarkMode } = useAppTheme();
   const currentTheme = isDarkMode ? darkTheme : lightTheme;
   const currentColors = isDarkMode ? appColors.dark : appColors.light;
 
@@ -73,13 +75,25 @@ export const PostDetailScreen: React.FC = () => {
 
   const options: IconDropdownOption[] = [
     {
-      label: 'Excluir Post',
+      label: 'Excluir Publicação',
       iconName: 'trash',
+      onSelect: async () => {
+        if (post) {
+          try {
+            await postUsecase.deletePost(post.id);
+            if (canGoBack) {
+              navigation.goBack();
+            }
+          } catch (_error) {
+            Alert.alert('Oops, algo deu errado');
+          }
+        }
+      },
     },
   ];
 
   return (
-    <View style={currentTheme.container}>
+    <ScrollView contentContainerStyle={currentTheme.containerLeftAligned}>
       {canGoBack && (
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -97,31 +111,51 @@ export const PostDetailScreen: React.FC = () => {
               </View>
             )}
 
-            <View style={styles.imageContainer}>
-              <Image
-                source={{ uri: `data:image/jpeg;base64,${post.image}` }}
-                style={styles.image}
-                resizeMode="contain"
-              />
+            <View style={styles.postUserContainer}>
+              {post.user?.avatar && (
+                <Image
+                  source={{
+                    uri: `data:image/jpeg;base64,${post.user?.avatar}`,
+                  }}
+                ></Image>
+              )}
+            </View>
+
+            <Image
+              source={{ uri: `data:image/jpeg;base64,${post.image}` }}
+              style={styles.image}
+              resizeMode="contain"
+            />
+
+            <View style={styles.descriptionContainer}>
+              <Text
+                style={currentTheme.textBold}
+              >{`${post.user?.username}   `}</Text>
+
+              <Text style={currentTheme.text}>{post.description}</Text>
             </View>
           </>
         )
       ) : (
         <ActivityIndicator size="large" color={currentColors.primary} />
       )}
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  descriptionContainer: {
+    flexDirection: 'row',
+    paddingLeft: 10,
+    paddingTop: 5,
+  },
   image: {
-    height: '100%',
+    height: '50%',
     width: '100%',
   },
-  imageContainer: {
-    height: 400,
-    marginVertical: 40,
-    position: 'relative',
-    width: '100%',
+  postUserContainer: {
+    flexDirection: 'row',
+    paddingLeft: 10,
+    paddingTop: 5,
   },
 });

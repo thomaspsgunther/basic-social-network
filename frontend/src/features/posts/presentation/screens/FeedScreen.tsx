@@ -1,12 +1,12 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 
-import { useTheme } from '@/src/core/context/ThemeContext';
+import { useAppTheme } from '@/src/core/context/ThemeContext';
 import { FeedStackScreenProps } from '@/src/core/navigation/types';
 import { darkTheme, lightTheme } from '@/src/core/theme/appTheme';
 
 export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = () => {
-  const { isDarkMode } = useTheme();
+  const { isDarkMode } = useAppTheme();
   const currentTheme = isDarkMode ? darkTheme : lightTheme;
 
   return (

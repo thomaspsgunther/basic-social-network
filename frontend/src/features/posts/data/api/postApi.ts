@@ -31,7 +31,7 @@ export const postApi = {
     return response;
   },
   remove: async (id: string) => {
-    const response = await axiosInstance.delete(`/posts${id}`);
+    const response = await axiosInstance.delete(`/posts/${id}`);
 
     return response;
   },

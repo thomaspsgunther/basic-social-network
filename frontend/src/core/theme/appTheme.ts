@@ -6,7 +6,7 @@ const lightTheme = StyleSheet.create({
   backButton: {
     left: 15,
     position: 'absolute',
-    top: 35,
+    top: 45,
     zIndex: 1,
   },
   bottomTabBar: {
@@ -43,6 +43,12 @@ const lightTheme = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
+  containerLeftAligned: {
+    alignItems: 'flex-start',
+    backgroundColor: appColors.light.background,
+    flex: 1,
+    justifyContent: 'center',
+  },
   filledIconButton: {
     alignItems: 'center',
     backgroundColor: appColors.light.primary,
@@ -62,7 +68,6 @@ const lightTheme = StyleSheet.create({
     padding: 10,
     width: '76%',
   },
-
   largeInput: {
     backgroundColor: appColors.light.input,
     borderColor: appColors.light.border,
@@ -87,6 +92,12 @@ const lightTheme = StyleSheet.create({
   },
   text: {
     color: appColors.light.text,
+    textAlign: 'left',
+  },
+  textBold: {
+    color: appColors.light.text,
+    fontWeight: 'bold',
+    textAlign: 'left',
   },
   titleText: {
     alignItems: 'center',
@@ -94,14 +105,14 @@ const lightTheme = StyleSheet.create({
     fontSize: 26,
     justifyContent: 'center',
     position: 'absolute',
-    top: 35,
+    top: 45,
     zIndex: 1,
   },
   topRow: {
     flexDirection: 'row',
     position: 'absolute',
     right: 15,
-    top: 35,
+    top: 45,
     zIndex: 1,
   },
 });
@@ -110,7 +121,7 @@ const darkTheme = StyleSheet.create({
   backButton: {
     left: 15,
     position: 'absolute',
-    top: 35,
+    top: 45,
     zIndex: 1,
   },
   bottomTabBar: {
@@ -147,6 +158,12 @@ const darkTheme = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
+  containerLeftAligned: {
+    alignItems: 'flex-start',
+    backgroundColor: appColors.dark.background,
+    flex: 1,
+    justifyContent: 'center',
+  },
   filledIconButton: {
     alignItems: 'center',
     backgroundColor: appColors.dark.primary,
@@ -166,7 +183,6 @@ const darkTheme = StyleSheet.create({
     padding: 10,
     width: '76%',
   },
-
   largeInput: {
     backgroundColor: appColors.dark.input,
     borderColor: appColors.dark.border,
@@ -191,6 +207,12 @@ const darkTheme = StyleSheet.create({
   },
   text: {
     color: appColors.dark.text,
+    textAlign: 'left',
+  },
+  textBold: {
+    color: appColors.dark.text,
+    fontWeight: 'bold',
+    textAlign: 'left',
   },
   titleText: {
     alignItems: 'center',
@@ -198,14 +220,14 @@ const darkTheme = StyleSheet.create({
     fontSize: 26,
     justifyContent: 'center',
     position: 'absolute',
-    top: 35,
+    top: 45,
     zIndex: 1,
   },
   topRow: {
     flexDirection: 'row',
     position: 'absolute',
     right: 15,
-    top: 35,
+    top: 45,
     zIndex: 1,
   },
 });

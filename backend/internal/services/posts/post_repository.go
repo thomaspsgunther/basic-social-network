@@ -90,12 +90,11 @@ func (r *postRepositoryImpl) getPosts(ctx context.Context, limit int, lastCreate
 	var posts []shared.Post
 	for rows.Next() {
 		var post shared.Post
-		var user shared.User
-		err := rows.Scan(&post.ID, &user.ID, &user.Username, &user.Avatar, &post.Image, &post.Description, &post.LikeCount, &post.CommentCount, &post.CreatedAt)
+		post.User = &shared.User{}
+		err := rows.Scan(&post.ID, &post.User.ID, &post.User.Username, &post.User.Avatar, &post.Image, &post.Description, &post.LikeCount, &post.CommentCount, &post.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan post: %w", err)
 		}
-		post.User = &user
 		posts = append(posts, post)
 	}
 	if err := rows.Err(); err != nil {
@@ -123,16 +122,15 @@ func (r *postRepositoryImpl) getPost(ctx context.Context, id uuid.UUID) (shared.
 	`
 
 	var post shared.Post
-	var user shared.User
+	post.User = &shared.User{}
 	err = tx.QueryRow(
 		ctx,
 		query,
 		id,
-	).Scan(&post.ID, &user.ID, &user.Username, &user.Avatar, &post.Image, &post.Description, &post.LikeCount, &post.CommentCount, &post.CreatedAt)
+	).Scan(&post.ID, &post.User.ID, &post.User.Username, &post.User.Avatar, &post.Image, &post.Description, &post.LikeCount, &post.CommentCount, &post.CreatedAt)
 	if err != nil {
 		return shared.Post{}, fmt.Errorf("failed to scan post: %w", err)
 	}
-	post.User = &user
 
 	return post, nil
 }

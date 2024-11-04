@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 
 import { AuthContext } from '@/src/core/context/AuthContext';
-import { useTheme } from '@/src/core/context/ThemeContext';
+import { useAppTheme } from '@/src/core/context/ThemeContext';
 import { CreatePostStackScreenProps } from '@/src/core/navigation/types';
 import { appColors } from '@/src/core/theme/appColors';
 import { darkTheme, lightTheme } from '@/src/core/theme/appTheme';
@@ -42,7 +42,7 @@ export const CreatePostScreen: React.FC<
 
   const { authUser } = context;
 
-  const { isDarkMode } = useTheme();
+  const { isDarkMode } = useAppTheme();
   const currentTheme = isDarkMode ? darkTheme : lightTheme;
   const currentColors = isDarkMode ? appColors.dark : appColors.light;
 
@@ -183,7 +183,7 @@ export const CreatePostScreen: React.FC<
         </View>
       )}
 
-      <Text style={currentTheme.titleText}>Nova publicação</Text>
+      <Text style={currentTheme.titleText}>Nova Publicação</Text>
 
       {imageUri ? (
         <View style={styles.imageContainer}>
