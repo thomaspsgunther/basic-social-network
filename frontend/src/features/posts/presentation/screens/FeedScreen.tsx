@@ -70,7 +70,7 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = () =>
     const checkLikes = async (posts: Post[]) => {
       try {
         if (authUser) {
-          const newLikedPostIds: Set<string> = new Set();
+          const newLikedPostIds: Set<string> = new Set(likedPostIds);
           for (const post of posts) {
             const didLike: boolean = await postUsecase.checkIfUserLikedPost(
               authUser.id,
@@ -80,13 +80,9 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = () =>
               newLikedPostIds.add(post.id);
             }
           }
-          if (newLikedPostIds) {
-            const updatedLikedPostIds: Set<string> = new Set(likedPostIds);
-            newLikedPostIds.forEach((postId) =>
-              updatedLikedPostIds.add(postId),
-            );
-            setLikedPostIds(updatedLikedPostIds);
-            const jsonValue = JSON.stringify(Array.from(updatedLikedPostIds));
+          if (newLikedPostIds !== likedPostIds) {
+            setLikedPostIds(newLikedPostIds);
+            const jsonValue = JSON.stringify(Array.from(newLikedPostIds));
             await AsyncStorage.setItem('liked-posts', jsonValue);
           }
         } else {
