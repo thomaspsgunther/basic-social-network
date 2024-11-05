@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Text, View } from 'react-native';
 
@@ -19,7 +18,7 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = () =>
   {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [posts, setPosts] = useState<Post[]>([]);
-    const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
+    const [likedPostIds, setLikedPostIds] = useState<string[]>([]);
     const postRepository = new PostRepositoryImpl();
     const postUsecase = new PostUsecaseImpl(postRepository);
 
@@ -37,7 +36,6 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = () =>
     useEffect(() => {
       if (!posts) {
         loadPosts();
-        getCurrentLikes();
         checkLikes(posts);
       }
     }, [posts]);
@@ -55,35 +53,23 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = () =>
       }
     };
 
-    const getCurrentLikes = async () => {
-      try {
-        const jsonValue = await AsyncStorage.getItem('liked-posts');
-        if (jsonValue) {
-          const postIds = new Set<string>(JSON.parse(jsonValue));
-          setLikedPostIds(postIds);
-        }
-      } catch (_error) {
-        Alert.alert('Oops, algo deu errado');
-      }
-    };
-
     const checkLikes = async (posts: Post[]) => {
       try {
         if (authUser) {
-          const newLikedPostIds: Set<string> = new Set(likedPostIds);
+          const newLikedPostIds: string[] = likedPostIds;
           for (const post of posts) {
             const didLike: boolean = await postUsecase.checkIfUserLikedPost(
               authUser.id,
               post.id,
             );
             if (didLike) {
-              newLikedPostIds.add(post.id);
+              if (!newLikedPostIds.includes(post.id)) {
+                newLikedPostIds.push(post.id);
+              }
             }
           }
           if (newLikedPostIds !== likedPostIds) {
             setLikedPostIds(newLikedPostIds);
-            const jsonValue = JSON.stringify(Array.from(newLikedPostIds));
-            await AsyncStorage.setItem('liked-posts', jsonValue);
           }
         } else {
           throw new Error('missing authuser');
