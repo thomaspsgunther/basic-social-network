@@ -250,6 +250,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
 
       <TextInput
         style={styles.input}
+        maxLength={20}
         placeholder="Nome de usuário"
         placeholderTextColor="#DDD"
         value={username}
@@ -259,6 +260,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
       <View style={styles.passwordContainer}>
         <TextInput
           style={styles.inputPassword}
+          maxLength={30}
           placeholder="Senha"
           placeholderTextColor="#DDD"
           secureTextEntry={!isPasswordVisible}
@@ -287,6 +289,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
 
       <TextInput
         style={styles.input}
+        maxLength={50}
         placeholder="Nome completo (opcional)"
         placeholderTextColor="#DDD"
         value={fullName}

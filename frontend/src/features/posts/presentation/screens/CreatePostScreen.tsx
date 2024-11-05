@@ -220,6 +220,7 @@ export const CreatePostScreen: React.FC<
       <TextInput
         style={currentTheme.largeInput}
         multiline
+        maxLength={200}
         placeholder="Descrição (opcional)"
         placeholderTextColor={isDarkMode ? 'lightgray' : '#808080'}
         value={description}

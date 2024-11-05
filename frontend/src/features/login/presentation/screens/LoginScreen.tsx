@@ -81,6 +81,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
 
       <TextInput
         style={styles.input}
+        maxLength={20}
         placeholder="Nome de usuário"
         placeholderTextColor="#DDD"
         value={username}
@@ -90,6 +91,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
       <View style={styles.passwordContainer}>
         <TextInput
           style={styles.inputPassword}
+          maxLength={30}
           placeholder="Senha"
           placeholderTextColor="#DDD"
           secureTextEntry={!isPasswordVisible}

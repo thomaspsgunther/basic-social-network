@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -34,6 +35,7 @@ export const PostDetailScreen: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [post, setPost] = useState<Post>();
+  const [isLiked, setIsLiked] = useState<boolean>(false);
   const postRepository = new PostRepositoryImpl();
   const postUsecase = new PostUsecaseImpl(postRepository);
 
@@ -55,12 +57,20 @@ export const PostDetailScreen: React.FC = () => {
       setIsLoading(true);
       try {
         const mainPost: Post = await postUsecase.getPost(postId);
-        if (mainPost) {
+        if (mainPost && authUser) {
+          const didLike: boolean = await postUsecase.checkIfUserLikedPost(
+            authUser.id,
+            mainPost.id,
+          );
+          if (didLike) {
+            setIsLiked(true);
+          }
+
           setIsLoading(false);
           setPost(mainPost);
         } else {
           setIsLoading(false);
-          throw new Error('missing post');
+          throw new Error('missing post or authuser');
         }
       } catch (_error) {
         setIsLoading(false);
@@ -72,6 +82,36 @@ export const PostDetailScreen: React.FC = () => {
       loadPost();
     }
   }, [post]);
+
+  const handleLike = async () => {
+    try {
+      if (authUser && post) {
+        if (isLiked) {
+          const didUnlike: boolean = await postUsecase.unlikePost(
+            authUser.id,
+            post.id,
+          );
+          if (didUnlike) {
+            post.likeCount = (post.likeCount ?? 0) - 1;
+            setIsLiked(false);
+          }
+        } else {
+          const didLike: boolean = await postUsecase.likePost(
+            authUser.id,
+            post.id,
+          );
+          if (didLike) {
+            post.likeCount = (post.likeCount ?? 0) + 1;
+            setIsLiked(true);
+          }
+        }
+      } else {
+        throw new Error('no authuser or post');
+      }
+    } catch (_error) {
+      Alert.alert('Oops, algo deu errado');
+    }
+  };
 
   const options: IconDropdownOption[] = [
     {
@@ -111,14 +151,30 @@ export const PostDetailScreen: React.FC = () => {
               </View>
             )}
 
-            <View style={styles.postUserContainer}>
-              {post.user?.avatar && (
-                <Image
-                  source={{
-                    uri: `data:image/jpeg;base64,${post.user?.avatar}`,
-                  }}
-                ></Image>
-              )}
+            <View style={styles.postRowContainer}>
+              <TouchableOpacity>
+                {post.user?.avatar ? (
+                  <Image
+                    source={{
+                      uri: `data:image/jpeg;base64,${post.user?.avatar}`,
+                    }}
+                    style={styles.avatar}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <Ionicons
+                      name="person-circle-outline"
+                      size={45}
+                      color="black"
+                    ></Ionicons>
+                  </View>
+                )}
+
+                <Text
+                  style={currentTheme.textBold}
+                >{`   ${post.user?.username}`}</Text>
+              </TouchableOpacity>
             </View>
 
             <Image
@@ -127,13 +183,41 @@ export const PostDetailScreen: React.FC = () => {
               resizeMode="contain"
             />
 
-            <View style={styles.descriptionContainer}>
-              <Text
-                style={currentTheme.textBold}
-              >{`${post.user?.username}   `}</Text>
+            <View style={styles.postRowContainer}>
+              <Pressable onPress={handleLike}>
+                <Ionicons
+                  name={isLiked ? 'heart' : 'heart-outline'}
+                  size={34}
+                  color={isLiked ? 'red' : currentColors.icon}
+                ></Ionicons>
+              </Pressable>
 
-              <Text style={currentTheme.text}>{post.description}</Text>
+              <Text style={currentTheme.textBold}>
+                {` ${post.likeCount ?? 0}     `}
+              </Text>
+
+              <Pressable>
+                <Ionicons
+                  name="chatbubble-outline"
+                  size={34}
+                  color={currentColors.icon}
+                ></Ionicons>
+              </Pressable>
+
+              <Text style={currentTheme.textBold}>
+                {` ${post.commentCount ?? 0}`}
+              </Text>
             </View>
+
+            {post.description && (
+              <View style={styles.descriptionContainer}>
+                <Text
+                  style={currentTheme.textBold}
+                >{`${post.user?.username}   `}</Text>
+
+                <Text style={currentTheme.text}>{post.description}</Text>
+              </View>
+            )}
           </>
         )
       ) : (
@@ -144,6 +228,19 @@ export const PostDetailScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  avatar: {
+    borderRadius: 100,
+    height: 45,
+    width: 45,
+  },
+  avatarPlaceholder: {
+    alignItems: 'center',
+    backgroundColor: '#ccc' as string,
+    borderRadius: 100,
+    height: 45,
+    justifyContent: 'center',
+    width: 45,
+  },
   descriptionContainer: {
     flexDirection: 'row',
     paddingLeft: 10,
@@ -153,9 +250,10 @@ const styles = StyleSheet.create({
     height: '50%',
     width: '100%',
   },
-  postUserContainer: {
+  postRowContainer: {
+    alignItems: 'center',
     flexDirection: 'row',
     paddingLeft: 10,
-    paddingTop: 5,
+    paddingTop: 3,
   },
 });

@@ -92,10 +92,12 @@ const lightTheme = StyleSheet.create({
   },
   text: {
     color: appColors.light.text,
+    fontSize: 16,
     textAlign: 'left',
   },
   textBold: {
     color: appColors.light.text,
+    fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'left',
   },
@@ -207,10 +209,12 @@ const darkTheme = StyleSheet.create({
   },
   text: {
     color: appColors.dark.text,
+    fontSize: 16,
     textAlign: 'left',
   },
   textBold: {
     color: appColors.dark.text,
+    fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'left',
   },
