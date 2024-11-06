@@ -6,6 +6,7 @@ import (
 	database "y-net/internal/database/postgres"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type iCommentRepository interface {
@@ -63,6 +64,10 @@ func (r *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUI
 
 	rows, err := tx.Query(ctx, query, postId)
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return []Comment{}, nil
+		}
+
 		return nil, fmt.Errorf("failed to select comments: %w", err)
 	}
 	defer rows.Close()

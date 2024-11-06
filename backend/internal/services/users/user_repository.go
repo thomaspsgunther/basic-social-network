@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 
 	database "y-net/internal/database/postgres"
 	"y-net/internal/services/shared"
@@ -162,6 +163,10 @@ func (r *userRepositoryImpl) getPostsFromUser(ctx context.Context, userId uuid.U
 
 	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return []shared.Post{}, nil
+		}
+
 		return nil, fmt.Errorf("failed to select posts: %w", err)
 	}
 	defer rows.Close()

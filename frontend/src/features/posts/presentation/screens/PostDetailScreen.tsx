@@ -106,7 +106,7 @@ export const PostDetailScreen: React.FC = () => {
           }
         }
       } else {
-        throw new Error('no authuser or post');
+        throw new Error('missing authuser or post');
       }
     } catch (_error) {
       Alert.alert('Oops, algo deu errado');
@@ -133,8 +133,8 @@ export const PostDetailScreen: React.FC = () => {
   ];
 
   return (
-    <ScrollView contentContainerStyle={currentTheme.containerLeftAligned}>
-      {canGoBack && (
+    <View style={currentTheme.containerLeftAligned}>
+      {!isLoading && canGoBack && (
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={currentTheme.backButton}
@@ -151,79 +151,100 @@ export const PostDetailScreen: React.FC = () => {
               </View>
             )}
 
-            <View style={styles.postRowContainer}>
+            <ScrollView
+              contentContainerStyle={currentTheme.containerLeftAligned}
+            >
               <TouchableOpacity>
-                {post.user?.avatar ? (
-                  <Image
-                    source={{
-                      uri: `data:image/jpeg;base64,${post.user?.avatar}`,
-                    }}
-                    style={styles.avatar}
-                    resizeMode="contain"
-                  />
-                ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <Ionicons
-                      name="person-circle-outline"
-                      size={45}
-                      color="black"
-                    ></Ionicons>
-                  </View>
-                )}
+                <View style={styles.postRowContainer}>
+                  {post.user?.avatar ? (
+                    <Image
+                      source={{
+                        uri: `data:image/jpeg;base64,${post.user?.avatar}`,
+                      }}
+                      style={styles.avatar}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <View style={styles.avatarPlaceholder}>
+                      <Ionicons
+                        name="person-circle-outline"
+                        size={45}
+                        color="black"
+                      ></Ionicons>
+                    </View>
+                  )}
 
-                <Text
-                  style={currentTheme.textBold}
-                >{`   ${post.user?.username}`}</Text>
+                  <Text
+                    style={currentTheme.textBold}
+                  >{`   ${post.user?.username}`}</Text>
+                </View>
               </TouchableOpacity>
-            </View>
 
-            <Image
-              source={{ uri: `data:image/jpeg;base64,${post.image}` }}
-              style={styles.image}
-              resizeMode="contain"
-            />
+              <Image
+                source={{ uri: `data:image/jpeg;base64,${post.image}` }}
+                style={styles.image}
+                resizeMode="contain"
+              />
 
-            <View style={styles.postRowContainer}>
-              <Pressable onPress={handleLike}>
-                <Ionicons
-                  name={isLiked ? 'heart' : 'heart-outline'}
-                  size={34}
-                  color={isLiked ? 'red' : currentColors.icon}
-                ></Ionicons>
-              </Pressable>
+              <View style={styles.postRowContainer}>
+                <Pressable onPress={() => handleLike()}>
+                  <Ionicons
+                    name={isLiked ? 'heart' : 'heart-outline'}
+                    size={34}
+                    color={isLiked ? 'red' : currentColors.icon}
+                  ></Ionicons>
+                </Pressable>
 
-              <Text style={currentTheme.textBold}>
-                {` ${post.likeCount ?? 0}     `}
-              </Text>
+                <Text style={currentTheme.textBold}>
+                  {` ${post.likeCount ?? 0}    `}
+                </Text>
 
-              <Pressable>
-                <Ionicons
-                  name="chatbubble-outline"
-                  size={34}
-                  color={currentColors.icon}
-                ></Ionicons>
-              </Pressable>
+                <Pressable>
+                  <Ionicons
+                    name="chatbubble-outline"
+                    size={34}
+                    color={currentColors.icon}
+                  ></Ionicons>
+                </Pressable>
 
-              <Text style={currentTheme.textBold}>
-                {` ${post.commentCount ?? 0}`}
-              </Text>
-            </View>
-
-            {post.description && (
-              <View style={styles.descriptionContainer}>
-                <Text
-                  style={currentTheme.textBold}
-                >{`${post.user?.username}   `}</Text>
-
-                <Text style={currentTheme.text}>{post.description}</Text>
+                <Text style={currentTheme.textBold}>
+                  {` ${post.commentCount ?? 0}`}
+                </Text>
               </View>
-            )}
+
+              {post.description && (
+                <View style={styles.descriptionContainer}>
+                  <Text
+                    style={currentTheme.textBold}
+                  >{`${post.user?.username}  `}</Text>
+
+                  <Text style={currentTheme.text}>{post.description}</Text>
+                </View>
+              )}
+
+              <View style={styles.postRowContainer}>
+                <Text style={currentTheme.text}>
+                  {`${new Date(
+                    post.createdAt?.toLocaleString() ?? '',
+                  ).toLocaleDateString()}  ${new Date(
+                    post.createdAt?.toLocaleString() ?? '',
+                  ).toLocaleTimeString(undefined, {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}`}
+                </Text>
+              </View>
+            </ScrollView>
           </>
         )
       ) : (
-        <ActivityIndicator size="large" color={currentColors.primary} />
+        <ActivityIndicator
+          size="large"
+          style={styles.loadingContainer}
+          color={currentColors.primary}
+        />
       )}
-    </ScrollView>
+    </View>
   );
 };
 
@@ -244,15 +265,18 @@ const styles = StyleSheet.create({
   descriptionContainer: {
     flexDirection: 'row',
     paddingLeft: 10,
-    paddingTop: 5,
   },
   image: {
-    height: '50%',
-    width: '100%',
+    height: 420,
+    width: 420,
+  },
+  loadingContainer: {
+    paddingLeft: '45%',
   },
   postRowContainer: {
     alignItems: 'center',
     flexDirection: 'row',
+    paddingBottom: 5,
     paddingLeft: 10,
     paddingTop: 3,
   },

@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -64,7 +65,7 @@ export const CreatePostScreen: React.FC<
           clearImage();
           setDescription('');
           setIsLoading(false);
-          navigation.navigate('PostDetail', { postId: newPost.id });
+          navigation.push('PostDetail', { postId: newPost.id });
         } else {
           setIsLoading(false);
           Alert.alert('Oops, algo deu errado');
@@ -176,7 +177,7 @@ export const CreatePostScreen: React.FC<
   };
 
   return (
-    <View style={currentTheme.container}>
+    <ScrollView style={currentTheme.container}>
       {isLoading && (
         <View style={currentTheme.loadingOverlay}>
           <ActivityIndicator size="large" color={currentColors.primary} />
@@ -241,7 +242,7 @@ export const CreatePostScreen: React.FC<
           />
         </TouchableOpacity>
       )}
-    </View>
+    </ScrollView>
   );
 };
 

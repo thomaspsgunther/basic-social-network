@@ -8,6 +8,7 @@ import (
 	"y-net/internal/services/shared"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type iPostRepository interface {
@@ -83,6 +84,10 @@ func (r *postRepositoryImpl) getPosts(ctx context.Context, limit int, lastCreate
 
 	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return []shared.Post{}, nil
+		}
+
 		return nil, fmt.Errorf("failed to select posts: %w", err)
 	}
 	defer rows.Close()
@@ -147,8 +152,8 @@ func (r *postRepositoryImpl) update(ctx context.Context, post shared.Post, id uu
 
 	_, err = tx.Exec(
 		ctx,
-		"UPDATE posts SET description = $1 WHERE id = $2",
-		post.Description, id,
+		"UPDATE posts SET image = $1, description = $2 WHERE id = $3",
+		post.Image, post.Description, id,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to update post: %w", err)
