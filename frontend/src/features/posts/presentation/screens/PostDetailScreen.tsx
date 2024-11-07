@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useContext, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -28,7 +29,8 @@ import { PostRepositoryImpl } from '../../data/repositories/PostRepositoryImpl';
 import { PostUsecaseImpl } from '../../domain/usecases/PostUsecase';
 
 export const PostDetailScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<StackNavigationProp<FeedStackParamList, 'UserProfile'>>();
 
   const route = useRoute<RouteProp<FeedStackParamList, 'PostDetail'>>();
   const { postId } = route.params;
@@ -113,6 +115,12 @@ export const PostDetailScreen: React.FC = () => {
     }
   };
 
+  const goToUser = async (id: string) => {
+    if (authUser && authUser.id != id) {
+      navigation.push('UserProfile', { userId: id });
+    }
+  };
+
   const options: IconDropdownOption[] = [
     {
       label: 'Excluir Publicação',
@@ -120,8 +128,8 @@ export const PostDetailScreen: React.FC = () => {
       onSelect: async () => {
         if (post) {
           try {
-            await postUsecase.deletePost(post.id);
-            if (canGoBack) {
+            const didDelete: boolean = await postUsecase.deletePost(post.id);
+            if (didDelete && canGoBack) {
               navigation.goBack();
             }
           } catch (_error) {
@@ -133,7 +141,7 @@ export const PostDetailScreen: React.FC = () => {
   ];
 
   return (
-    <View style={currentTheme.containerLeftAligned}>
+    <View style={currentTheme.container}>
       {!isLoading && canGoBack && (
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -151,15 +159,13 @@ export const PostDetailScreen: React.FC = () => {
               </View>
             )}
 
-            <ScrollView
-              contentContainerStyle={currentTheme.containerLeftAligned}
-            >
-              <TouchableOpacity>
+            <ScrollView contentContainerStyle={styles.containerScroll}>
+              <TouchableOpacity onPress={() => goToUser(post.user!.id)}>
                 <View style={styles.postRowContainer}>
                   {post.user?.avatar ? (
                     <Image
                       source={{
-                        uri: `data:image/jpeg;base64,${post.user?.avatar}`,
+                        uri: `data:image/jpeg;base64,${post.user!.avatar}`,
                       }}
                       style={styles.avatar}
                       resizeMode="contain"
@@ -241,7 +247,7 @@ export const PostDetailScreen: React.FC = () => {
         <ActivityIndicator
           size="large"
           style={styles.loadingContainer}
-          color={currentColors.primary}
+          color={currentColors.icon}
         />
       )}
     </View>
@@ -262,9 +268,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 45,
   },
+  containerScroll: {
+    flex: 1,
+    justifyContent: 'center',
+  },
   descriptionContainer: {
+    alignItems: 'flex-start',
     flexDirection: 'row',
     paddingLeft: 10,
+    width: 365,
   },
   image: {
     height: 420,
@@ -276,6 +288,7 @@ const styles = StyleSheet.create({
   postRowContainer: {
     alignItems: 'center',
     flexDirection: 'row',
+    justifyContent: 'flex-start',
     paddingBottom: 5,
     paddingLeft: 10,
     paddingTop: 3,

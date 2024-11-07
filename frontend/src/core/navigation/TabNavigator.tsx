@@ -3,7 +3,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
 
 import { CreatePostStack } from './CreatePostStack';
-import CustomTabBar from './CustomTabBar';
+import { CurrentUserProfileStack } from './CurrentUserProfileStack';
+import { CustomTabBar } from './CustomTabBar';
 import { FeedStack } from './FeedStack';
 import { TabParamList } from './types';
 
@@ -13,18 +14,21 @@ export function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
+        tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
 
           switch (route.name) {
             case 'FeedStack':
-              iconName = 'home';
+              iconName = focused ? 'home' : 'home-outline';
               break;
             case 'CreatePostStack':
-              iconName = 'add-circle-outline';
+              iconName = focused ? 'add-circle' : 'add-circle-outline';
+              break;
+            case 'CurrentUserProfileStack':
+              iconName = focused ? 'person-circle' : 'person-circle-outline';
               break;
             default:
-              iconName = 'home';
+              iconName = focused ? 'home' : 'home-outline';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -35,6 +39,10 @@ export function TabNavigator() {
     >
       <Tab.Screen name="FeedStack" component={FeedStack} />
       <Tab.Screen name="CreatePostStack" component={CreatePostStack} />
+      <Tab.Screen
+        name="CurrentUserProfileStack"
+        component={CurrentUserProfileStack}
+      />
     </Tab.Navigator>
   );
 }

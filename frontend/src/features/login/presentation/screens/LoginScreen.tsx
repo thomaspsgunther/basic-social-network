@@ -113,7 +113,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
       {!isLoading ? (
         <TouchableOpacity
           style={isDisabled ? styles.buttonDisabled : styles.button}
-          onPress={handleLogin}
+          onPress={() => handleLogin()}
           disabled={isDisabled}
         >
           <Text style={styles.buttonText}>Entrar</Text>
@@ -125,7 +125,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
       {!isLoading && (
         <TouchableOpacity
           style={styles.signUpButton}
-          onPress={handleSignUpRedirect}
+          onPress={() => handleSignUpRedirect()}
         >
           <Text style={styles.signUpText}>
             Ainda não tem conta? Cadastre-se aqui!
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   buttonText: {
-    color: '#fff' as string,
+    color: 'white' as string,
     fontSize: 20,
   },
   container: {
@@ -173,18 +173,18 @@ const styles = StyleSheet.create({
     borderColor: '#9b59b6' as string,
     borderRadius: 5,
     borderWidth: 1,
-    color: '#fff' as string,
+    color: 'white' as string,
     marginBottom: 20,
     padding: 10,
     width: '76%',
   },
   inputPassword: {
-    color: '#fff' as string,
+    color: 'white' as string,
     padding: 10,
     width: '76%',
   },
   logo: {
-    color: '#fff' as string,
+    color: 'white' as string,
     fontSize: 100,
     fontWeight: 'bold',
     marginBottom: 50,
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   },
   versionText: {
     bottom: 15,
-    color: '#fff' as string,
+    color: 'white' as string,
     fontSize: 14,
     position: 'absolute',
     right: 20,

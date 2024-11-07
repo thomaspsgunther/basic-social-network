@@ -4,9 +4,9 @@ import { appColors } from './appColors';
 
 const lightTheme = StyleSheet.create({
   backButton: {
-    left: 15,
+    left: 20,
     position: 'absolute',
-    top: 45,
+    top: 50,
     zIndex: 1,
   },
   bottomTabBar: {
@@ -34,17 +34,11 @@ const lightTheme = StyleSheet.create({
     paddingVertical: 12,
   },
   buttonText: {
-    color: '#fff' as string,
+    color: 'white' as string,
     fontSize: 20,
   },
   container: {
     alignItems: 'center',
-    backgroundColor: appColors.light.background,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  containerLeftAligned: {
-    alignItems: 'flex-start',
     backgroundColor: appColors.light.background,
     flex: 1,
     justifyContent: 'center',
@@ -90,6 +84,11 @@ const lightTheme = StyleSheet.create({
     top: 0,
     zIndex: 1000,
   },
+  logo: {
+    color: appColors.light.text,
+    fontSize: 50,
+    fontWeight: 'bold',
+  },
   text: {
     color: appColors.light.text,
     fontSize: 16,
@@ -102,28 +101,49 @@ const lightTheme = StyleSheet.create({
     textAlign: 'left',
   },
   titleText: {
+    color: appColors.light.text,
+    fontSize: 26,
+  },
+  titleTop: {
     alignItems: 'center',
     color: appColors.light.text,
     fontSize: 26,
     justifyContent: 'center',
     position: 'absolute',
-    top: 45,
+    top: 50,
+    zIndex: 1,
+  },
+  titleTopLeftAligned: {
+    alignItems: 'center',
+    color: appColors.light.text,
+    fontSize: 26,
+    justifyContent: 'flex-start',
+    left: 15,
+    position: 'absolute',
+    top: 50,
     zIndex: 1,
   },
   topRow: {
     flexDirection: 'row',
     position: 'absolute',
-    right: 15,
-    top: 45,
+    right: 20,
+    top: 50,
     zIndex: 1,
+  },
+  userHeader: {
+    borderBottomColor: appColors.light.border,
+    borderBottomWidth: 1,
+    paddingBottom: 30,
+    paddingLeft: 20,
+    paddingRight: 20,
   },
 });
 
 const darkTheme = StyleSheet.create({
   backButton: {
-    left: 15,
+    left: 20,
     position: 'absolute',
-    top: 45,
+    top: 50,
     zIndex: 1,
   },
   bottomTabBar: {
@@ -151,17 +171,11 @@ const darkTheme = StyleSheet.create({
     paddingVertical: 12,
   },
   buttonText: {
-    color: '#fff' as string,
+    color: 'white' as string,
     fontSize: 20,
   },
   container: {
     alignItems: 'center',
-    backgroundColor: appColors.dark.background,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  containerLeftAligned: {
-    alignItems: 'flex-start',
     backgroundColor: appColors.dark.background,
     flex: 1,
     justifyContent: 'center',
@@ -207,6 +221,11 @@ const darkTheme = StyleSheet.create({
     top: 0,
     zIndex: 1000,
   },
+  logo: {
+    color: appColors.dark.text,
+    fontSize: 50,
+    fontWeight: 'bold',
+  },
   text: {
     color: appColors.dark.text,
     fontSize: 16,
@@ -219,20 +238,41 @@ const darkTheme = StyleSheet.create({
     textAlign: 'left',
   },
   titleText: {
+    color: appColors.dark.text,
+    fontSize: 26,
+  },
+  titleTop: {
     alignItems: 'center',
     color: appColors.dark.text,
     fontSize: 26,
     justifyContent: 'center',
     position: 'absolute',
-    top: 45,
+    top: 50,
+    zIndex: 1,
+  },
+  titleTopLeftAligned: {
+    alignItems: 'center',
+    color: appColors.dark.text,
+    fontSize: 26,
+    justifyContent: 'center',
+    left: 15,
+    position: 'absolute',
+    top: 50,
     zIndex: 1,
   },
   topRow: {
     flexDirection: 'row',
     position: 'absolute',
-    right: 15,
-    top: 45,
+    right: 20,
+    top: 50,
     zIndex: 1,
+  },
+  userHeader: {
+    borderBottomColor: appColors.dark.border,
+    borderBottomWidth: 1,
+    paddingBottom: 30,
+    paddingLeft: 20,
+    paddingRight: 20,
   },
 });
 

@@ -90,7 +90,7 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({ options }) => {
 
   return (
     <View>
-      <TouchableOpacity ref={iconRef} onPress={handlePress}>
+      <TouchableOpacity ref={iconRef} onPress={() => handlePress()}>
         <Ionicons
           name="ellipsis-vertical"
           size={34}

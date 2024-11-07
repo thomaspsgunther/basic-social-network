@@ -6,7 +6,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { appColors } from '../theme/appColors';
 import { darkTheme, lightTheme } from '../theme/appTheme';
 
-const CustomTabBar = ({
+export const CustomTabBar = ({
   state,
   descriptors,
   navigation,
@@ -25,7 +25,7 @@ const CustomTabBar = ({
           options.tabBarIcon &&
           options.tabBarIcon({
             focused: isFocused,
-            color: isFocused ? currentColors.primary : currentColors.unfocused,
+            color: currentColors.icon,
             size: 32,
           });
         const onPress = () => {
@@ -43,7 +43,7 @@ const CustomTabBar = ({
         return (
           <TouchableOpacity
             key={route.key}
-            onPress={onPress}
+            onPress={() => onPress()}
             style={styles.tab}
           >
             {iconName}
@@ -60,5 +60,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
-export default CustomTabBar;

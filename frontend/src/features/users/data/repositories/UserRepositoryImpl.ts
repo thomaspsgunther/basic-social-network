@@ -25,7 +25,7 @@ export class UserRepositoryImpl implements IUserRepository {
     cursor?: string,
   ): Promise<Post[]> {
     const response = await userApi.listPosts(id, limit, cursor);
-    const posts: Post[] = response.data;
+    const posts: Post[] = response.data ? response.data : [];
 
     return posts;
   }

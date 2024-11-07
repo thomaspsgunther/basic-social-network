@@ -3,6 +3,7 @@ import React from 'react';
 
 import { CreatePostScreen } from '@/src/features/posts/presentation/screens/CreatePostScreen';
 import { PostDetailScreen } from '@/src/features/posts/presentation/screens/PostDetailScreen';
+import { UserProfileScreen } from '@/src/features/users/presentation/screens/UserProfileScreen';
 
 import { CreatePostStackParamList } from './types';
 
@@ -16,6 +17,7 @@ export const CreatePostStack = () => {
     >
       <Stack.Screen name="CreatePost" component={CreatePostScreen} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+      <Stack.Screen name="UserProfile" component={UserProfileScreen} />
     </Stack.Navigator>
   );
 };

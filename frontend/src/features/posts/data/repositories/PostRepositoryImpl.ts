@@ -14,7 +14,7 @@ export class PostRepositoryImpl implements IPostRepository {
 
   async listPosts(limit: number, cursor?: string): Promise<Post[]> {
     const response = await postApi.list(limit, cursor);
-    const posts: Post[] = response.data;
+    const posts: Post[] = response.data ? response.data : [];
 
     return posts;
   }

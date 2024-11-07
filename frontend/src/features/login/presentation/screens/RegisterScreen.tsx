@@ -208,13 +208,16 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Ionicons name="arrow-back" size={34} color="#fff" />
+          <Ionicons name="arrow-back" size={34} color="white" />
         </TouchableOpacity>
       )}
 
       <Text style={styles.logo}>y</Text>
 
-      <TouchableOpacity onPress={takePhoto} style={styles.avatarContainer}>
+      <TouchableOpacity
+        onPress={() => takePhoto()}
+        style={styles.avatarContainer}
+      >
         {avatarUri ? (
           <Image
             source={{ uri: avatarUri }}
@@ -228,7 +231,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
         )}
         {avatarUri && (
           <TouchableOpacity
-            onPress={clearAvatar}
+            onPress={() => clearAvatar()}
             style={styles.trashIconContainer}
           >
             <Ionicons name="trash" size={24} color="red" />
@@ -237,14 +240,14 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
       </TouchableOpacity>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.iconButton} onPress={takePhoto}>
-          <Ionicons name="camera" size={32} color="#fff" />
+        <TouchableOpacity style={styles.iconButton} onPress={() => takePhoto()}>
+          <Ionicons name="camera" size={32} color="white" />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.iconButton}
-          onPress={selectImageFromLibrary}
+          onPress={() => selectImageFromLibrary()}
         >
-          <Ionicons name="image" size={32} color="#fff" />
+          <Ionicons name="image" size={32} color="white" />
         </TouchableOpacity>
       </View>
 
@@ -299,7 +302,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
       {!isLoading ? (
         <TouchableOpacity
           style={isDisabled ? styles.buttonDisabled : styles.button}
-          onPress={handleRegister}
+          onPress={() => handleRegister()}
           disabled={isDisabled}
         >
           <Text style={styles.buttonText}>Cadastrar</Text>
@@ -333,9 +336,9 @@ const styles = StyleSheet.create({
     color: '#777' as string,
   },
   backButton: {
-    left: 15,
+    left: 20,
     position: 'absolute',
-    top: 45,
+    top: 50,
     zIndex: 1,
   },
   button: {
@@ -359,7 +362,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   buttonText: {
-    color: '#fff' as string,
+    color: 'white' as string,
     fontSize: 20,
     textAlign: 'center',
   },
@@ -386,18 +389,18 @@ const styles = StyleSheet.create({
     borderColor: '#9b59b6' as string,
     borderRadius: 5,
     borderWidth: 1,
-    color: '#fff' as string,
+    color: 'white' as string,
     marginBottom: 20,
     padding: 10,
     width: '76%',
   },
   inputPassword: {
-    color: '#fff' as string,
+    color: 'white' as string,
     padding: 10,
     width: '76%',
   },
   logo: {
-    color: '#fff' as string,
+    color: 'white' as string,
     fontSize: 50,
     fontWeight: 'bold',
     marginBottom: 30,

@@ -177,14 +177,14 @@ export const CreatePostScreen: React.FC<
   };
 
   return (
-    <ScrollView style={currentTheme.container}>
+    <ScrollView contentContainerStyle={currentTheme.container}>
       {isLoading && (
         <View style={currentTheme.loadingOverlay}>
-          <ActivityIndicator size="large" color={currentColors.primary} />
+          <ActivityIndicator size="large" color="white" />
         </View>
       )}
 
-      <Text style={currentTheme.titleText}>Nova Publicação</Text>
+      <Text style={currentTheme.titleTopLeftAligned}>Nova Publicação</Text>
 
       {imageUri ? (
         <View style={styles.imageContainer}>
@@ -206,15 +206,15 @@ export const CreatePostScreen: React.FC<
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={currentTheme.filledIconButton}
-            onPress={takePhoto}
+            onPress={() => takePhoto()}
           >
-            <Ionicons name="camera" size={32} color="#fff" />
+            <Ionicons name="camera" size={32} color="white" />
           </TouchableOpacity>
           <TouchableOpacity
             style={currentTheme.filledIconButton}
-            onPress={selectImageFromLibrary}
+            onPress={() => selectImageFromLibrary()}
           >
-            <Ionicons name="image" size={32} color="#fff" />
+            <Ionicons name="image" size={32} color="white" />
           </TouchableOpacity>
         </View>
       )}
@@ -232,7 +232,7 @@ export const CreatePostScreen: React.FC<
       {!isLoading && (
         <TouchableOpacity
           style={styles.bottomIconButton}
-          onPress={handlePost}
+          onPress={() => handlePost()}
           disabled={isDisabled}
         >
           <Ionicons
