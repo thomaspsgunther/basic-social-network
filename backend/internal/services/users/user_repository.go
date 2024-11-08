@@ -70,7 +70,7 @@ func (r *userRepositoryImpl) get(ctx context.Context, idList []uuid.UUID) ([]sha
 	}
 
 	placeholdersClause := strings.Join(placeholders, ", ")
-	query := fmt.Sprintf("SELECT id, username, full_name, avatar, post_count, follower_count, followed_count FROM users WHERE id IN (%s)", placeholdersClause)
+	query := fmt.Sprintf("SELECT id, username, full_name, description, avatar, post_count, follower_count, followed_count FROM users WHERE id IN (%s)", placeholdersClause)
 
 	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
@@ -81,7 +81,7 @@ func (r *userRepositoryImpl) get(ctx context.Context, idList []uuid.UUID) ([]sha
 	var users []shared.User
 	for rows.Next() {
 		var user shared.User
-		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar, &user.PostCount, &user.FollowerCount, &user.FollowedCount); err != nil {
+		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Description, &user.Avatar, &user.PostCount, &user.FollowerCount, &user.FollowedCount); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
 		users = append(users, user)
@@ -103,7 +103,7 @@ func (r *userRepositoryImpl) getBySearch(ctx context.Context, searchStr string) 
 		database.HandleTransaction(ctx, tx, err)
 	}()
 
-	query := "SELECT id, username, full_name, avatar FROM users WHERE username ILIKE $1 OR full_name ILIKE $1"
+	query := "SELECT id, username, avatar FROM users WHERE username ILIKE $1 OR full_name ILIKE $1"
 
 	searchPattern := "%" + searchStr + "%"
 
@@ -116,7 +116,7 @@ func (r *userRepositoryImpl) getBySearch(ctx context.Context, searchStr string) 
 	var users []shared.User
 	for rows.Next() {
 		var user shared.User
-		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
+		if err := rows.Scan(&user.ID, &user.Username, &user.Avatar); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
 		users = append(users, user)
@@ -288,7 +288,7 @@ func (r *userRepositoryImpl) userFollowsUser(ctx context.Context, followerId uui
 	}()
 
 	var exists bool
-	err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM likes WHERE follower_id = $1 AND followed_id = $2)", followerId, followedId).Scan(&exists)
+	err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM followers WHERE follower_id = $1 AND followed_id = $2)", followerId, followedId).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("failed to check if user follows user: %w", err)
 	}
@@ -306,7 +306,7 @@ func (r *userRepositoryImpl) getFollowers(ctx context.Context, id uuid.UUID) ([]
 		database.HandleTransaction(ctx, tx, err)
 	}()
 
-	rows, err := tx.Query(ctx, "SELECT u.id, u.username, u.full_name, u.avatar FROM followers f JOIN users u ON f.follower_id = u.id WHERE f.followed_id = $1", id)
+	rows, err := tx.Query(ctx, "SELECT u.id, u.username, u.avatar FROM followers f JOIN users u ON f.follower_id = u.id WHERE f.followed_id = $1", id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select followers: %w", err)
 	}
@@ -315,7 +315,7 @@ func (r *userRepositoryImpl) getFollowers(ctx context.Context, id uuid.UUID) ([]
 	var userFollowers []shared.User
 	for rows.Next() {
 		var user shared.User
-		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
+		if err := rows.Scan(&user.ID, &user.Username, &user.Avatar); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
 		userFollowers = append(userFollowers, user)
@@ -337,7 +337,7 @@ func (r *userRepositoryImpl) getFollowed(ctx context.Context, id uuid.UUID) ([]s
 		database.HandleTransaction(ctx, tx, err)
 	}()
 
-	rows, err := tx.Query(ctx, "SELECT u.id, u.username, u.full_name, u.avatar FROM followers f JOIN users u ON f.followed_id = u.id WHERE f.follower_id = $1", id)
+	rows, err := tx.Query(ctx, "SELECT u.id, u.username, u.avatar FROM followers f JOIN users u ON f.followed_id = u.id WHERE f.follower_id = $1", id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select followed: %w", err)
 	}
@@ -346,7 +346,7 @@ func (r *userRepositoryImpl) getFollowed(ctx context.Context, id uuid.UUID) ([]s
 	var userFollowed []shared.User
 	for rows.Next() {
 		var user shared.User
-		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
+		if err := rows.Scan(&user.ID, &user.Username, &user.Avatar); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
 		userFollowed = append(userFollowed, user)

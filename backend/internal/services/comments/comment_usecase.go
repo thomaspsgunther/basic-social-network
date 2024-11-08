@@ -13,8 +13,6 @@ type ICommentUsecase interface {
 	GetFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error)
 	Get(ctx context.Context, id uuid.UUID) (Comment, error)
 	Update(ctx context.Context, comment Comment, id uuid.UUID) error
-	Like(ctx context.Context, id uuid.UUID) error
-	Unlike(ctx context.Context, id uuid.UUID) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -79,24 +77,6 @@ func (u *commentUsecaseImpl) Update(ctx context.Context, comment Comment, id uui
 	}
 
 	err := u.repository.update(ctx, comment, id)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (u *commentUsecaseImpl) Like(ctx context.Context, id uuid.UUID) error {
-	err := u.repository.like(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (u *commentUsecaseImpl) Unlike(ctx context.Context, id uuid.UUID) error {
-	err := u.repository.unlike(ctx, id)
 	if err != nil {
 		return err
 	}

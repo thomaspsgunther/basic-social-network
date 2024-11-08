@@ -7,6 +7,6 @@ export interface User {
   description?: string;
   avatar?: string;
   postCount?: string;
-  followerCount?: string;
-  followedCount?: string;
+  followerCount?: number;
+  followedCount?: number;
 }

@@ -24,16 +24,16 @@ type UserHandler struct {
 func (h UserHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Get("/{id_list}", h.GetUsers)                                        // GET /api/v1/users/{id_list} - Read a list of users by: id_list
-	r.Get("/search/{search_term}", h.SearchUsers)                          // GET /api/v1/users/search/{search_term} - Read a list of users by: search_term
-	r.Get("/{id}/posts", h.ListPostsFromUser)                              // GET /api/v1/users/{id}/posts?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
-	r.Put("/{id}", h.UpdateUser)                                           // PUT /api/v1/users/{id} - Update a single user by: id
-	r.Delete("/{id}", h.DeleteUser)                                        // DELETE /api/v1/users/{id} - Delete a single user by: id
-	r.Post("/follow/{follower_id}_{followed_id}", h.Follow)                // POST /api/v1/users/follow/{follower_id}_{followed_id} - Follow a user by: id
-	r.Delete("/unfollow/{follower_id}_{followed_id}", h.Unfollow)          // DELETE /api/v1/users/unfollow/{follower_id}_{followed_id} - Unfollow a user by: id
-	r.Get("/checkfollower/{follower_id}_{followed_id}", h.UserFollowsUser) // GET /api/v1/users/checkfollower/{follower_id}_{followed_id} - Check if a user follows another user by: id
-	r.Get("/{id}/followers", h.GetFollowers)                               // GET /api/v1/users/{id}/followers - Read a list of who follows a user by: user_id
-	r.Get("/{id}/followed", h.GetFollowed)                                 // GET /api/v1/users/{id}/followed - Read a list of who a user follows by: user_id
+	r.Get("/{id_list}", h.GetUsers)                                      // GET /api/v1/users/{id_list} - Read a list of users by: id_list
+	r.Get("/search/{search_term}", h.SearchUsers)                        // GET /api/v1/users/search/{search_term} - Read a list of users by: search_term
+	r.Get("/{id}/posts", h.ListPostsFromUser)                            // GET /api/v1/users/{id}/posts?limit=10&cursor=base64string - Read a list of posts by: user_id using pagination
+	r.Put("/{id}", h.UpdateUser)                                         // PUT /api/v1/users/{id} - Update a single user by: id
+	r.Delete("/{id}", h.DeleteUser)                                      // DELETE /api/v1/users/{id} - Delete a single user by: id
+	r.Post("/follow/{follower_id}_{followed_id}", h.Follow)              // POST /api/v1/users/follow/{follower_id}_{followed_id} - Follow a user by: id
+	r.Delete("/follow/{follower_id}_{followed_id}", h.Unfollow)          // DELETE /api/v1/users/follow/{follower_id}_{followed_id} - Unfollow a user by: id
+	r.Get("/checkfollow/{follower_id}_{followed_id}", h.UserFollowsUser) // GET /api/v1/users/checkfollow/{follower_id}_{followed_id} - Check if a user follows another user by: id
+	r.Get("/{id}/followers", h.GetFollowers)                             // GET /api/v1/users/{id}/followers - Read a list of who follows a user by: user_id
+	r.Get("/{id}/followed", h.GetFollowed)                               // GET /api/v1/users/{id}/followed - Read a list of who a user follows by: user_id
 
 	return r
 }
@@ -427,7 +427,7 @@ func (h UserHandler) Follow(w http.ResponseWriter, r *http.Request) {
 // @Failure     401
 // @Failure     403
 // @Failure     500
-// @Router      /users/unfollow/{follower_id}_{followed_id} [delete]
+// @Router      /users/follow/{follower_id}_{followed_id} [delete]
 func (h UserHandler) Unfollow(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: delete %s", r.URL))
 
@@ -456,7 +456,7 @@ func (h UserHandler) Unfollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if authUser.ID != followerId || authUser.ID != followedId {
+	if authUser.ID != followerId {
 		err := fmt.Errorf("forbidden unfollow attempt from user: %v", authUser.ID)
 
 		logger.ServerLogger.Warn(err.Error())
@@ -488,7 +488,7 @@ func (h UserHandler) Unfollow(w http.ResponseWriter, r *http.Request) {
 // @Failure        400
 // @Failure        401
 // @Failure        500
-// @Router         /users/checkfollower/{follower_id}_{followed_id} [get]
+// @Router         /users/checkfollow/{follower_id}_{followed_id} [get]
 func (h UserHandler) UserFollowsUser(w http.ResponseWriter, r *http.Request) {
 	logger.ServerLogger.Info(fmt.Sprintf("new request: get %s", r.URL))
 

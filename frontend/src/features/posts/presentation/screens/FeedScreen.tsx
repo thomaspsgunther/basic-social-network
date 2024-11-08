@@ -16,7 +16,7 @@ import { FlatList } from 'react-native-gesture-handler';
 import {
   IconDropdown,
   IconDropdownOption,
-} from '@/src/core/components/iconDropdown';
+} from '@/src/core/components/IconDropdown';
 import { AuthContext } from '@/src/core/context/AuthContext';
 import { useAppTheme } from '@/src/core/context/ThemeContext';
 import { FeedStackScreenProps } from '@/src/core/navigation/types';
@@ -50,19 +50,25 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
   const currentColors = isDarkMode ? appColors.dark : appColors.light;
 
   useEffect(() => {
+    if (posts.length <= 5) {
+      checkLikes(posts);
+    }
+
     if (!noMorePosts && posts && posts.length === 0) {
       initPosts();
     }
   }, [posts]);
 
   const initPosts = async () => {
+    if (isLoading) {
+      return;
+    }
     setIsLoading(true);
     try {
       const initialPosts: Post[] = await postUsecase.listPosts(5);
 
       if (initialPosts && initialPosts.length > 0) {
         setIsLoading(false);
-        checkLikes(initialPosts);
         setPosts(initialPosts);
       } else {
         setIsLoading(false);
@@ -76,6 +82,9 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
   };
 
   const handleReload = async () => {
+    if (isLoading) {
+      return;
+    }
     setIsLoading(true);
     setPosts([]);
     setLikedPostIds([]);
@@ -84,7 +93,6 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
 
       if (initialPosts && initialPosts.length > 0) {
         setIsLoading(false);
-        checkLikes(initialPosts);
         setPosts(initialPosts);
         setNoMorePosts(false);
       } else {
@@ -99,7 +107,7 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
   };
 
   const loadPosts = async () => {
-    if (isLoadingPosts || noMorePosts || (posts && posts.length === 0)) {
+    if (isLoading || isLoadingPosts || noMorePosts) {
       return;
     }
     setIsLoadingPosts(true);
@@ -220,7 +228,7 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
                 const options: IconDropdownOption[] = [
                   {
                     label: 'Excluir Publicação',
-                    iconName: 'trash',
+                    iconName: 'trash-outline',
                     onSelect: async () => {
                       if (item) {
                         try {
@@ -355,11 +363,7 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
                 <View style={styles.listHeader}>
                   <Text style={currentTheme.logo}>y</Text>
 
-                  <View
-                    style={
-                      posts.length > 0 ? styles.icon : styles.iconEmptyList
-                    }
-                  >
+                  <View style={styles.icon}>
                     <TouchableOpacity onPress={() => handleReload()}>
                       <Ionicons
                         name="reload"
@@ -425,10 +429,6 @@ const styles = StyleSheet.create({
   icon: {
     marginTop: 23,
   },
-  iconEmptyList: {
-    marginTop: 25,
-    paddingLeft: 320,
-  },
   image: {
     height: 420,
     width: 420,
@@ -439,7 +439,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingBottom: 30,
     paddingLeft: 20,
-    paddingRight: 28,
+    paddingRight: 20,
+    width: 420,
   },
   loadingContainer: {
     paddingVertical: 5,

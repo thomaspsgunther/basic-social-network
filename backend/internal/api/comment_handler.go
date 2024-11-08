@@ -24,10 +24,8 @@ func (h CommentHandler) Routes() chi.Router {
 	r.Get("/post/{post_id}", h.GetCommentsFromPost) // GET /api/v1/comments/post/{post_id} - Read a list of comments by: post_id
 
 	r.Route("/{id}", func(r chi.Router) {
-		r.Put("/", h.UpdateComment)        // PUT /api/v1/comments/{id} - Update a single comment by: id
-		r.Delete("/", h.DeleteComment)     // DELETE /api/v1/comments/{id} - Delete a single comment by: id
-		r.Post("/like", h.LikeComment)     // POST /api/v1/comments/{id}/like - Like a single comment by: id
-		r.Post("/unlike", h.UnlikeComment) // POST /api/v1/comments/{id}/unlike - Unlike a single comment by: id
+		r.Put("/", h.UpdateComment)    // PUT /api/v1/comments/{id} - Update a single comment by: id
+		r.Delete("/", h.DeleteComment) // DELETE /api/v1/comments/{id} - Delete a single comment by: id
 	})
 
 	return r
@@ -272,96 +270,6 @@ func (h CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.Usecase.Delete(r.Context(), commentId)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
-// LikeComment   godoc
-// @Summary      Like a single comment by: id
-// @Description  Like a single comment by: id
-// @Tags         comments
-// @Param        Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
-// @Param        id path string true "Comment ID" Format(uuid)
-// @Success      200
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /comments/{id}/like [post]
-func (h CommentHandler) LikeComment(w http.ResponseWriter, r *http.Request) {
-	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
-
-	authUser := auth.ForContext(r.Context())
-	if authUser == nil {
-		err := fmt.Errorf("access denied")
-
-		logger.ServerLogger.Warn(err.Error())
-
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	id := chi.URLParam(r, "id")
-	commentId, err := uuid.Parse(id)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, "invalid comment id", http.StatusBadRequest)
-		return
-	}
-
-	err = h.Usecase.Like(r.Context(), commentId)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
-// UnlikeComment godoc
-// @Summary      Unlike a single comment by: id
-// @Description  Unlike a single comment by: id
-// @Tags         comments
-// @Param        Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
-// @Param        id path string true "Comment ID" Format(uuid)
-// @Success      200
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /comments/{id}/unlike [post]
-func (h CommentHandler) UnlikeComment(w http.ResponseWriter, r *http.Request) {
-	logger.ServerLogger.Info(fmt.Sprintf("new request: post %s", r.URL))
-
-	authUser := auth.ForContext(r.Context())
-	if authUser == nil {
-		err := fmt.Errorf("access denied")
-
-		logger.ServerLogger.Warn(err.Error())
-
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	id := chi.URLParam(r, "id")
-	commentId, err := uuid.Parse(id)
-	if err != nil {
-		logger.ServerLogger.Error(err.Error())
-
-		http.Error(w, "invalid comment id", http.StatusBadRequest)
-		return
-	}
-
-	err = h.Usecase.Unlike(r.Context(), commentId)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

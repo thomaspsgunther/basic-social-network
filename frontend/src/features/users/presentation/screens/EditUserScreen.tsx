@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { CommonActions } from '@react-navigation/native';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useContext, useState } from 'react';
@@ -17,78 +16,119 @@ import {
 } from 'react-native';
 
 import { AuthContext } from '@/src/core/context/AuthContext';
-import { RootStackScreenProps } from '@/src/core/navigation/types';
+import { useAppTheme } from '@/src/core/context/ThemeContext';
+import { CurrentUserProfileStackScreenProps } from '@/src/core/navigation/types';
+import { appColors } from '@/src/core/theme/appColors';
+import { darkTheme, lightTheme } from '@/src/core/theme/appTheme';
 import { User } from '@/src/features/shared/data/models/User';
 
-export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
-  navigation,
-}) => {
+import { UserRepositoryImpl } from '../../data/repositories/UserRepositoryImpl';
+import { UserUsecaseImpl } from '../../domain/usecases/UserUsecase';
+
+export const EditUserScreen: React.FC<
+  CurrentUserProfileStackScreenProps<'EditUser'>
+> = ({ navigation }) => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('edituserscreen must be used within an authprovider');
+  }
+
+  const { authUser, setAuthUser } = context;
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [avatar, setAvatar] = useState<string | null>(null);
-  const [avatarUri, setAvatarUri] = useState<string | null>(null);
-  const [username, setUsername] = useState<string>('');
+  const [avatar, setAvatar] = useState<string | null>(
+    authUser ? (authUser.avatar ?? null) : null,
+  );
+  const [avatarUri, setAvatarUri] = useState<string | null>(
+    authUser
+      ? authUser.avatar
+        ? `data:image/jpeg;base64,${authUser.avatar}`
+        : null
+      : null,
+  );
+  const [username, setUsername] = useState<string>(
+    authUser ? (authUser.username ?? '') : '',
+  );
   const [password, setPassword] = useState<string>('');
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
-  const [email, setEmail] = useState<string>('');
-  const [fullName, setFullName] = useState<string>('');
+  const [email, setEmail] = useState<string>(
+    authUser ? (authUser.email ?? '') : '',
+  );
+  const [fullName, setFullName] = useState<string>(
+    authUser ? (authUser.fullName ?? '') : '',
+  );
+  const [description, setDescription] = useState<string>(
+    authUser ? (authUser.description ?? '') : '',
+  );
+  const userRepository = new UserRepositoryImpl();
+  const userUsecase = new UserUsecaseImpl(userRepository);
 
   const canGoBack = navigation.canGoBack();
 
-  const isDisabled: boolean = username.trim() === '' || password.trim() === '';
+  const isDisabled: boolean = username.trim() === '';
 
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('registerscreen must be used within an authprovider');
-  }
+  const { isDarkMode } = useAppTheme();
+  const currentTheme = isDarkMode ? darkTheme : lightTheme;
+  const currentColors = isDarkMode ? appColors.dark : appColors.light;
 
-  const { register, logout } = context;
-
-  const handleRegister = async () => {
+  const handleEdit = async () => {
     setIsLoading(true);
     Keyboard.dismiss();
     try {
-      if (username && password) {
-        const userData: Omit<User, 'id'> = {
-          username: username,
-          password: password,
-        };
-        if (email && !isValidEmail(email)) {
+      if (authUser) {
+        if (username) {
+          const userData: User = {
+            id: authUser.id,
+            username: username,
+          };
+          if (email && !isValidEmail(email)) {
+            setIsLoading(false);
+            Alert.alert(
+              'Oops, algo deu errado',
+              'Por favor, insira um email válido',
+            );
+            return;
+          }
+          if (password) {
+            userData.password = password;
+          }
+          if (email) {
+            userData.email = email;
+          }
+          if (fullName) {
+            userData.fullName = fullName;
+          }
+          if (description) {
+            userData.description = description;
+          }
+          if (avatar) {
+            userData.avatar = avatar;
+          }
+
+          const didUpdate = await userUsecase.updateUser(userData);
+
+          if (didUpdate) {
+            userData.password = undefined;
+
+            setIsLoading(false);
+            setAuthUser(userData);
+            if (canGoBack) {
+              navigation.goBack();
+            }
+          }
+        } else {
           setIsLoading(false);
           Alert.alert(
             'Oops, algo deu errado',
-            'Por favor, insira um email válido',
+            'Nome de usuário e senha precisam estar preenchidos',
           );
-          return;
         }
-        if (email) {
-          userData.email = email;
-        }
-        if (fullName) {
-          userData.fullName = fullName;
-        }
-        if (avatar) {
-          userData.avatar = avatar;
-        }
-
-        await register(userData);
-        setIsLoading(false);
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'Tabs' }],
-          }),
-        );
       } else {
-        setIsLoading(false);
-        Alert.alert(
-          'Oops, algo deu errado',
-          'Nome de usuário e senha precisam estar preenchidos',
-        );
+        throw new Error('missing authuser');
       }
     } catch (error) {
       if (error instanceof Error) {
         setIsLoading(false);
-        logout();
         if (error.message.trim() === 'user already exists') {
           Alert.alert(
             'Oops, algo deu errado',
@@ -203,17 +243,15 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={currentTheme.container}>
       {canGoBack && (
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.backButton}
+          style={currentTheme.backButton}
         >
-          <Ionicons name="arrow-back" size={40} color="white" />
+          <Ionicons name="arrow-back" size={40} color={currentColors.icon} />
         </TouchableOpacity>
       )}
-
-      <Text style={styles.logo}>y</Text>
 
       <TouchableOpacity
         onPress={() => takePhoto()}
@@ -241,11 +279,14 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
       </TouchableOpacity>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.iconButton} onPress={() => takePhoto()}>
+        <TouchableOpacity
+          style={currentTheme.filledIconButton}
+          onPress={() => takePhoto()}
+        >
           <Ionicons name="camera" size={32} color="white" />
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.iconButton}
+          style={currentTheme.filledIconButton}
           onPress={() => selectImageFromLibrary()}
         >
           <Ionicons name="image" size={32} color="white" />
@@ -253,20 +294,20 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
       </View>
 
       <TextInput
-        style={styles.input}
+        style={currentTheme.input}
         maxLength={20}
         placeholder="Nome de usuário"
-        placeholderTextColor="#DDD"
+        placeholderTextColor={currentColors.placeholderText}
         value={username}
         onChangeText={setUsername}
       />
 
-      <View style={styles.passwordContainer}>
+      <View style={currentTheme.passwordContainer}>
         <TextInput
-          style={styles.inputPassword}
+          style={currentTheme.inputPassword}
           maxLength={30}
           placeholder="Senha"
-          placeholderTextColor="#DDD"
+          placeholderTextColor={currentColors.placeholderText}
           secureTextEntry={!isPasswordVisible}
           value={password}
           onChangeText={setPassword}
@@ -277,39 +318,50 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
           <Ionicons
             name={isPasswordVisible ? 'eye-off' : 'eye'}
             size={26}
-            color="#ddd"
+            color={currentColors.icon}
             style={styles.icon}
           />
         </TouchableOpacity>
       </View>
 
       <TextInput
-        style={styles.input}
+        style={currentTheme.input}
         placeholder="Email (opcional)"
-        placeholderTextColor="#DDD"
+        placeholderTextColor={currentColors.placeholderText}
         value={email}
         onChangeText={setEmail}
       />
 
       <TextInput
-        style={styles.input}
+        style={currentTheme.input}
         maxLength={50}
         placeholder="Nome completo (opcional)"
-        placeholderTextColor="#DDD"
+        placeholderTextColor={currentColors.placeholderText}
         value={fullName}
         onChangeText={setFullName}
       />
 
+      <TextInput
+        style={currentTheme.largeInput}
+        multiline
+        maxLength={200}
+        placeholder="Descrição (opcional)"
+        placeholderTextColor={currentColors.placeholderText}
+        value={description}
+        onChangeText={setDescription}
+        textAlignVertical="top"
+      />
+
       {!isLoading ? (
         <TouchableOpacity
-          style={isDisabled ? styles.buttonDisabled : styles.button}
-          onPress={() => handleRegister()}
+          style={isDisabled ? currentTheme.buttonDisabled : currentTheme.button}
+          onPress={() => handleEdit()}
           disabled={isDisabled}
         >
-          <Text style={styles.buttonText}>Cadastrar</Text>
+          <Text style={currentTheme.buttonText}>Salvar</Text>
         </TouchableOpacity>
       ) : (
-        <ActivityIndicator size="large" color="#FFFFFF" />
+        <ActivityIndicator size="large" color={currentColors.icon} />
       )}
     </ScrollView>
   );
@@ -323,6 +375,7 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     marginBottom: 20,
+    marginTop: 60,
     position: 'relative',
   },
   avatarPlaceholder: {
@@ -336,85 +389,14 @@ const styles = StyleSheet.create({
   avatarPlaceholderText: {
     color: '#777' as string,
   },
-  backButton: {
-    left: 20,
-    position: 'absolute',
-    top: 50,
-    zIndex: 1,
-  },
-  button: {
-    backgroundColor: '#8A2BE2' as string,
-    borderRadius: 5,
-    marginTop: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: 20,
     width: '80%',
   },
-  buttonDisabled: {
-    backgroundColor: 'gray' as string,
-    borderRadius: 5,
-    marginTop: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  buttonText: {
-    color: 'white' as string,
-    fontSize: 20,
-    textAlign: 'center',
-  },
-  container: {
-    alignItems: 'center',
-    backgroundColor: '#310d6b' as string,
-    flex: 1,
-    justifyContent: 'center',
-  },
   icon: {
     marginLeft: 35,
-  },
-  iconButton: {
-    alignItems: 'center',
-    backgroundColor: '#8A2BE2' as string,
-    borderRadius: 5,
-    flex: 1,
-    justifyContent: 'center',
-    margin: 5,
-    padding: 10,
-  },
-  input: {
-    backgroundColor: '#250a4e' as string,
-    borderColor: '#9b59b6' as string,
-    borderRadius: 5,
-    borderWidth: 1,
-    color: 'white' as string,
-    marginBottom: 20,
-    padding: 10,
-    width: '76%',
-  },
-  inputPassword: {
-    color: 'white' as string,
-    padding: 10,
-    width: '76%',
-  },
-  logo: {
-    color: 'white' as string,
-    fontSize: 50,
-    fontWeight: 'bold',
-    marginBottom: 30,
-  },
-  passwordContainer: {
-    alignItems: 'center',
-    backgroundColor: '#250a4e' as string,
-    borderColor: '#9b59b6' as string,
-    borderRadius: 5,
-    borderWidth: 1,
-    flexDirection: 'row',
-    marginBottom: 20,
-    width: '76%',
   },
   trashIconContainer: {
     backgroundColor: 'white' as string,

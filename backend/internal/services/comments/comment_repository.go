@@ -14,8 +14,6 @@ type iCommentRepository interface {
 	getFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error)
 	get(ctx context.Context, id uuid.UUID) (Comment, error)
 	update(ctx context.Context, comment Comment, id uuid.UUID) error
-	like(ctx context.Context, id uuid.UUID) error
-	unlike(ctx context.Context, id uuid.UUID) error
 	delete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -55,11 +53,10 @@ func (r *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUI
 	}()
 
 	query := `
-		SELECT c.id, c.user_id, u.username, u.avatar, c.image, c.message, c.like_count, c.created_at
+		SELECT c.id, c.user_id, u.username, u.avatar, c.post_id, c.image, c.message, c.created_at
 		FROM comments c
 		INNER JOIN users u ON c.user_id = u.id
 		WHERE post_id = $1
-		ORDER BY like_count DESC
 	`
 
 	rows, err := tx.Query(ctx, query, postId)
@@ -75,7 +72,7 @@ func (r *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUI
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
-		err := rows.Scan(&comment.ID, &comment.User.ID, &comment.User.Username, &comment.User.Avatar, &comment.Message, &comment.LikeCount, &comment.CreatedAt)
+		err := rows.Scan(&comment.ID, &comment.User.ID, &comment.User.Username, &comment.User.Avatar, &comment.PostID, &comment.Message, &comment.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan comment: %w", err)
 		}
@@ -124,50 +121,6 @@ func (r *commentRepositoryImpl) update(ctx context.Context, comment Comment, id 
 		ctx,
 		"UPDATE comments SET message = $1 WHERE id = $1",
 		comment.Message, id,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to update comment: %w", err)
-	}
-
-	return nil
-}
-
-func (r *commentRepositoryImpl) like(ctx context.Context, id uuid.UUID) error {
-	tx, err := database.Postgres.Begin(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
-	}
-
-	defer func() {
-		database.HandleTransaction(ctx, tx, err)
-	}()
-
-	_, err = tx.Exec(
-		ctx,
-		"UPDATE comments SET like_count = like_count + 1 WHERE id = $1",
-		id,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to update comment: %w", err)
-	}
-
-	return nil
-}
-
-func (r *commentRepositoryImpl) unlike(ctx context.Context, id uuid.UUID) error {
-	tx, err := database.Postgres.Begin(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
-	}
-
-	defer func() {
-		database.HandleTransaction(ctx, tx, err)
-	}()
-
-	_, err = tx.Exec(
-		ctx,
-		"UPDATE comments SET like_count = like_count - 1 WHERE id = $1",
-		id,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to update comment: %w", err)

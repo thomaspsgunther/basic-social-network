@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Keyboard,
   ScrollView,
   StyleSheet,
   Text,
@@ -49,6 +50,7 @@ export const CreatePostScreen: React.FC<
 
   const handlePost = async () => {
     setIsLoading(true);
+    Keyboard.dismiss();
     try {
       if (image) {
         const post: Omit<Post, 'id'> = {
@@ -223,7 +225,7 @@ export const CreatePostScreen: React.FC<
         multiline
         maxLength={200}
         placeholder="Descrição (opcional)"
-        placeholderTextColor={isDarkMode ? 'lightgray' : '#808080'}
+        placeholderTextColor={currentColors.placeholderText}
         value={description}
         onChangeText={setDescription}
         textAlignVertical="top"

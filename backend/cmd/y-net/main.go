@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
-	"github.com/zishang520/socket.io/v2/socket"
 
 	_ "y-net/docs"
 	"y-net/internal/api"
@@ -22,7 +21,6 @@ import (
 	"y-net/internal/services/comments"
 	"y-net/internal/services/posts"
 	"y-net/internal/services/users"
-	"y-net/internal/socketio"
 	"y-net/internal/utils"
 )
 
@@ -72,11 +70,6 @@ func main() {
 		}
 	}
 
-	// Socketio setup
-	io := socket.NewServer(nil, nil)
-	defer io.Close(nil)
-	socketio.ConnectionHandler(io)
-
 	// Define host and port to run on
 	host := os.Getenv("HTTP_HOST")
 	port := os.Getenv("HTTP_PORT")
@@ -84,7 +77,6 @@ func main() {
 	// Routes setup
 	r := chi.NewRouter()
 	r.Use(auth.Middleware())
-	r.Handle("/socket.io/", io.ServeHandler(nil))
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(fmt.Sprintf("http://%s:%s/swagger/doc.json", host, port)),
 	))

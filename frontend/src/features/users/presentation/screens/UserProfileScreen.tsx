@@ -33,11 +33,15 @@ export const UserProfileScreen: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [user, setUser] = useState<User>();
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [isLoadingFollow, setIsLoadingFollow] = useState<boolean>(false);
   const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(false);
   const [noMorePosts, setNoMorePosts] = useState<boolean>(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const userRepository = new UserRepositoryImpl();
   const userUsecase = new UserUsecaseImpl(userRepository);
+
+  const canGoBack = navigation.canGoBack();
 
   const context = useContext(AuthContext);
   if (!context) {
@@ -57,12 +61,24 @@ export const UserProfileScreen: React.FC = () => {
   }, [posts]);
 
   const initProfile = async () => {
+    if (isLoading) {
+      return;
+    }
     setIsLoading(true);
     try {
       const users: User[] = await userUsecase.getUsersById(userId);
 
-      if (users) {
+      if (users && authUser) {
         setUser(users[0]);
+
+        const doesFollow: boolean = await userUsecase.userFollowsUser(
+          authUser!.id,
+          users[0].id,
+        );
+
+        if (doesFollow) {
+          setIsFollowing(true);
+        }
 
         const initialPosts: Post[] = await userUsecase.listUserPosts(
           users[0].id,
@@ -77,7 +93,7 @@ export const UserProfileScreen: React.FC = () => {
           setNoMorePosts(true);
         }
       } else {
-        throw new Error('missing user');
+        throw new Error('missing user or authuser');
       }
     } catch (_error) {
       setIsLoading(false);
@@ -87,15 +103,28 @@ export const UserProfileScreen: React.FC = () => {
   };
 
   const handleReload = async () => {
+    if (isLoading) {
+      return;
+    }
     setIsLoading(true);
     setNoMorePosts(false);
     setUser(undefined);
+    setIsFollowing(false);
     setPosts([]);
     try {
       const users: User[] = await userUsecase.getUsersById(userId);
 
-      if (users) {
+      if (users && authUser) {
         setUser(users[0]);
+
+        const doesFollow: boolean = await userUsecase.userFollowsUser(
+          authUser!.id,
+          users[0].id,
+        );
+
+        if (doesFollow) {
+          setIsFollowing(true);
+        }
 
         const initialPosts: Post[] = await userUsecase.listUserPosts(
           users[0].id,
@@ -111,7 +140,7 @@ export const UserProfileScreen: React.FC = () => {
           setNoMorePosts(true);
         }
       } else {
-        throw new Error('missing user');
+        throw new Error('missing user or authuser');
       }
     } catch (_error) {
       setIsLoading(false);
@@ -121,7 +150,7 @@ export const UserProfileScreen: React.FC = () => {
   };
 
   const loadPosts = async () => {
-    if (!user || isLoadingPosts || noMorePosts) {
+    if (!user || isLoading || isLoadingPosts || noMorePosts) {
       return;
     }
     setIsLoadingPosts(true);
@@ -156,112 +185,192 @@ export const UserProfileScreen: React.FC = () => {
     }
   };
 
+  const handleFollow = async () => {
+    setIsLoadingFollow(true);
+    try {
+      if (user && authUser) {
+        if (!isFollowing) {
+          const didFollow: boolean = await userUsecase.followUser(
+            authUser.id,
+            user.id,
+          );
+
+          if (didFollow) {
+            user.followerCount = (user.followerCount ?? 0) + 1;
+            setIsLoadingFollow(false);
+            setIsFollowing(true);
+          }
+        } else {
+          const didUnfollow: boolean = await userUsecase.unfollowUser(
+            authUser.id,
+            user.id,
+          );
+
+          if (didUnfollow) {
+            user.followerCount = (user.followerCount ?? 0) - 1;
+            setIsLoadingFollow(false);
+            setIsFollowing(false);
+          }
+        }
+      } else {
+        throw new Error('missing user or authuser');
+      }
+    } catch (_error) {
+      setIsLoadingFollow(false);
+      Alert.alert('Oops, algo deu errado');
+    }
+  };
+
   const goToPost = async (id: string) => {
     navigation.push('PostDetail', { postId: id });
   };
 
   return (
     <View style={currentTheme.container}>
+      {!isLoading && !user && canGoBack && (
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={currentTheme.backButton}
+        >
+          <Ionicons name="arrow-back" size={40} color={currentColors.icon} />
+        </TouchableOpacity>
+      )}
+
       {!isLoading ? (
         user && (
-          <FlatList
-            data={posts}
-            keyExtractor={(post) => post.id}
-            renderItem={({ item }: { item: Post }) => (
-              <View style={styles.postContainer}>
-                <TouchableOpacity onPress={() => goToPost(item.id)}>
-                  <Image
-                    source={{ uri: `data:image/jpeg;base64,${item.image}` }}
-                    style={styles.image}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-              </View>
-            )}
-            numColumns={3}
-            onEndReached={() => loadPosts()}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.flatListContainer}
-            ListHeaderComponent={
-              <View style={currentTheme.userHeader}>
-                <View style={styles.listHeaderTopRow}>
-                  <Text style={currentTheme.titleText}>{user.username}</Text>
-
-                  <View
-                    style={
-                      posts.length > 0 ? styles.icon : styles.iconEmptyList
-                    }
-                  ></View>
-                  <TouchableOpacity onPress={() => handleReload()}>
-                    <Ionicons
-                      name="reload"
-                      size={34}
-                      color={currentColors.icon}
-                    ></Ionicons>
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.userInfoRow}>
-                  {user.avatar ? (
+          <>
+            <FlatList
+              data={posts}
+              keyExtractor={(post) => post.id}
+              renderItem={({ item }: { item: Post }) => (
+                <View style={styles.postContainer}>
+                  <TouchableOpacity onPress={() => goToPost(item.id)}>
                     <Image
-                      source={{
-                        uri: `data:image/jpeg;base64,${user.avatar}`,
-                      }}
-                      style={styles.avatar}
+                      source={{ uri: `data:image/jpeg;base64,${item.image}` }}
+                      style={styles.image}
                       resizeMode="contain"
                     />
-                  ) : (
-                    <View style={styles.avatarPlaceholder}>
-                      <Ionicons
-                        name="person-circle-outline"
-                        size={100}
-                        color="black"
-                      ></Ionicons>
+                  </TouchableOpacity>
+                </View>
+              )}
+              numColumns={3}
+              onEndReached={() => loadPosts()}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.flatListContainer}
+              ListHeaderComponent={
+                <View style={currentTheme.userHeader}>
+                  <View style={styles.listHeaderTopRow}>
+                    <View style={currentTheme.row}>
+                      <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Ionicons
+                          name="arrow-back"
+                          size={40}
+                          color={currentColors.icon}
+                        />
+                      </TouchableOpacity>
+
+                      <Text
+                        style={currentTheme.titleText}
+                      >{`   ${user.username}`}</Text>
                     </View>
+
+                    <TouchableOpacity onPress={() => handleReload()}>
+                      <Ionicons
+                        name="reload"
+                        size={34}
+                        color={currentColors.icon}
+                      ></Ionicons>
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.userInfoRow}>
+                    {user.avatar ? (
+                      <Image
+                        source={{
+                          uri: `data:image/jpeg;base64,${user.avatar}`,
+                        }}
+                        style={styles.avatar}
+                        resizeMode="contain"
+                      />
+                    ) : (
+                      <View style={styles.avatarPlaceholder}>
+                        <Ionicons
+                          name="person-circle-outline"
+                          size={100}
+                          color="black"
+                        ></Ionicons>
+                      </View>
+                    )}
+
+                    <View style={styles.infoColumn}>
+                      <Text
+                        style={currentTheme.textBold}
+                      >{`${user.postCount ?? 0}`}</Text>
+
+                      <Text style={currentTheme.text}>publicações</Text>
+                    </View>
+
+                    <View style={styles.infoColumn}>
+                      <Text
+                        style={currentTheme.textBold}
+                      >{`${user.followerCount ?? 0}`}</Text>
+
+                      <Text style={currentTheme.text}>seguidores</Text>
+                    </View>
+
+                    <View style={styles.infoColumn}>
+                      <Text
+                        style={currentTheme.textBold}
+                      >{`${user.followedCount ?? 0}`}</Text>
+
+                      <Text style={currentTheme.text}>seguindo</Text>
+                    </View>
+                  </View>
+
+                  {user.fullName && (
+                    <Text style={currentTheme.textBold}>{user.fullName}</Text>
                   )}
 
-                  <View style={styles.infoColummn}>
-                    <Text
-                      style={currentTheme.textBold}
-                    >{`${user.postCount ?? 0}`}</Text>
+                  {user.description && (
+                    <Text style={currentTheme.text}>{user.description}</Text>
+                  )}
 
-                    <Text style={currentTheme.text}>publicações</Text>
-                  </View>
-
-                  <View style={styles.infoColummn}>
-                    <Text
-                      style={currentTheme.textBold}
-                    >{`${user.followerCount ?? 0}`}</Text>
-
-                    <Text style={currentTheme.text}>seguidores</Text>
-                  </View>
-
-                  <View style={styles.infoColummn}>
-                    <Text
-                      style={currentTheme.textBold}
-                    >{`${user.followedCount ?? 0}`}</Text>
-
-                    <Text style={currentTheme.text}>seguindo</Text>
+                  <View style={styles.buttonContainer}>
+                    {!isLoadingFollow ? (
+                      <TouchableOpacity
+                        style={
+                          isFollowing
+                            ? styles.unfollowButton
+                            : currentTheme.button
+                        }
+                        onPress={() => handleFollow()}
+                      >
+                        <Text style={currentTheme.buttonText}>
+                          {isFollowing ? 'Deixar de seguir' : 'Seguir'}
+                        </Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <ActivityIndicator
+                        size="large"
+                        color={currentColors.icon}
+                      />
+                    )}
                   </View>
                 </View>
+              }
+            ></FlatList>
 
-                {user.fullName && (
-                  <Text style={currentTheme.textBold}>{user.fullName}</Text>
-                )}
-
-                {user.description && (
-                  <Text style={currentTheme.text}>{user.description}</Text>
-                )}
-              </View>
-            }
-          ></FlatList>
+            {isLoadingPosts && (
+              <ActivityIndicator
+                size="large"
+                style={styles.loadingContainer}
+                color={currentColors.icon}
+              />
+            )}
+          </>
         )
       ) : (
-        <ActivityIndicator
-          size="large"
-          style={styles.loadingContainer}
-          color={currentColors.icon}
-        />
+        <ActivityIndicator size="large" color={currentColors.icon} />
       )}
     </View>
   );
@@ -281,22 +390,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 100,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    paddingTop: 10,
+  },
   flatListContainer: {
     flexGrow: 1,
     paddingTop: 53,
-  },
-  icon: {
-    marginTop: 5,
-  },
-  iconEmptyList: {
-    marginTop: 5,
-    paddingLeft: 300,
   },
   image: {
     height: 135,
     width: 135,
   },
-  infoColummn: {
+  infoColumn: {
     alignItems: 'center',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -305,13 +411,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingBottom: 30,
+    paddingBottom: 20,
   },
   loadingContainer: {
     paddingVertical: 5,
   },
   postContainer: {
     margin: 1,
+  },
+  unfollowButton: {
+    backgroundColor: 'red' as string,
+    borderRadius: 5,
+    marginBottom: 20,
+    marginTop: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   userInfoRow: {
     alignItems: 'center',

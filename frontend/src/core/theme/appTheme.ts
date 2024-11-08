@@ -62,6 +62,11 @@ const lightTheme = StyleSheet.create({
     padding: 10,
     width: '76%',
   },
+  inputPassword: {
+    color: 'white' as string,
+    padding: 10,
+    width: '76%',
+  },
   largeInput: {
     backgroundColor: appColors.light.input,
     borderColor: appColors.light.border,
@@ -88,6 +93,19 @@ const lightTheme = StyleSheet.create({
     color: appColors.light.text,
     fontSize: 50,
     fontWeight: 'bold',
+  },
+  passwordContainer: {
+    alignItems: 'center',
+    backgroundColor: appColors.light.input,
+    borderColor: appColors.light.border,
+    borderRadius: 5,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginBottom: 20,
+    width: '76%',
+  },
+  row: {
+    flexDirection: 'row',
   },
   text: {
     color: appColors.light.text,
@@ -133,9 +151,10 @@ const lightTheme = StyleSheet.create({
   userHeader: {
     borderBottomColor: appColors.light.border,
     borderBottomWidth: 1,
-    paddingBottom: 30,
+    paddingBottom: 10,
     paddingLeft: 20,
     paddingRight: 20,
+    width: 420,
   },
 });
 
@@ -199,6 +218,11 @@ const darkTheme = StyleSheet.create({
     padding: 10,
     width: '76%',
   },
+  inputPassword: {
+    color: 'white' as string,
+    padding: 10,
+    width: '76%',
+  },
   largeInput: {
     backgroundColor: appColors.dark.input,
     borderColor: appColors.dark.border,
@@ -225,6 +249,19 @@ const darkTheme = StyleSheet.create({
     color: appColors.dark.text,
     fontSize: 50,
     fontWeight: 'bold',
+  },
+  passwordContainer: {
+    alignItems: 'center',
+    backgroundColor: appColors.dark.input,
+    borderColor: appColors.dark.border,
+    borderRadius: 5,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginBottom: 20,
+    width: '76%',
+  },
+  row: {
+    flexDirection: 'row',
   },
   text: {
     color: appColors.dark.text,
@@ -270,9 +307,10 @@ const darkTheme = StyleSheet.create({
   userHeader: {
     borderBottomColor: appColors.dark.border,
     borderBottomWidth: 1,
-    paddingBottom: 30,
+    paddingBottom: 10,
     paddingLeft: 20,
     paddingRight: 20,
+    width: 420,
   },
 });
 

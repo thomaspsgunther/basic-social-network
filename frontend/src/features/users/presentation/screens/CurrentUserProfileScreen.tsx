@@ -11,12 +11,17 @@ import {
   View,
 } from 'react-native';
 
+import {
+  IconDropdown,
+  IconDropdownOption,
+} from '@/src/core/components/IconDropdown';
 import { AuthContext } from '@/src/core/context/AuthContext';
 import { useAppTheme } from '@/src/core/context/ThemeContext';
 import { CurrentUserProfileStackScreenProps } from '@/src/core/navigation/types';
 import { appColors } from '@/src/core/theme/appColors';
 import { darkTheme, lightTheme } from '@/src/core/theme/appTheme';
 import { Post } from '@/src/features/shared/data/models/Post';
+import { User } from '@/src/features/shared/data/models/User';
 
 import { UserRepositoryImpl } from '../../data/repositories/UserRepositoryImpl';
 import { UserUsecaseImpl } from '../../domain/usecases/UserUsecase';
@@ -25,6 +30,7 @@ export const CurrentUserProfileScreen: React.FC<
   CurrentUserProfileStackScreenProps<'CurrentUserProfile'>
 > = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [user, setUser] = useState<User>();
   const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(false);
   const [noMorePosts, setNoMorePosts] = useState<boolean>(false);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -38,7 +44,7 @@ export const CurrentUserProfileScreen: React.FC<
     );
   }
 
-  const { authUser } = context;
+  const { authUser, logoutAndLeave } = context;
 
   const { isDarkMode } = useAppTheme();
   const currentTheme = isDarkMode ? darkTheme : lightTheme;
@@ -51,20 +57,29 @@ export const CurrentUserProfileScreen: React.FC<
   }, [posts]);
 
   const initPosts = async () => {
+    if (isLoading) {
+      return;
+    }
     setIsLoading(true);
     try {
       if (authUser) {
-        const initialPosts: Post[] = await userUsecase.listUserPosts(
-          authUser.id,
-          15,
-        );
+        const users: User[] = await userUsecase.getUsersById(authUser.id);
 
-        if (initialPosts && initialPosts.length > 0) {
-          setIsLoading(false);
-          setPosts(initialPosts);
-        } else {
-          setIsLoading(false);
-          setNoMorePosts(true);
+        if (users) {
+          setUser(users[0]);
+
+          const initialPosts: Post[] = await userUsecase.listUserPosts(
+            users[0].id,
+            15,
+          );
+
+          if (initialPosts && initialPosts.length > 0) {
+            setIsLoading(false);
+            setPosts(initialPosts);
+          } else {
+            setIsLoading(false);
+            setNoMorePosts(true);
+          }
         }
       } else {
         throw new Error('missing authuser');
@@ -77,26 +92,36 @@ export const CurrentUserProfileScreen: React.FC<
   };
 
   const handleReload = async () => {
+    if (isLoading) {
+      return;
+    }
     setIsLoading(true);
     setNoMorePosts(false);
+    setUser(undefined);
     setPosts([]);
     try {
       if (authUser) {
-        const initialPosts: Post[] = await userUsecase.listUserPosts(
-          authUser.id,
-          15,
-        );
+        const users: User[] = await userUsecase.getUsersById(authUser.id);
 
-        if (initialPosts && initialPosts.length > 0) {
-          setIsLoading(false);
-          setPosts(initialPosts);
-          setNoMorePosts(false);
+        if (users) {
+          setUser(users[0]);
+
+          const initialPosts: Post[] = await userUsecase.listUserPosts(
+            users[0].id,
+            15,
+          );
+
+          if (initialPosts && initialPosts.length > 0) {
+            setIsLoading(false);
+            setPosts(initialPosts);
+            setNoMorePosts(false);
+          } else {
+            setIsLoading(false);
+            setNoMorePosts(true);
+          }
         } else {
-          setIsLoading(false);
-          setNoMorePosts(true);
+          throw new Error('missing authuser');
         }
-      } else {
-        throw new Error('missing authuser');
       }
     } catch (_error) {
       setIsLoading(false);
@@ -106,7 +131,7 @@ export const CurrentUserProfileScreen: React.FC<
   };
 
   const loadPosts = async () => {
-    if (!authUser || isLoadingPosts || noMorePosts) {
+    if (!user || isLoading || isLoadingPosts || noMorePosts) {
       return;
     }
     setIsLoadingPosts(true);
@@ -119,7 +144,7 @@ export const CurrentUserProfileScreen: React.FC<
         `${lastPost.createdAt},${lastPost.id}`,
       ).toString('base64');
 
-      const newPosts = await userUsecase.listUserPosts(authUser.id, 12, cursor);
+      const newPosts = await userUsecase.listUserPosts(user.id, 15, cursor);
 
       if (newPosts && newPosts.length > 0) {
         setPosts((prevPosts) => [...prevPosts, ...newPosts]);
@@ -145,110 +170,138 @@ export const CurrentUserProfileScreen: React.FC<
     navigation.push('PostDetail', { postId: id });
   };
 
+  const goToEdit = async () => {
+    navigation.push('EditUser');
+  };
+
+  const options: IconDropdownOption[] = [
+    {
+      label: 'Sair',
+      iconName: 'log-out-outline',
+      onSelect: async () => {
+        logoutAndLeave();
+      },
+    },
+  ];
+
   return (
     <View style={currentTheme.container}>
       {!isLoading ? (
-        authUser && (
-          <FlatList
-            data={posts}
-            keyExtractor={(post) => post.id}
-            renderItem={({ item }: { item: Post }) => (
-              <View style={styles.postContainer}>
-                <TouchableOpacity onPress={() => goToPost(item.id)}>
-                  <Image
-                    source={{ uri: `data:image/jpeg;base64,${item.image}` }}
-                    style={styles.image}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-              </View>
-            )}
-            numColumns={3}
-            onEndReached={() => loadPosts()}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.flatListContainer}
-            ListHeaderComponent={
-              <View style={currentTheme.userHeader}>
-                <View style={styles.listHeaderTopRow}>
-                  <Text style={currentTheme.titleText}>
-                    {authUser.username}
-                  </Text>
-
-                  <View
-                    style={
-                      posts.length > 0 ? styles.icon : styles.iconEmptyList
-                    }
-                  ></View>
-                  <TouchableOpacity onPress={() => handleReload()}>
-                    <Ionicons
-                      name="reload"
-                      size={34}
-                      color={currentColors.icon}
-                    ></Ionicons>
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.userInfoRow}>
-                  {authUser.avatar ? (
+        user && (
+          <>
+            <FlatList
+              data={posts}
+              keyExtractor={(post) => post.id}
+              renderItem={({ item }: { item: Post }) => (
+                <View style={styles.postContainer}>
+                  <TouchableOpacity onPress={() => goToPost(item.id)}>
                     <Image
-                      source={{
-                        uri: `data:image/jpeg;base64,${authUser.avatar}`,
-                      }}
-                      style={styles.avatar}
+                      source={{ uri: `data:image/jpeg;base64,${item.image}` }}
+                      style={styles.image}
                       resizeMode="contain"
                     />
-                  ) : (
-                    <View style={styles.avatarPlaceholder}>
-                      <Ionicons
-                        name="person-circle-outline"
-                        size={100}
-                        color="black"
-                      ></Ionicons>
+                  </TouchableOpacity>
+                </View>
+              )}
+              numColumns={3}
+              onEndReached={() => loadPosts()}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.flatListContainer}
+              ListHeaderComponent={
+                <View style={currentTheme.userHeader}>
+                  <View style={styles.listHeaderTopRow}>
+                    <Text style={currentTheme.titleText}>{user.username}</Text>
+
+                    <View style={currentTheme.row}>
+                      <View style={styles.icon}>
+                        <TouchableOpacity onPress={() => handleReload()}>
+                          <Ionicons
+                            name="reload"
+                            size={34}
+                            color={currentColors.icon}
+                          ></Ionicons>
+                        </TouchableOpacity>
+                      </View>
+
+                      <IconDropdown options={options}></IconDropdown>
                     </View>
+                  </View>
+
+                  <View style={styles.userInfoRow}>
+                    {user.avatar ? (
+                      <Image
+                        source={{
+                          uri: `data:image/jpeg;base64,${user.avatar}`,
+                        }}
+                        style={styles.avatar}
+                        resizeMode="contain"
+                      />
+                    ) : (
+                      <View style={styles.avatarPlaceholder}>
+                        <Ionicons
+                          name="person-circle-outline"
+                          size={100}
+                          color="black"
+                        ></Ionicons>
+                      </View>
+                    )}
+
+                    <View style={styles.infoColumn}>
+                      <Text
+                        style={currentTheme.textBold}
+                      >{`${user.postCount ?? 0}`}</Text>
+
+                      <Text style={currentTheme.text}>publicações</Text>
+                    </View>
+
+                    <View style={styles.infoColumn}>
+                      <Text
+                        style={currentTheme.textBold}
+                      >{`${user.followerCount ?? 0}`}</Text>
+
+                      <Text style={currentTheme.text}>seguidores</Text>
+                    </View>
+
+                    <View style={styles.infoColumn}>
+                      <Text
+                        style={currentTheme.textBold}
+                      >{`${user.followedCount ?? 0}`}</Text>
+
+                      <Text style={currentTheme.text}>seguindo</Text>
+                    </View>
+                  </View>
+
+                  {user.fullName && (
+                    <Text style={currentTheme.textBold}>{user.fullName}</Text>
                   )}
 
-                  <View style={styles.infoColummn}>
-                    <Text
-                      style={currentTheme.textBold}
-                    >{`${authUser.postCount ?? 0}`}</Text>
+                  {user.description && (
+                    <Text style={currentTheme.text}>{user.description}</Text>
+                  )}
 
-                    <Text style={currentTheme.text}>publicações</Text>
-                  </View>
-
-                  <View style={styles.infoColummn}>
-                    <Text
-                      style={currentTheme.textBold}
-                    >{`${authUser.followerCount ?? 0}`}</Text>
-
-                    <Text style={currentTheme.text}>seguidores</Text>
-                  </View>
-
-                  <View style={styles.infoColummn}>
-                    <Text
-                      style={currentTheme.textBold}
-                    >{`${authUser.followedCount ?? 0}`}</Text>
-
-                    <Text style={currentTheme.text}>seguindo</Text>
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                      style={currentTheme.button}
+                      onPress={() => goToEdit()}
+                    >
+                      <Text style={currentTheme.buttonText}>Editar perfil</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
+              }
+            ></FlatList>
 
-                {authUser.fullName && (
-                  <Text style={currentTheme.textBold}>{authUser.fullName}</Text>
-                )}
-
-                {authUser.description && (
-                  <Text style={currentTheme.text}>{authUser.description}</Text>
-                )}
-              </View>
-            }
-          ></FlatList>
+            {isLoadingPosts && (
+              <ActivityIndicator
+                size="large"
+                style={styles.loadingContainer}
+                color={currentColors.icon}
+              />
+            )}
+          </>
         )
       ) : (
-        <ActivityIndicator
-          size="large"
-          style={styles.loadingContainer}
-          color={currentColors.icon}
-        />
+        <ActivityIndicator size="large" color={currentColors.icon} />
       )}
     </View>
   );
@@ -268,22 +321,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 100,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    paddingTop: 10,
+  },
   flatListContainer: {
     flexGrow: 1,
     paddingTop: 53,
   },
   icon: {
-    marginTop: 5,
-  },
-  iconEmptyList: {
-    marginTop: 5,
-    paddingLeft: 300,
+    paddingRight: 20,
   },
   image: {
     height: 135,
     width: 135,
   },
-  infoColummn: {
+  infoColumn: {
     alignItems: 'center',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -292,7 +345,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingBottom: 30,
+    paddingBottom: 20,
   },
   loadingContainer: {
     paddingVertical: 5,

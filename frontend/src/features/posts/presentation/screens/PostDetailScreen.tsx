@@ -17,7 +17,7 @@ import {
 import {
   IconDropdown,
   IconDropdownOption,
-} from '@/src/core/components/iconDropdown';
+} from '@/src/core/components/IconDropdown';
 import { AuthContext } from '@/src/core/context/AuthContext';
 import { useAppTheme } from '@/src/core/context/ThemeContext';
 import { FeedStackParamList } from '@/src/core/navigation/types';
@@ -124,7 +124,7 @@ export const PostDetailScreen: React.FC = () => {
   const options: IconDropdownOption[] = [
     {
       label: 'Excluir Publicação',
-      iconName: 'trash',
+      iconName: 'trash-outline',
       onSelect: async () => {
         if (post) {
           try {
@@ -147,9 +147,10 @@ export const PostDetailScreen: React.FC = () => {
           onPress={() => navigation.goBack()}
           style={currentTheme.backButton}
         >
-          <Ionicons name="arrow-back" size={34} color={currentColors.icon} />
+          <Ionicons name="arrow-back" size={40} color={currentColors.icon} />
         </TouchableOpacity>
       )}
+
       {!isLoading ? (
         post && (
           <>
@@ -244,11 +245,7 @@ export const PostDetailScreen: React.FC = () => {
           </>
         )
       ) : (
-        <ActivityIndicator
-          size="large"
-          style={styles.loadingContainer}
-          color={currentColors.icon}
-        />
+        <ActivityIndicator size="large" color={currentColors.icon} />
       )}
     </View>
   );
@@ -281,9 +278,6 @@ const styles = StyleSheet.create({
   image: {
     height: 420,
     width: 420,
-  },
-  loadingContainer: {
-    paddingLeft: '45%',
   },
   postRowContainer: {
     alignItems: 'center',
