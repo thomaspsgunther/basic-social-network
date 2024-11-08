@@ -187,7 +187,8 @@ export const CurrentUserProfileScreen: React.FC<
   return (
     <View style={currentTheme.container}>
       {!isLoading ? (
-        user && (
+        user &&
+        authUser && (
           <>
             <FlatList
               data={posts}
@@ -228,10 +229,10 @@ export const CurrentUserProfileScreen: React.FC<
                   </View>
 
                   <View style={styles.userInfoRow}>
-                    {user.avatar ? (
+                    {authUser.avatar ? (
                       <Image
                         source={{
-                          uri: `data:image/jpeg;base64,${user.avatar}`,
+                          uri: `data:image/jpeg;base64,${authUser.avatar}`,
                         }}
                         style={styles.avatar}
                         resizeMode="contain"
@@ -271,12 +272,16 @@ export const CurrentUserProfileScreen: React.FC<
                     </View>
                   </View>
 
-                  {user.fullName && (
-                    <Text style={currentTheme.textBold}>{user.fullName}</Text>
+                  {authUser.fullName && (
+                    <Text style={currentTheme.textBold}>
+                      {authUser.fullName}
+                    </Text>
                   )}
 
-                  {user.description && (
-                    <Text style={currentTheme.text}>{user.description}</Text>
+                  {authUser.description && (
+                    <Text style={currentTheme.text}>
+                      {authUser.description}
+                    </Text>
                   )}
 
                   <View style={styles.buttonContainer}>
