@@ -398,6 +398,7 @@ const styles = StyleSheet.create({
   },
   flatListContainer: {
     flexGrow: 1,
+    paddingTop: 10,
   },
   image: {
     height: 135,
@@ -412,7 +413,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingBottom: 20,
+    paddingBottom: 10,
     paddingLeft: 20,
     paddingRight: 20,
     paddingTop: 50,
