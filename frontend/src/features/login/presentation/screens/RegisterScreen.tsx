@@ -49,36 +49,44 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
     Keyboard.dismiss();
     try {
       if (username && password) {
-        const userData: Omit<User, 'id'> = {
-          username: username,
-          password: password,
-        };
-        if (email && !isValidEmail(email)) {
+        if (!hasSpecialCharacters(username)) {
+          const userData: Omit<User, 'id'> = {
+            username: username,
+            password: password,
+          };
+          if (email && !isValidEmail(email)) {
+            setIsLoading(false);
+            Alert.alert(
+              'Oops, algo deu errado',
+              'Por favor, insira um email válido',
+            );
+            return;
+          }
+          if (email) {
+            userData.email = email;
+          }
+          if (fullName) {
+            userData.fullName = fullName;
+          }
+          if (avatar) {
+            userData.avatar = avatar;
+          }
+
+          await register(userData);
+          setIsLoading(false);
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Tabs' }],
+            }),
+          );
+        } else {
           setIsLoading(false);
           Alert.alert(
             'Oops, algo deu errado',
-            'Por favor, insira um email válido',
+            'Nome de usuário não pode conter caracteres especiais',
           );
-          return;
         }
-        if (email) {
-          userData.email = email;
-        }
-        if (fullName) {
-          userData.fullName = fullName;
-        }
-        if (avatar) {
-          userData.avatar = avatar;
-        }
-
-        await register(userData);
-        setIsLoading(false);
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'Tabs' }],
-          }),
-        );
       } else {
         setIsLoading(false);
         Alert.alert(
@@ -101,6 +109,12 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
       }
     }
   };
+
+  const handleUsernameChange = (input: string) => {
+    setUsername(input.toLowerCase());
+  };
+
+  const hasSpecialCharacters = (str: string) => /[^a-zA-Z0-9\s]/.test(str);
 
   const isValidEmail = (email: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -264,7 +278,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
         placeholder="Nome de usuário"
         placeholderTextColor="#DDD"
         value={username}
-        onChangeText={setUsername}
+        onChangeText={handleUsernameChange}
       />
 
       <View style={styles.passwordContainer}>

@@ -78,44 +78,52 @@ export const EditUserScreen: React.FC<
     try {
       if (authUser) {
         if (username) {
-          const userData: User = {
-            id: authUser.id,
-            username: username,
-          };
-          if (email && !isValidEmail(email)) {
+          if (!hasSpecialCharacters(username)) {
+            const userData: User = {
+              id: authUser.id,
+              username: username,
+            };
+            if (email && !isValidEmail(email)) {
+              setIsLoading(false);
+              Alert.alert(
+                'Oops, algo deu errado',
+                'Por favor, insira um email válido',
+              );
+              return;
+            }
+            if (password) {
+              userData.password = password;
+            }
+            if (email) {
+              userData.email = email;
+            }
+            if (fullName) {
+              userData.fullName = fullName;
+            }
+            if (description) {
+              userData.description = description;
+            }
+            if (avatar) {
+              userData.avatar = avatar;
+            }
+
+            const didUpdate = await userUsecase.updateUser(userData);
+
+            if (didUpdate) {
+              userData.password = undefined;
+
+              setIsLoading(false);
+              setAuthUser(userData);
+              if (canGoBack) {
+                navigation.goBack();
+              }
+            }
+          } else {
             setIsLoading(false);
             Alert.alert(
               'Oops, algo deu errado',
-              'Por favor, insira um email válido',
+              'Nome de usuário não pode conter caracteres especiais',
             );
-            return;
-          }
-          if (password) {
-            userData.password = password;
-          }
-          if (email) {
-            userData.email = email;
-          }
-          if (fullName) {
-            userData.fullName = fullName;
-          }
-          if (description) {
-            userData.description = description;
-          }
-          if (avatar) {
-            userData.avatar = avatar;
-          }
-
-          const didUpdate = await userUsecase.updateUser(userData);
-
-          if (didUpdate) {
-            userData.password = undefined;
-
-            setIsLoading(false);
-            setAuthUser(userData);
-            if (canGoBack) {
-              navigation.goBack();
-            }
           }
         } else {
           setIsLoading(false);
@@ -141,6 +149,12 @@ export const EditUserScreen: React.FC<
       }
     }
   };
+
+  const handleUsernameChange = (input: string) => {
+    setUsername(input.toLowerCase());
+  };
+
+  const hasSpecialCharacters = (str: string) => /[^a-zA-Z0-9\s]/.test(str);
 
   const isValidEmail = (email: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -303,7 +317,7 @@ export const EditUserScreen: React.FC<
         placeholder="Nome de usuário"
         placeholderTextColor={currentColors.placeholderText}
         value={username}
-        onChangeText={setUsername}
+        onChangeText={handleUsernameChange}
       />
 
       <View style={currentTheme.passwordContainer}>
