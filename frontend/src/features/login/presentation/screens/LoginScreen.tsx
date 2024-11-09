@@ -41,18 +41,26 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
     Keyboard.dismiss();
     try {
       if (username && password) {
-        const userData: Omit<User, 'id'> = {
-          username: username,
-          password: password,
-        };
-        await login(userData);
-        setIsLoading(false);
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'Tabs' }],
-          }),
-        );
+        if (!hasSpecialCharacters(username)) {
+          const userData: Omit<User, 'id'> = {
+            username: username,
+            password: password,
+          };
+          await login(userData);
+          setIsLoading(false);
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Tabs' }],
+            }),
+          );
+        } else {
+          setIsLoading(false);
+          Alert.alert(
+            'Oops, algo deu errado',
+            'Usuário não pode conter caracteres especiais',
+          );
+        }
       } else {
         setIsLoading(false);
         Alert.alert(
@@ -73,6 +81,19 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
     }
   };
 
+  const handleUsernameChange = (input: string) => {
+    const noSpacesInput: string = input.replace(/\s+/g, '');
+    const lowercaseUsername: string = noSpacesInput.toLowerCase();
+    setUsername(lowercaseUsername);
+  };
+
+  const handlePasswordChange = (input: string) => {
+    const noSpacesPassword: string = input.replace(/\s+/g, '');
+    setPassword(noSpacesPassword);
+  };
+
+  const hasSpecialCharacters = (str: string) => /[^a-zA-Z0-9\s]/.test(str);
+
   const handleSignUpRedirect = () => {
     navigation.navigate('Register');
   };
@@ -90,7 +111,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
         placeholder="Nome de usuário"
         placeholderTextColor="#DDD"
         value={username}
-        onChangeText={setUsername}
+        onChangeText={handleUsernameChange}
       />
 
       <View style={styles.passwordContainer}>
@@ -101,7 +122,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
           placeholderTextColor="#DDD"
           secureTextEntry={!isPasswordVisible}
           value={password}
-          onChangeText={setPassword}
+          onChangeText={handlePasswordChange}
         />
         <TouchableOpacity
           onPress={() => setIsPasswordVisible(!isPasswordVisible)}
