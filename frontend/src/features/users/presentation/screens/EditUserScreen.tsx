@@ -7,7 +7,8 @@ import {
   Alert,
   Image,
   Keyboard,
-  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -243,7 +244,10 @@ export const EditUserScreen: React.FC<
   };
 
   return (
-    <ScrollView contentContainerStyle={currentTheme.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={currentTheme.container}
+    >
       {canGoBack && (
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -363,7 +367,7 @@ export const EditUserScreen: React.FC<
       ) : (
         <ActivityIndicator size="large" color={currentColors.icon} />
       )}
-    </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

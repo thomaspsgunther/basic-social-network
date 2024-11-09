@@ -6,6 +6,8 @@ import {
   ActivityIndicator,
   Alert,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -76,7 +78,10 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
       <Text style={styles.logo}>y</Text>
 
       <TextInput
@@ -134,7 +139,7 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
       )}
 
       <Text style={styles.versionText}>v{Constants.expoConfig?.version}</Text>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

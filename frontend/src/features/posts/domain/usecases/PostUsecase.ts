@@ -23,8 +23,8 @@ export class PostUsecaseImpl implements IPostUsecase {
   }
 
   async createPost(post: Omit<Post, 'id'>): Promise<Post> {
-    if (!post.image) {
-      throw new Error('post image is required');
+    if (!post.image || !post.user) {
+      throw new Error('post image and user are required');
     }
 
     const createdPost: Post = await this.repository.createPost(post);
@@ -45,8 +45,8 @@ export class PostUsecaseImpl implements IPostUsecase {
   }
 
   async updatePost(post: Post): Promise<boolean> {
-    if (!post.image) {
-      throw new Error('post image is required');
+    if (!post.image || !post.user) {
+      throw new Error('post image and user are required');
     }
 
     await this.repository.updatePost(post);

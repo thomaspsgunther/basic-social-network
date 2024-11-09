@@ -7,7 +7,8 @@ import {
   Alert,
   Image,
   Keyboard,
-  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -64,13 +65,16 @@ export const CreatePostScreen: React.FC<
           }
 
           const newPost = await postUsecase.createPost(post);
-          clearImage();
-          setDescription('');
-          setIsLoading(false);
-          navigation.push('PostDetail', { postId: newPost.id });
+
+          console.log('here');
+          if (newPost) {
+            clearImage();
+            setDescription('');
+            setIsLoading(false);
+            navigation.push('PostDetail', { postId: newPost.id });
+          }
         } else {
-          setIsLoading(false);
-          Alert.alert('Oops, algo deu errado');
+          throw new Error('missing authuser');
         }
       } else {
         setIsLoading(false);
@@ -179,7 +183,10 @@ export const CreatePostScreen: React.FC<
   };
 
   return (
-    <ScrollView contentContainerStyle={currentTheme.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={currentTheme.container}
+    >
       {isLoading && (
         <View style={currentTheme.loadingOverlay}>
           <ActivityIndicator size="large" color="white" />
@@ -195,6 +202,7 @@ export const CreatePostScreen: React.FC<
             style={styles.image}
             resizeMode="contain"
           />
+
           <TouchableOpacity
             style={styles.trashIconContainer}
             onPress={() => {
@@ -212,6 +220,7 @@ export const CreatePostScreen: React.FC<
           >
             <Ionicons name="camera" size={32} color="white" />
           </TouchableOpacity>
+
           <TouchableOpacity
             style={currentTheme.filledIconButton}
             onPress={() => selectImageFromLibrary()}
@@ -220,6 +229,7 @@ export const CreatePostScreen: React.FC<
           </TouchableOpacity>
         </View>
       )}
+
       <TextInput
         style={currentTheme.largeInput}
         multiline
@@ -244,7 +254,7 @@ export const CreatePostScreen: React.FC<
           />
         </TouchableOpacity>
       )}
-    </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

@@ -105,6 +105,7 @@ const lightTheme = StyleSheet.create({
     width: '76%',
   },
   row: {
+    alignItems: 'center',
     flexDirection: 'row',
   },
   text: {
@@ -144,7 +145,7 @@ const lightTheme = StyleSheet.create({
   topRow: {
     flexDirection: 'row',
     position: 'absolute',
-    right: 20,
+    right: 10,
     top: 50,
     zIndex: 1,
   },
@@ -261,6 +262,7 @@ const darkTheme = StyleSheet.create({
     width: '76%',
   },
   row: {
+    alignItems: 'center',
     flexDirection: 'row',
   },
   text: {
@@ -300,7 +302,7 @@ const darkTheme = StyleSheet.create({
   topRow: {
     flexDirection: 'row',
     position: 'absolute',
-    right: 20,
+    right: 10,
     top: 50,
     zIndex: 1,
   },

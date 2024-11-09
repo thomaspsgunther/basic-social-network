@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	database "y-net/internal/database/postgres"
+	"y-net/internal/services/shared"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -53,10 +54,11 @@ func (r *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUI
 	}()
 
 	query := `
-		SELECT c.id, c.user_id, u.username, u.avatar, c.post_id, c.image, c.message, c.created_at
+		SELECT c.id, c.user_id, u.username, u.avatar, c.post_id, c.message, c.created_at
 		FROM comments c
 		INNER JOIN users u ON c.user_id = u.id
-		WHERE post_id = $1
+		WHERE c.post_id = $1
+		ORDER BY c.created_at DESC
 	`
 
 	rows, err := tx.Query(ctx, query, postId)
@@ -72,6 +74,7 @@ func (r *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUI
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
+		comment.User = &shared.User{}
 		err := rows.Scan(&comment.ID, &comment.User.ID, &comment.User.Username, &comment.User.Avatar, &comment.PostID, &comment.Message, &comment.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan comment: %w", err)
@@ -96,6 +99,7 @@ func (r *commentRepositoryImpl) get(ctx context.Context, id uuid.UUID) (Comment,
 	}()
 
 	var comment Comment
+	comment.User = &shared.User{}
 	err = tx.QueryRow(
 		ctx,
 		"SELECT id, user_id, post_id FROM comments WHERE id = $1",

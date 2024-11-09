@@ -8,7 +8,8 @@ import {
   Alert,
   Image,
   Keyboard,
-  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -203,7 +204,10 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
       {canGoBack && (
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -230,6 +234,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
             <Text style={styles.avatarPlaceholderText}>Tire uma foto!</Text>
           </View>
         )}
+
         {avatarUri && (
           <TouchableOpacity
             onPress={() => clearAvatar()}
@@ -244,6 +249,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
         <TouchableOpacity style={styles.iconButton} onPress={() => takePhoto()}>
           <Ionicons name="camera" size={32} color="white" />
         </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.iconButton}
           onPress={() => selectImageFromLibrary()}
@@ -311,7 +317,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
       ) : (
         <ActivityIndicator size="large" color="#FFFFFF" />
       )}
-    </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

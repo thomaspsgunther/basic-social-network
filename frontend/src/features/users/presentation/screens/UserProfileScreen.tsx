@@ -239,6 +239,32 @@ export const UserProfileScreen: React.FC = () => {
       {!isLoading ? (
         user && (
           <>
+            <View style={styles.listHeaderTopRow}>
+              <View style={currentTheme.row}>
+                {canGoBack && (
+                  <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Ionicons
+                      name="arrow-back"
+                      size={40}
+                      color={currentColors.icon}
+                    />
+                  </TouchableOpacity>
+                )}
+
+                <Text
+                  style={currentTheme.titleText}
+                >{`   ${user.username}`}</Text>
+              </View>
+
+              <TouchableOpacity onPress={() => handleReload()}>
+                <Ionicons
+                  name="reload"
+                  size={34}
+                  color={currentColors.icon}
+                ></Ionicons>
+              </TouchableOpacity>
+            </View>
+
             <FlatList
               data={posts}
               keyExtractor={(post) => post.id}
@@ -259,30 +285,6 @@ export const UserProfileScreen: React.FC = () => {
               contentContainerStyle={styles.flatListContainer}
               ListHeaderComponent={
                 <View style={currentTheme.userHeader}>
-                  <View style={styles.listHeaderTopRow}>
-                    <View style={currentTheme.row}>
-                      <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Ionicons
-                          name="arrow-back"
-                          size={40}
-                          color={currentColors.icon}
-                        />
-                      </TouchableOpacity>
-
-                      <Text
-                        style={currentTheme.titleText}
-                      >{`   ${user.username}`}</Text>
-                    </View>
-
-                    <TouchableOpacity onPress={() => handleReload()}>
-                      <Ionicons
-                        name="reload"
-                        size={34}
-                        color={currentColors.icon}
-                      ></Ionicons>
-                    </TouchableOpacity>
-                  </View>
-
                   <View style={styles.userInfoRow}>
                     {user.avatar ? (
                       <Image
@@ -396,7 +398,6 @@ const styles = StyleSheet.create({
   },
   flatListContainer: {
     flexGrow: 1,
-    paddingTop: 53,
   },
   image: {
     height: 135,
@@ -412,6 +413,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingBottom: 20,
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 50,
+    width: '100%',
   },
   loadingContainer: {
     paddingVertical: 5,

@@ -1,7 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -54,36 +59,38 @@ export const PostDetailScreen: React.FC = () => {
   const currentTheme = isDarkMode ? darkTheme : lightTheme;
   const currentColors = isDarkMode ? appColors.dark : appColors.light;
 
-  useEffect(() => {
-    const loadPost = async () => {
-      setIsLoading(true);
-      try {
-        const mainPost: Post = await postUsecase.getPost(postId);
-        if (mainPost && authUser) {
-          const didLike: boolean = await postUsecase.checkIfUserLikedPost(
-            authUser.id,
-            mainPost.id,
-          );
-          if (didLike) {
-            setIsLiked(true);
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadPost = async () => {
+        setIsLoading(true);
+        try {
+          const mainPost: Post = await postUsecase.getPost(postId);
+          if (mainPost && authUser) {
+            const didLike: boolean = await postUsecase.checkIfUserLikedPost(
+              authUser.id,
+              mainPost.id,
+            );
+            if (didLike) {
+              setIsLiked(true);
+            }
+
+            setIsLoading(false);
+            setPost(mainPost);
+          } else {
+            setIsLoading(false);
+            throw new Error('missing post or authuser');
           }
-
+        } catch (_error) {
           setIsLoading(false);
-          setPost(mainPost);
-        } else {
-          setIsLoading(false);
-          throw new Error('missing post or authuser');
+          Alert.alert('Oops, algo deu errado');
         }
-      } catch (_error) {
-        setIsLoading(false);
-        Alert.alert('Oops, algo deu errado');
-      }
-    };
+      };
 
-    if (!post) {
-      loadPost();
-    }
-  }, [post]);
+      if (!post) {
+        loadPost();
+      }
+    }, []),
+  );
 
   const handleLike = async () => {
     try {
@@ -118,6 +125,12 @@ export const PostDetailScreen: React.FC = () => {
   const goToUser = async (id: string) => {
     if (authUser && authUser.id != id) {
       navigation.push('UserProfile', { userId: id });
+    }
+  };
+
+  const goToComments = async (id: string) => {
+    if (authUser && authUser.id != id) {
+      navigation.push('PostComments', { postId: id });
     }
   };
 
@@ -206,13 +219,13 @@ export const PostDetailScreen: React.FC = () => {
                   {` ${post.likeCount ?? 0}    `}
                 </Text>
 
-                <Pressable>
+                <TouchableOpacity onPress={() => goToComments(post.id)}>
                   <Ionicons
                     name="chatbubble-outline"
                     size={34}
                     color={currentColors.icon}
                   ></Ionicons>
-                </Pressable>
+                </TouchableOpacity>
 
                 <Text style={currentTheme.textBold}>
                   {` ${post.commentCount ?? 0}`}
@@ -221,11 +234,12 @@ export const PostDetailScreen: React.FC = () => {
 
               {post.description && (
                 <View style={styles.descriptionContainer}>
-                  <Text
-                    style={currentTheme.textBold}
-                  >{`${post.user?.username}  `}</Text>
-
-                  <Text style={currentTheme.text}>{post.description}</Text>
+                  <Text style={currentTheme.text}>
+                    <Text
+                      style={currentTheme.textBold}
+                    >{`${post.user?.username} `}</Text>
+                    {post.description}
+                  </Text>
                 </View>
               )}
 
@@ -270,10 +284,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   descriptionContainer: {
-    alignItems: 'flex-start',
     flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingLeft: 10,
-    width: 365,
+    width: 405,
   },
   image: {
     height: 420,

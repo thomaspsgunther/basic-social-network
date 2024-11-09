@@ -216,6 +216,12 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
     }
   };
 
+  const goToComments = async (id: string) => {
+    if (authUser && authUser.id != id) {
+      navigation.push('PostComments', { postId: id });
+    }
+  };
+
   return (
     <View style={currentTheme.container}>
       {!isLoading ? (
@@ -316,13 +322,13 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
                         {` ${item.likeCount ?? 0}    `}
                       </Text>
 
-                      <Pressable>
+                      <TouchableOpacity onPress={() => goToComments(item.id)}>
                         <Ionicons
                           name="chatbubble-outline"
                           size={34}
                           color={currentColors.icon}
                         ></Ionicons>
-                      </Pressable>
+                      </TouchableOpacity>
 
                       <Text style={currentTheme.textBold}>
                         {` ${item.commentCount ?? 0}`}
@@ -331,11 +337,10 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
 
                     {item.description && (
                       <View style={styles.descriptionContainer}>
-                        <Text
-                          style={currentTheme.textBold}
-                        >{`${item.user?.username}  `}</Text>
-
                         <Text style={currentTheme.text}>
+                          <Text
+                            style={currentTheme.textBold}
+                          >{`${item.user?.username} `}</Text>
                           {item.description}
                         </Text>
                       </View>
@@ -417,10 +422,10 @@ const styles = StyleSheet.create({
     top: '50%',
   },
   descriptionContainer: {
-    alignItems: 'flex-start',
     flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingLeft: 10,
-    width: 365,
+    width: 405,
   },
   flatListContainer: {
     flexGrow: 1,

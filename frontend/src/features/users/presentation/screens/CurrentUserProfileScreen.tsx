@@ -190,6 +190,24 @@ export const CurrentUserProfileScreen: React.FC<
         user &&
         authUser && (
           <>
+            <View style={styles.listHeaderTopRow}>
+              <Text style={currentTheme.titleText}>{user.username}</Text>
+
+              <View style={currentTheme.row}>
+                <View style={styles.icon}>
+                  <TouchableOpacity onPress={() => handleReload()}>
+                    <Ionicons
+                      name="reload"
+                      size={34}
+                      color={currentColors.icon}
+                    ></Ionicons>
+                  </TouchableOpacity>
+                </View>
+
+                <IconDropdown options={options}></IconDropdown>
+              </View>
+            </View>
+
             <FlatList
               data={posts}
               keyExtractor={(post) => post.id}
@@ -210,24 +228,6 @@ export const CurrentUserProfileScreen: React.FC<
               contentContainerStyle={styles.flatListContainer}
               ListHeaderComponent={
                 <View style={currentTheme.userHeader}>
-                  <View style={styles.listHeaderTopRow}>
-                    <Text style={currentTheme.titleText}>{user.username}</Text>
-
-                    <View style={currentTheme.row}>
-                      <View style={styles.icon}>
-                        <TouchableOpacity onPress={() => handleReload()}>
-                          <Ionicons
-                            name="reload"
-                            size={34}
-                            color={currentColors.icon}
-                          ></Ionicons>
-                        </TouchableOpacity>
-                      </View>
-
-                      <IconDropdown options={options}></IconDropdown>
-                    </View>
-                  </View>
-
                   <View style={styles.userInfoRow}>
                     {authUser.avatar ? (
                       <Image
@@ -332,7 +332,6 @@ const styles = StyleSheet.create({
   },
   flatListContainer: {
     flexGrow: 1,
-    paddingTop: 53,
   },
   icon: {
     paddingRight: 20,
@@ -351,6 +350,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingBottom: 20,
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 50,
+    width: '100%',
   },
   loadingContainer: {
     paddingVertical: 5,
