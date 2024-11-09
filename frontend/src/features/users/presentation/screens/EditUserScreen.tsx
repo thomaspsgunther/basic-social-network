@@ -151,7 +151,14 @@ export const EditUserScreen: React.FC<
   };
 
   const handleUsernameChange = (input: string) => {
-    setUsername(input.toLowerCase());
+    const noSpacesInput: string = input.replace(/\s+/g, '');
+    const lowercaseUsername: string = noSpacesInput.toLowerCase();
+    setUsername(lowercaseUsername);
+  };
+
+  const handlePasswordChange = (input: string) => {
+    const noSpacesPassword: string = input.replace(/\s+/g, '');
+    setPassword(noSpacesPassword);
   };
 
   const hasSpecialCharacters = (str: string) => /[^a-zA-Z0-9\s]/.test(str);
@@ -328,7 +335,7 @@ export const EditUserScreen: React.FC<
           placeholderTextColor={currentColors.placeholderText}
           secureTextEntry={!isPasswordVisible}
           value={password}
-          onChangeText={setPassword}
+          onChangeText={handlePasswordChange}
         />
         <TouchableOpacity
           onPress={() => setIsPasswordVisible(!isPasswordVisible)}

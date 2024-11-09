@@ -111,7 +111,14 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   };
 
   const handleUsernameChange = (input: string) => {
-    setUsername(input.toLowerCase());
+    const noSpacesInput: string = input.replace(/\s+/g, '');
+    const lowercaseUsername: string = noSpacesInput.toLowerCase();
+    setUsername(lowercaseUsername);
+  };
+
+  const handlePasswordChange = (input: string) => {
+    const noSpacesPassword: string = input.replace(/\s+/g, '');
+    setPassword(noSpacesPassword);
   };
 
   const hasSpecialCharacters = (str: string) => /[^a-zA-Z0-9\s]/.test(str);
@@ -289,7 +296,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
           placeholderTextColor="#DDD"
           secureTextEntry={!isPasswordVisible}
           value={password}
-          onChangeText={setPassword}
+          onChangeText={handlePasswordChange}
         />
         <TouchableOpacity
           onPress={() => setIsPasswordVisible(!isPasswordVisible)}
@@ -297,7 +304,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
           <Ionicons
             name={isPasswordVisible ? 'eye-off' : 'eye'}
             size={26}
-            color="#ddd"
+            color="white"
             style={styles.icon}
           />
         </TouchableOpacity>
