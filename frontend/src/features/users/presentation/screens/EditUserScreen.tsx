@@ -83,6 +83,9 @@ export const EditUserScreen: React.FC<
               id: authUser.id,
               username: username,
             };
+            if (password) {
+              userData.password = password;
+            }
             if (email && !isValidEmail(email)) {
               setIsLoading(false);
               Alert.alert(
@@ -90,11 +93,7 @@ export const EditUserScreen: React.FC<
                 'Por favor, insira um email válido',
               );
               return;
-            }
-            if (password) {
-              userData.password = password;
-            }
-            if (email) {
+            } else if (email && isValidEmail(email)) {
               userData.email = email;
             }
             if (fullName) {

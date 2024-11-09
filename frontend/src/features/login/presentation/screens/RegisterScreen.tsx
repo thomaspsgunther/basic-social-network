@@ -61,8 +61,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
               'Por favor, insira um email válido',
             );
             return;
-          }
-          if (email) {
+          } else if (email && isValidEmail(email)) {
             userData.email = email;
           }
           if (fullName) {
