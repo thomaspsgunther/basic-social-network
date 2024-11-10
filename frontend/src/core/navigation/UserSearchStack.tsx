@@ -2,26 +2,26 @@ import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
 
 import { PostCommentsScreen } from '@/src/features/comments/presentation/screens/PostCommentsScreen';
-import { CreatePostScreen } from '@/src/features/posts/presentation/screens/CreatePostScreen';
 import { PostDetailScreen } from '@/src/features/posts/presentation/screens/PostDetailScreen';
 import { UserListScreen } from '@/src/features/users/presentation/screens/UserListScreen';
 import { UserProfileScreen } from '@/src/features/users/presentation/screens/UserProfileScreen';
+import { UserSearchScreen } from '@/src/features/users/presentation/screens/UserSearchScreen';
 
-import { CreatePostStackParamList } from './types';
+import { UserSearchStackParamList } from './types';
 
-const Stack = createStackNavigator<CreatePostStackParamList>();
+const Stack = createStackNavigator<UserSearchStackParamList>();
 
-export const CreatePostStack = () => {
+export const UserSearchStack = () => {
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName="CreatePost"
+      initialRouteName="UserSearch"
     >
-      <Stack.Screen name="CreatePost" component={CreatePostScreen} />
-      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
-      <Stack.Screen name="PostComments" component={PostCommentsScreen} />
+      <Stack.Screen name="UserSearch" component={UserSearchScreen} />
       <Stack.Screen name="UserProfile" component={UserProfileScreen} />
       <Stack.Screen name="UserList" component={UserListScreen} />
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+      <Stack.Screen name="PostComments" component={PostCommentsScreen} />
     </Stack.Navigator>
   );
 };

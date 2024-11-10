@@ -29,9 +29,11 @@ func TestCreateComment(t *testing.T) {
 	postId := uuid.New()
 	comment := Comment{User: &user, PostID: postId, Message: "This is a comment."}
 
-	id, err := ts.usecase.Create(context.Background(), comment)
+	createdComment, err := ts.usecase.Create(context.Background(), comment)
 	assert.NoError(t, err)
-	assert.NotEqual(t, uuid.Nil, id)
+	assert.NotNil(t, createdComment.ID)
+	assert.Equal(t, comment.Message, createdComment.Message)
+	assert.Equal(t, comment.PostID, createdComment.PostID)
 }
 
 func TestCreateCommentEmptyUserAndNilPostID(t *testing.T) {
@@ -39,9 +41,9 @@ func TestCreateCommentEmptyUserAndNilPostID(t *testing.T) {
 
 	comment := Comment{User: &shared.User{}, PostID: uuid.Nil, Message: "This is a comment."}
 
-	id, err := ts.usecase.Create(context.Background(), comment)
+	createdComment, err := ts.usecase.Create(context.Background(), comment)
 	assert.Error(t, err)
-	assert.Equal(t, uuid.Nil, id)
+	assert.Equal(t, uuid.Nil, createdComment.ID)
 }
 
 func TestCreateCommentEmptyDescription(t *testing.T) {
@@ -51,9 +53,9 @@ func TestCreateCommentEmptyDescription(t *testing.T) {
 	postId := uuid.New()
 	comment := Comment{User: &user, PostID: postId, Message: ""}
 
-	id, err := ts.usecase.Create(context.Background(), comment)
+	createdComment, err := ts.usecase.Create(context.Background(), comment)
 	assert.Error(t, err)
-	assert.Equal(t, uuid.Nil, id)
+	assert.Equal(t, uuid.Nil, createdComment.ID)
 }
 
 func TestUpdateComment(t *testing.T) {
@@ -62,13 +64,13 @@ func TestUpdateComment(t *testing.T) {
 	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
 	comment := Comment{User: &user, PostID: postId, Message: "This is a comment."}
-	id, _ := ts.usecase.Create(context.Background(), comment)
+	createdComment, _ := ts.usecase.Create(context.Background(), comment)
 
-	comment.Message = "Updated comment."
-	err := ts.usecase.Update(context.Background(), comment, id)
+	createdComment.Message = "Updated comment."
+	err := ts.usecase.Update(context.Background(), createdComment, createdComment.ID)
 	assert.NoError(t, err)
 
-	updatedComment, err := ts.usecase.Get(context.Background(), id)
+	updatedComment, err := ts.usecase.Get(context.Background(), createdComment.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, "Updated comment.", updatedComment.Message)
 }
@@ -90,14 +92,14 @@ func TestDeleteComment(t *testing.T) {
 	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
 	comment := Comment{User: &user, PostID: postId, Message: "This is a comment."}
-	id, _ := ts.usecase.Create(context.Background(), comment)
+	createdComment, _ := ts.usecase.Create(context.Background(), comment)
 
-	err := ts.usecase.Delete(context.Background(), id)
+	err := ts.usecase.Delete(context.Background(), createdComment.ID)
 	assert.NoError(t, err)
 
-	comments, err := ts.usecase.GetFromPost(context.Background(), comment.PostID)
+	comments, err := ts.usecase.GetFromPost(context.Background(), createdComment.PostID)
 	assert.NoError(t, err)
-	assert.NotContains(t, comments, comment)
+	assert.NotContains(t, comments, createdComment)
 }
 
 func TestDeleteCommentNotFound(t *testing.T) {
@@ -130,9 +132,9 @@ func TestGetComment(t *testing.T) {
 	user := shared.User{ID: uuid.New(), Username: "testuser"}
 	postId := uuid.New()
 	comment := Comment{User: &user, PostID: postId, Message: "This is a comment."}
-	id, _ := ts.usecase.Create(context.Background(), comment)
+	createdComment, _ := ts.usecase.Create(context.Background(), comment)
 
-	retrievedComment, err := ts.usecase.Get(context.Background(), id)
+	retrievedComment, err := ts.usecase.Get(context.Background(), createdComment.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, comment.Message, retrievedComment.Message)
 }
@@ -157,12 +159,12 @@ func newMockCommentRepository() *mockCommentRepository {
 	}
 }
 
-func (m *mockCommentRepository) create(ctx context.Context, comment Comment) (uuid.UUID, error) {
+func (m *mockCommentRepository) create(ctx context.Context, comment Comment) (Comment, error) {
 	id := uuid.New()
 	comment.ID = id
 	m.comments[id] = comment
 
-	return id, nil
+	return comment, nil
 }
 
 func (m *mockCommentRepository) update(ctx context.Context, comment Comment, id uuid.UUID) error {

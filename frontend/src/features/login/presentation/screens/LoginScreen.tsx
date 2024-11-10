@@ -148,16 +148,15 @@ export const LoginScreen: React.FC<RootStackScreenProps<'Login'>> = ({
         <ActivityIndicator size="large" color="#FFFFFF" />
       )}
 
-      {!isLoading && (
-        <TouchableOpacity
-          style={styles.signUpButton}
-          onPress={() => handleSignUpRedirect()}
-        >
-          <Text style={styles.signUpText}>
-            Ainda não tem conta? Cadastre-se aqui!
-          </Text>
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity
+        style={styles.signUpButton}
+        onPress={() => handleSignUpRedirect()}
+        disabled={isLoading}
+      >
+        <Text style={styles.signUpText}>
+          Ainda não tem conta? Cadastre-se aqui!
+        </Text>
+      </TouchableOpacity>
 
       <Text style={styles.versionText}>v{Constants.expoConfig?.version}</Text>
     </KeyboardAvoidingView>

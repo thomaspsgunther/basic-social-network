@@ -11,7 +11,7 @@ import (
 )
 
 type iCommentRepository interface {
-	create(ctx context.Context, comment Comment) (uuid.UUID, error)
+	create(ctx context.Context, comment Comment) (Comment, error)
 	getFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error)
 	get(ctx context.Context, id uuid.UUID) (Comment, error)
 	update(ctx context.Context, comment Comment, id uuid.UUID) error
@@ -20,27 +20,27 @@ type iCommentRepository interface {
 
 type commentRepositoryImpl struct{}
 
-func (r *commentRepositoryImpl) create(ctx context.Context, comment Comment) (uuid.UUID, error) {
+func (r *commentRepositoryImpl) create(ctx context.Context, comment Comment) (Comment, error) {
 	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("failed to begin transaction: %w", err)
+		return Comment{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer func() {
 		database.HandleTransaction(ctx, tx, err)
 	}()
 
-	var id uuid.UUID
+	var newComment Comment
 	err = tx.QueryRow(
 		ctx,
-		"INSERT INTO comments (user_id, post_id, message) VALUES ($1, $2, $3) RETURNING id",
+		"INSERT INTO comments (user_id, post_id, message) VALUES ($1, $2, $3) RETURNING id, created_at",
 		comment.User.ID, comment.PostID, comment.Message,
-	).Scan(&id)
+	).Scan(&newComment.ID, &newComment.CreatedAt)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("failed to insert comment: %w", err)
+		return Comment{}, fmt.Errorf("failed to insert comment: %w", err)
 	}
 
-	return id, nil
+	return newComment, nil
 }
 
 func (r *commentRepositoryImpl) getFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error) {

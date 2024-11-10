@@ -14,7 +14,7 @@ export class UserRepositoryImpl implements IUserRepository {
 
   async getUsersBySearch(searchTerm: string): Promise<User[]> {
     const response = await userApi.search(searchTerm);
-    const users: User[] = response.data;
+    const users: User[] = response.data ? response.data : [];
 
     return users;
   }
@@ -66,14 +66,14 @@ export class UserRepositoryImpl implements IUserRepository {
 
   async getUserFollowers(id: string): Promise<User[]> {
     const response = await userApi.getFollowers(id);
-    const users: User[] = response.data;
+    const users: User[] = response.data ? response.data : [];
 
     return users;
   }
 
   async getUserFollowed(id: string): Promise<User[]> {
     const response = await userApi.getFollowed(id);
-    const users: User[] = response.data;
+    const users: User[] = response.data ? response.data : [];
 
     return users;
   }

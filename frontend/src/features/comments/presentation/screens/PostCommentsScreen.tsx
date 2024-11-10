@@ -95,7 +95,8 @@ export const PostCommentsScreen: React.FC = () => {
         if (authUser) {
           comment.user = authUser;
 
-          const newComment = await commentUsecase.createComment(comment);
+          const newComment: Comment =
+            await commentUsecase.createComment(comment);
 
           if (newComment) {
             newComment.user = comment.user;
@@ -128,9 +129,7 @@ export const PostCommentsScreen: React.FC = () => {
   };
 
   const goToUser = async (id: string) => {
-    if (authUser && authUser.id != id) {
-      navigation.push('UserProfile', { userId: id });
-    }
+    navigation.push('UserProfile', { userId: id });
   };
 
   return (
@@ -160,6 +159,8 @@ export const PostCommentsScreen: React.FC = () => {
                   />
                 </TouchableOpacity>
               )}
+
+              <Text style={currentTheme.titleText}>{`   Comentários`}</Text>
             </View>
 
             <FlatList
@@ -197,6 +198,9 @@ export const PostCommentsScreen: React.FC = () => {
                       <TouchableOpacity
                         style={styles.commentUserRowContainer}
                         onPress={() => goToUser(item.user!.id)}
+                        disabled={
+                          authUser ? item.user!.id === authUser!.id : true
+                        }
                       >
                         {item.user?.avatar ? (
                           <Image
@@ -219,11 +223,20 @@ export const PostCommentsScreen: React.FC = () => {
 
                       <View style={styles.messageContainer}>
                         <Text style={currentTheme.text}>
-                          <Text
-                            style={currentTheme.textBold}
-                          >{`${item.user?.username} `}</Text>
-                          {item.message}
+                          <Text style={currentTheme.textBold}>
+                            {`${item.user?.username}   `}
+                          </Text>
+                          {`${new Date(
+                            item.createdAt?.toLocaleString() ?? '',
+                          ).toLocaleDateString()}  ${new Date(
+                            item.createdAt?.toLocaleString() ?? '',
+                          ).toLocaleTimeString(undefined, {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}`}
                         </Text>
+
+                        <Text style={currentTheme.text}>{item.message}</Text>
                       </View>
                     </View>
 
@@ -235,6 +248,7 @@ export const PostCommentsScreen: React.FC = () => {
                   </View>
                 );
               }}
+              showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.flatListContainer}
             ></FlatList>
 
@@ -242,7 +256,7 @@ export const PostCommentsScreen: React.FC = () => {
               <TextInput
                 style={currentTheme.input}
                 multiline
-                maxLength={200}
+                maxLength={192}
                 placeholder="Escreva um comentário"
                 placeholderTextColor={currentColors.placeholderText}
                 value={message}
@@ -325,17 +339,15 @@ const styles = StyleSheet.create({
   listHeader: {
     alignItems: 'center',
     flexDirection: 'row',
+    marginTop: 50,
     paddingBottom: 10,
-    paddingLeft: 20,
+    paddingLeft: 24,
     paddingRight: 20,
-    paddingTop: 50,
     width: 420,
   },
   messageContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
     marginLeft: 10,
-    marginTop: 14,
     width: 288,
   },
 });

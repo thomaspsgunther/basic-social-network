@@ -7,6 +7,7 @@ import { CurrentUserProfileStack } from './CurrentUserProfileStack';
 import { CustomTabBar } from './CustomTabBar';
 import { FeedStack } from './FeedStack';
 import { TabParamList } from './types';
+import { UserSearchStack } from './UserSearchStack';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -20,6 +21,9 @@ export function TabNavigator() {
           switch (route.name) {
             case 'FeedStack':
               iconName = focused ? 'home' : 'home-outline';
+              break;
+            case 'UserSearchStack':
+              iconName = focused ? 'search' : 'search-outline';
               break;
             case 'CreatePostStack':
               iconName = focused ? 'add-circle' : 'add-circle-outline';
@@ -38,6 +42,7 @@ export function TabNavigator() {
       tabBar={(props) => <CustomTabBar {...props} />}
     >
       <Tab.Screen name="FeedStack" component={FeedStack} />
+      <Tab.Screen name="UserSearchStack" component={UserSearchStack} />
       <Tab.Screen name="CreatePostStack" component={CreatePostStack} />
       <Tab.Screen
         name="CurrentUserProfileStack"

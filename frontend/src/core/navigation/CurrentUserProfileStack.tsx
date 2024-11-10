@@ -4,7 +4,8 @@ import React from 'react';
 import { PostCommentsScreen } from '@/src/features/comments/presentation/screens/PostCommentsScreen';
 import { PostDetailScreen } from '@/src/features/posts/presentation/screens/PostDetailScreen';
 import { CurrentUserProfileScreen } from '@/src/features/users/presentation/screens/CurrentUserProfileScreen';
-import { EditUserScreen } from '@/src/features/users/presentation/screens/EditUserScreen';
+import { UserEditScreen } from '@/src/features/users/presentation/screens/UserEditScreen';
+import { UserListScreen } from '@/src/features/users/presentation/screens/UserListScreen';
 import { UserProfileScreen } from '@/src/features/users/presentation/screens/UserProfileScreen';
 
 import { CurrentUserProfileStackParamList } from './types';
@@ -21,10 +22,11 @@ export const CurrentUserProfileStack = () => {
         name="CurrentUserProfile"
         component={CurrentUserProfileScreen}
       />
-      <Stack.Screen name="EditUser" component={EditUserScreen} />
+      <Stack.Screen name="UserEdit" component={UserEditScreen} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
       <Stack.Screen name="PostComments" component={PostCommentsScreen} />
       <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+      <Stack.Screen name="UserList" component={UserListScreen} />
     </Stack.Navigator>
   );
 };

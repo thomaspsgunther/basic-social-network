@@ -61,17 +61,18 @@ export const CreatePostScreen: React.FC<
           post.user = authUser;
 
           if (description) {
-            post.description = description;
+            post.description = description.trim();
           }
 
-          const newPost = await postUsecase.createPost(post);
+          const newPost: Post = await postUsecase.createPost(post);
 
-          console.log('here');
           if (newPost) {
             clearImage();
             setDescription('');
             setIsLoading(false);
             navigation.push('PostDetail', { postId: newPost.id });
+          } else {
+            setIsLoading(false);
           }
         } else {
           throw new Error('missing authuser');
@@ -233,7 +234,7 @@ export const CreatePostScreen: React.FC<
       <TextInput
         style={currentTheme.largeInput}
         multiline
-        maxLength={200}
+        maxLength={190}
         placeholder="Descrição (opcional)"
         placeholderTextColor={currentColors.placeholderText}
         value={description}

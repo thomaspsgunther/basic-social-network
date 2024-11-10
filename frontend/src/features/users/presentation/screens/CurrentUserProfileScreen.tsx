@@ -30,6 +30,8 @@ export const CurrentUserProfileScreen: React.FC<
   CurrentUserProfileStackScreenProps<'CurrentUserProfile'>
 > = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingFollowers, setIsLoadingFollowers] = useState<boolean>(false);
+  const [isLoadingFollowed, setIsLoadingFollowed] = useState<boolean>(false);
   const [user, setUser] = useState<User>();
   const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(false);
   const [noMorePosts, setNoMorePosts] = useState<boolean>(false);
@@ -144,7 +146,11 @@ export const CurrentUserProfileScreen: React.FC<
         `${lastPost.createdAt},${lastPost.id}`,
       ).toString('base64');
 
-      const newPosts = await userUsecase.listUserPosts(user.id, 15, cursor);
+      const newPosts: Post[] = await userUsecase.listUserPosts(
+        user.id,
+        15,
+        cursor,
+      );
 
       if (newPosts && newPosts.length > 0) {
         setPosts((prevPosts) => [...prevPosts, ...newPosts]);
@@ -166,12 +172,53 @@ export const CurrentUserProfileScreen: React.FC<
     }
   };
 
+  const goToFollowers = async () => {
+    if (user) {
+      setIsLoadingFollowers(true);
+      try {
+        const followers: User[] = await userUsecase.getUserFollowers(user.id);
+
+        if (followers) {
+          setIsLoadingFollowers(false);
+          navigation.push('UserList', {
+            users: followers,
+            title: 'Seguidores',
+          });
+        } else {
+          setIsLoadingFollowers(false);
+        }
+      } catch (_error) {
+        setIsLoadingFollowers(false);
+        Alert.alert('Oops, algo deu errado');
+      }
+    }
+  };
+
+  const goToFollowed = async () => {
+    if (user) {
+      setIsLoadingFollowed(true);
+      try {
+        const followed: User[] = await userUsecase.getUserFollowed(user.id);
+
+        if (followed) {
+          setIsLoadingFollowed(false);
+          navigation.push('UserList', { users: followed, title: 'Seguindo' });
+        } else {
+          setIsLoadingFollowed(false);
+        }
+      } catch (_error) {
+        setIsLoadingFollowed(false);
+        Alert.alert('Oops, algo deu errado');
+      }
+    }
+  };
+
   const goToPost = async (id: string) => {
     navigation.push('PostDetail', { postId: id });
   };
 
   const goToEdit = async () => {
-    navigation.push('EditUser');
+    navigation.push('UserEdit');
   };
 
   const options: IconDropdownOption[] = [
@@ -255,21 +302,43 @@ export const CurrentUserProfileScreen: React.FC<
                       <Text style={currentTheme.text}>publicações</Text>
                     </View>
 
-                    <View style={styles.infoColumn}>
-                      <Text
-                        style={currentTheme.textBold}
-                      >{`${user.followerCount ?? 0}`}</Text>
+                    {!isLoadingFollowers ? (
+                      <TouchableOpacity
+                        style={styles.infoColumn}
+                        onPress={() => goToFollowers()}
+                        disabled={(user.followerCount ?? 0) === 0}
+                      >
+                        <Text
+                          style={currentTheme.textBold}
+                        >{`${user.followerCount ?? 0}`}</Text>
 
-                      <Text style={currentTheme.text}>seguidores</Text>
-                    </View>
+                        <Text style={currentTheme.text}>seguidores</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <ActivityIndicator
+                        size="large"
+                        color={currentColors.icon}
+                      />
+                    )}
 
-                    <View style={styles.infoColumn}>
-                      <Text
-                        style={currentTheme.textBold}
-                      >{`${user.followedCount ?? 0}`}</Text>
+                    {!isLoadingFollowed ? (
+                      <TouchableOpacity
+                        style={styles.infoColumn}
+                        onPress={() => goToFollowed()}
+                        disabled={(user.followedCount ?? 0) === 0}
+                      >
+                        <Text
+                          style={currentTheme.textBold}
+                        >{`${user.followedCount ?? 0}`}</Text>
 
-                      <Text style={currentTheme.text}>seguindo</Text>
-                    </View>
+                        <Text style={currentTheme.text}>seguindo</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <ActivityIndicator
+                        size="large"
+                        color={currentColors.icon}
+                      />
+                    )}
                   </View>
 
                   {authUser.fullName && (
@@ -350,10 +419,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 50,
     paddingBottom: 10,
     paddingLeft: 20,
-    paddingRight: 20,
-    paddingTop: 50,
+    paddingRight: 10,
     width: '100%',
   },
   loadingContainer: {

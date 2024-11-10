@@ -23,6 +23,7 @@ import { FeedStackScreenProps } from '@/src/core/navigation/types';
 import { appColors } from '@/src/core/theme/appColors';
 import { darkTheme, lightTheme } from '@/src/core/theme/appTheme';
 import { Post } from '@/src/features/shared/data/models/Post';
+import { User } from '@/src/features/shared/data/models/User';
 
 import { PostRepositoryImpl } from '../../data/repositories/PostRepositoryImpl';
 import { PostUsecaseImpl } from '../../domain/usecases/PostUsecase';
@@ -120,7 +121,7 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
         `${lastPost.createdAt},${lastPost.id}`,
       ).toString('base64');
 
-      const newPosts = await postUsecase.listPosts(5, cursor);
+      const newPosts: Post[] = await postUsecase.listPosts(5, cursor);
 
       if (newPosts && newPosts.length > 0) {
         checkLikes(newPosts);
@@ -211,21 +212,33 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
   };
 
   const goToUser = async (id: string) => {
-    if (authUser && authUser.id != id) {
-      navigation.push('UserProfile', { userId: id });
+    navigation.push('UserProfile', { userId: id });
+  };
+
+  const goToLikes = async (post: Post) => {
+    if ((post.likeCount ?? 0) > 0) {
+      try {
+        const likes: User[] = await postUsecase.getLikes(post.id);
+
+        if (likes) {
+          navigation.push('UserList', { users: likes, title: 'Curtidas' });
+        }
+      } catch (_error) {
+        Alert.alert('Oops, algo deu errado');
+      }
     }
   };
 
   const goToComments = async (id: string) => {
-    if (authUser && authUser.id != id) {
-      navigation.push('PostComments', { postId: id });
-    }
+    navigation.push('PostComments', { postId: id });
   };
 
   return (
     <View style={currentTheme.container}>
       {!isLoading ? (
         <>
+          {posts && <View style={styles.topView} />}
+
           {posts && (
             <FlatList
               data={posts}
@@ -233,24 +246,51 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
               renderItem={({ item }: { item: Post }) => {
                 const options: IconDropdownOption[] = [
                   {
+                    label: 'Editar Publicação',
+                    iconName: 'pencil',
+                    onSelect: async () => {
+                      navigation.push('PostDetail', {
+                        postId: item.id,
+                        editing: true,
+                      });
+                    },
+                  },
+                  {
                     label: 'Excluir Publicação',
                     iconName: 'trash-outline',
                     onSelect: async () => {
                       if (item) {
-                        try {
-                          const didDelete: boolean =
-                            await postUsecase.deletePost(item.id);
+                        Alert.alert(
+                          'Confirmar exclusão',
+                          'Você tem certeza absoluta de que deseja excluir sua publicação?',
+                          [
+                            {
+                              text: 'Cancelar',
+                              style: 'cancel',
+                            },
+                            {
+                              text: 'Excluir',
+                              style: 'destructive',
+                              onPress: async () => {
+                                try {
+                                  const didDelete: boolean =
+                                    await postUsecase.deletePost(item.id);
 
-                          if (didDelete) {
-                            const newPosts: Post[] = posts.filter(
-                              (post) => post.id !== item.id,
-                            );
+                                  if (didDelete) {
+                                    const newPosts: Post[] = posts.filter(
+                                      (post) => post.id !== item.id,
+                                    );
 
-                            setPosts(newPosts);
-                          }
-                        } catch (_error) {
-                          Alert.alert('Oops, algo deu errado');
-                        }
+                                    setPosts(newPosts);
+                                  }
+                                } catch (_error) {
+                                  Alert.alert('Oops, algo deu errado');
+                                }
+                              },
+                            },
+                          ],
+                          { cancelable: true },
+                        );
                       }
                     },
                   },
@@ -262,6 +302,9 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
                       <TouchableOpacity
                         style={styles.postRowContainer}
                         onPress={() => goToUser(item.user!.id)}
+                        disabled={
+                          authUser ? item.user!.id === authUser!.id : true
+                        }
                       >
                         {item.user?.avatar ? (
                           <Image
@@ -302,7 +345,11 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
                     />
 
                     <View style={styles.postRowContainer}>
-                      <Pressable onPress={() => handleLike(item)}>
+                      <Pressable
+                        style={styles.row}
+                        onPress={() => handleLike(item)}
+                        onLongPress={() => goToLikes(item)}
+                      >
                         <Ionicons
                           name={
                             likedPostIds.includes(item.id)
@@ -316,23 +363,26 @@ export const FeedScreen: React.FC<FeedStackScreenProps<'Feed'>> = ({
                               : currentColors.icon
                           }
                         ></Ionicons>
+
+                        <Text style={currentTheme.textBold}>
+                          {` ${item.likeCount ?? 0}    `}
+                        </Text>
                       </Pressable>
 
-                      <Text style={currentTheme.textBold}>
-                        {` ${item.likeCount ?? 0}    `}
-                      </Text>
-
-                      <TouchableOpacity onPress={() => goToComments(item.id)}>
+                      <TouchableOpacity
+                        style={styles.row}
+                        onPress={() => goToComments(item.id)}
+                      >
                         <Ionicons
                           name="chatbubble-outline"
                           size={34}
                           color={currentColors.icon}
                         ></Ionicons>
-                      </TouchableOpacity>
 
-                      <Text style={currentTheme.textBold}>
-                        {` ${item.commentCount ?? 0}`}
-                      </Text>
+                        <Text style={currentTheme.textBold}>
+                          {` ${item.commentCount ?? 0}`}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
 
                     {item.description && (
@@ -429,9 +479,9 @@ const styles = StyleSheet.create({
   },
   flatListContainer: {
     flexGrow: 1,
-    paddingTop: 25,
   },
   icon: {
+    marginRight: 8,
     marginTop: 23,
   },
   image: {
@@ -445,7 +495,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
     paddingLeft: 20,
     paddingRight: 20,
-    width: 420,
+    width: '100%',
   },
   loadingContainer: {
     paddingVertical: 5,
@@ -461,10 +511,18 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingTop: 3,
   },
+  row: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  },
   topPostRowContainer: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingRight: 20,
+  },
+  topView: {
+    paddingVertical: 12,
   },
 });

@@ -8,7 +8,7 @@ export const userApi = {
     return response;
   },
   search: async (searchTerm: string) => {
-    const response = await axiosInstance.delete(`/users/search/${searchTerm}`);
+    const response = await axiosInstance.get(`/users/search/${searchTerm}`);
 
     return response;
   },
@@ -59,7 +59,7 @@ export const userApi = {
     return response;
   },
   getFollowers: async (id: string) => {
-    const response = await axiosInstance.get(`/users/${id}/followers}`);
+    const response = await axiosInstance.get(`/users/${id}/followers`);
 
     return response;
   },

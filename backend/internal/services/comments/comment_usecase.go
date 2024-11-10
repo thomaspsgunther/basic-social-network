@@ -9,7 +9,7 @@ import (
 )
 
 type ICommentUsecase interface {
-	Create(ctx context.Context, comment Comment) (uuid.UUID, error)
+	Create(ctx context.Context, comment Comment) (Comment, error)
 	GetFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error)
 	Get(ctx context.Context, id uuid.UUID) (Comment, error)
 	Update(ctx context.Context, comment Comment, id uuid.UUID) error
@@ -28,23 +28,23 @@ func NewCommentUsecase() ICommentUsecase {
 	}
 }
 
-func (u *commentUsecaseImpl) Create(ctx context.Context, comment Comment) (uuid.UUID, error) {
+func (u *commentUsecaseImpl) Create(ctx context.Context, comment Comment) (Comment, error) {
 	if (comment.User == &shared.User{}) {
-		return uuid.Nil, fmt.Errorf("user must not be empty")
+		return Comment{}, fmt.Errorf("user must not be empty")
 	}
 	if comment.PostID == uuid.Nil {
-		return uuid.Nil, fmt.Errorf("postid must not be empty")
+		return Comment{}, fmt.Errorf("postid must not be empty")
 	}
 	if comment.Message == "" {
-		return uuid.Nil, fmt.Errorf("comment text must not be empty")
+		return Comment{}, fmt.Errorf("comment text must not be empty")
 	}
 
-	id, err := u.repository.create(ctx, comment)
+	newComment, err := u.repository.create(ctx, comment)
 	if err != nil {
-		return uuid.Nil, err
+		return Comment{}, err
 	}
 
-	return id, nil
+	return newComment, nil
 }
 
 func (u *commentUsecaseImpl) GetFromPost(ctx context.Context, postId uuid.UUID) ([]Comment, error) {

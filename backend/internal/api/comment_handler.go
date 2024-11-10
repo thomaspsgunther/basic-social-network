@@ -76,7 +76,7 @@ func (h CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.Usecase.Create(r.Context(), comment)
+	newComment, err := h.Usecase.Create(r.Context(), comment)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 
@@ -84,7 +84,7 @@ func (h CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(comments.Comment{ID: id})
+	response, err := json.Marshal(newComment)
 	if err != nil {
 		logger.ServerLogger.Error(err.Error())
 

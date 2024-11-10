@@ -16,6 +16,10 @@ import {
   View,
 } from 'react-native';
 
+import {
+  IconDropdown,
+  IconDropdownOption,
+} from '@/src/core/components/IconDropdown';
 import { AuthContext } from '@/src/core/context/AuthContext';
 import { useAppTheme } from '@/src/core/context/ThemeContext';
 import { CurrentUserProfileStackScreenProps } from '@/src/core/navigation/types';
@@ -26,15 +30,15 @@ import { User } from '@/src/features/shared/data/models/User';
 import { UserRepositoryImpl } from '../../data/repositories/UserRepositoryImpl';
 import { UserUsecaseImpl } from '../../domain/usecases/UserUsecase';
 
-export const EditUserScreen: React.FC<
-  CurrentUserProfileStackScreenProps<'EditUser'>
+export const UserEditScreen: React.FC<
+  CurrentUserProfileStackScreenProps<'UserEdit'>
 > = ({ navigation }) => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('edituserscreen must be used within an authprovider');
+    throw new Error('UserEditscreen must be used within an authprovider');
   }
 
-  const { authUser, setAuthUser } = context;
+  const { authUser, setAuthUser, logoutAndLeave } = context;
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [avatar, setAvatar] = useState<string | null>(
@@ -94,13 +98,13 @@ export const EditUserScreen: React.FC<
               );
               return;
             } else if (email && isValidEmail(email)) {
-              userData.email = email;
+              userData.email = email.trim();
             }
             if (fullName) {
-              userData.fullName = fullName;
+              userData.fullName = fullName.trim();
             }
             if (description) {
-              userData.description = description;
+              userData.description = description.trim();
             }
             if (avatar) {
               userData.avatar = avatar;
@@ -116,6 +120,8 @@ export const EditUserScreen: React.FC<
               if (canGoBack) {
                 navigation.goBack();
               }
+            } else {
+              setIsLoading(false);
             }
           } else {
             setIsLoading(false);
@@ -150,13 +156,15 @@ export const EditUserScreen: React.FC<
   };
 
   const handleUsernameChange = (input: string) => {
-    const noSpacesInput: string = input.replace(/\s+/g, '');
+    const trimmedUsername: string = input.trim();
+    const noSpacesInput: string = trimmedUsername.replace(/\s+/g, '');
     const lowercaseUsername: string = noSpacesInput.toLowerCase();
     setUsername(lowercaseUsername);
   };
 
   const handlePasswordChange = (input: string) => {
-    const noSpacesPassword: string = input.replace(/\s+/g, '');
+    const trimmedPassword: string = input.trim();
+    const noSpacesPassword: string = trimmedPassword.replace(/\s+/g, '');
     setPassword(noSpacesPassword);
   };
 
@@ -263,6 +271,45 @@ export const EditUserScreen: React.FC<
     setAvatarUri(null);
   };
 
+  const options: IconDropdownOption[] = [
+    {
+      label: 'Excluir Conta',
+      iconName: 'trash-outline',
+      onSelect: async () => {
+        if (authUser) {
+          Alert.alert(
+            'Confirmar exclusão',
+            'Você tem certeza absoluta de que deseja excluir sua conta?',
+            [
+              {
+                text: 'Cancelar',
+                style: 'cancel',
+              },
+              {
+                text: 'Excluir',
+                style: 'destructive',
+                onPress: async () => {
+                  try {
+                    const didDelete: boolean = await userUsecase.deleteUser(
+                      authUser.id,
+                    );
+
+                    if (didDelete) {
+                      logoutAndLeave();
+                    }
+                  } catch (_error) {
+                    Alert.alert('Oops, algo deu errado');
+                  }
+                },
+              },
+            ],
+            { cancelable: true },
+          );
+        }
+      },
+    },
+  ];
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -276,6 +323,10 @@ export const EditUserScreen: React.FC<
           <Ionicons name="arrow-back" size={40} color={currentColors.icon} />
         </TouchableOpacity>
       )}
+
+      <View style={currentTheme.topRow}>
+        <IconDropdown options={options}></IconDropdown>
+      </View>
 
       <TouchableOpacity
         onPress={() => takePhoto()}
@@ -326,9 +377,9 @@ export const EditUserScreen: React.FC<
         onChangeText={handleUsernameChange}
       />
 
-      <View style={currentTheme.passwordContainer}>
+      <View style={currentTheme.inputIconContainer}>
         <TextInput
-          style={currentTheme.inputPassword}
+          style={currentTheme.inputIcon}
           maxLength={30}
           placeholder="Senha"
           placeholderTextColor={currentColors.placeholderText}
@@ -368,7 +419,7 @@ export const EditUserScreen: React.FC<
       <TextInput
         style={currentTheme.largeInput}
         multiline
-        maxLength={200}
+        maxLength={215}
         placeholder="Descrição (opcional)"
         placeholderTextColor={currentColors.placeholderText}
         value={description}

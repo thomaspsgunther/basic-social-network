@@ -68,7 +68,7 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({ options }) => {
   const handlePress = () => {
     if (iconRef.current) {
       iconRef.current.measure((_, __, ___, height, px, py) => {
-        setModalPosition({ top: py + height - 20, left: px + 20 });
+        setModalPosition({ top: py + height - 20, left: px + 60 });
         setModalVisible(true);
       });
     }

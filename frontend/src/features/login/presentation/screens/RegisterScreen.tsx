@@ -62,10 +62,10 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
             );
             return;
           } else if (email && isValidEmail(email)) {
-            userData.email = email;
+            userData.email = email.trim();
           }
           if (fullName) {
-            userData.fullName = fullName;
+            userData.fullName = fullName.trim();
           }
           if (avatar) {
             userData.avatar = avatar;
@@ -110,13 +110,15 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
   };
 
   const handleUsernameChange = (input: string) => {
-    const noSpacesInput: string = input.replace(/\s+/g, '');
+    const trimmedUsername: string = input.trim();
+    const noSpacesInput: string = trimmedUsername.replace(/\s+/g, '');
     const lowercaseUsername: string = noSpacesInput.toLowerCase();
     setUsername(lowercaseUsername);
   };
 
   const handlePasswordChange = (input: string) => {
-    const noSpacesPassword: string = input.replace(/\s+/g, '');
+    const trimmedPassword: string = input.trim();
+    const noSpacesPassword: string = trimmedPassword.replace(/\s+/g, '');
     setPassword(noSpacesPassword);
   };
 
@@ -228,7 +230,7 @@ export const RegisterScreen: React.FC<RootStackScreenProps<'Register'>> = ({
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      {canGoBack && (
+      {!isLoading && canGoBack && (
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
