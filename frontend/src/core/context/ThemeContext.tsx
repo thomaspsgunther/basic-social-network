@@ -19,7 +19,9 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const initialTheme = Appearance.getColorScheme() === 'dark';
+
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(initialTheme);
 
   useEffect(() => {
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
