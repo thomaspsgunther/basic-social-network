@@ -2,7 +2,7 @@
 
 ## English
 
-This is a relatively small but robust project, aimed at creating a basic instagram-like social network. It uses PostgreSQL for the database, Go for the backend and React Native for the frontend.
+This is a relatively small project, aimed at creating a basic instagram-like social network with users, followers, posts, likes and comments. It uses PostgreSQL for the database, Go for the backend and React Native for the frontend.
 
 ### Backend
 
@@ -26,7 +26,7 @@ To run the frontend, first execute the command `npm install` to install the proj
 
 ## Português
 
-Este é um projeto relativamente pequeno, mas robusto, voltado para a criação de uma rede social básica semelhante ao Instagram. Ele utiliza PostgreSQL para o banco de dados, Go para o backend e React Native para o frontend.
+Este é um projeto relativamente pequeno, voltado para a criação de uma rede social básica semelhante ao Instagram com usuários, seguidores, publicações, curtidas e comentários. Ele utiliza PostgreSQL para o banco de dados, Go para o backend e React Native para o frontend.
 
 ### Backend
 

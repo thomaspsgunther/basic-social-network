@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 
 	_ "y-net/docs"
@@ -74,8 +75,19 @@ func main() {
 	host := os.Getenv("HTTP_HOST")
 	port := os.Getenv("HTTP_PORT")
 
+	// Configure CORS settings
+	corsMiddleware := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:8081"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		ExposedHeaders:   []string{"X-Response-Time"},
+		MaxAge:           300,
+		AllowCredentials: true,
+	})
+
 	// Routes setup
 	r := chi.NewRouter()
+	r.Use(corsMiddleware.Handler)
 	r.Use(auth.Middleware())
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(fmt.Sprintf("http://%s:%s/swagger/doc.json", host, port)),

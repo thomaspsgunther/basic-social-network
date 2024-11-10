@@ -481,8 +481,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   icon: {
-    marginRight: 8,
-    marginTop: 23,
+    marginTop: 27,
   },
   image: {
     height: 420,
@@ -492,10 +491,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingBottom: 30,
+    marginTop: 1,
+    paddingBottom: 34,
     paddingLeft: 20,
-    paddingRight: 20,
-    width: '100%',
+    paddingRight: 14,
+    width: 420,
   },
   loadingContainer: {
     paddingVertical: 5,
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingRight: 20,
+    paddingRight: 15,
   },
   topView: {
     paddingVertical: 12,

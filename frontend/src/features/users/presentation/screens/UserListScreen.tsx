@@ -151,6 +151,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingBottom: 10,
     paddingLeft: 10,
-    width: '100%',
+    width: 420,
   },
 });

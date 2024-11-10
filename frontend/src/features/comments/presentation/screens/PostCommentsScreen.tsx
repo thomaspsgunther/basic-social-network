@@ -334,6 +334,7 @@ const styles = StyleSheet.create({
     marginLeft: 18,
   },
   iconDropdown: {
+    marginLeft: 12,
     marginTop: 9,
   },
   listHeader: {
