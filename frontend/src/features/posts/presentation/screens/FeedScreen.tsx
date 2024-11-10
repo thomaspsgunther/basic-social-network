@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   icon: {
-    marginTop: 27,
+    marginTop: 25,
   },
   image: {
     height: 420,
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
     paddingBottom: 34,
     paddingLeft: 20,
-    paddingRight: 14,
+    paddingRight: 20,
     width: 420,
   },
   loadingContainer: {
