@@ -5,6 +5,5 @@ export interface Comment {
   postId?: string;
   user?: User;
   message?: string;
-  likeCount?: number;
   createdAt?: Date;
 }
