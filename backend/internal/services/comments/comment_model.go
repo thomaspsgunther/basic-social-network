@@ -16,6 +16,5 @@ type Comment struct {
 	User      *shared.User `json:"user,omitempty"`
 	PostID    uuid.UUID    `json:"postId,omitempty"`
 	Message   string       `json:"message,omitempty"`
-	LikeCount int          `json:"likeCount,omitempty"`
 	CreatedAt time.Time    `json:"createdAt,omitempty"`
 }
