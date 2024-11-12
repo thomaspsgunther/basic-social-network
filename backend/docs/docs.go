@@ -1309,9 +1309,6 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "likeCount": {
-                    "type": "integer"
-                },
                 "message": {
                     "type": "string"
                 },
