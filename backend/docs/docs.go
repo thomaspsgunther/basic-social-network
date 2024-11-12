@@ -449,163 +449,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/posts/checkliked/{user_id}_{post_id}": {
-            "get": {
-                "description": "Check if a user has liked a post by: id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "posts"
-                ],
-                "summary": "Check if a user has liked a post by: id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Post ID",
-                        "name": "post_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/posts.LikedJson"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/posts/likes/{user_id}_{post_id}": {
-            "post": {
-                "description": "Like a post by: id",
-                "tags": [
-                    "posts"
-                ],
-                "summary": "Like a post by: id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Post ID",
-                        "name": "post_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            },
-            "delete": {
-                "description": "Unlike a post by: id",
-                "tags": [
-                    "posts"
-                ],
-                "summary": "Unlike a post by: id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Post ID",
-                        "name": "post_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
         "/posts/{id}": {
             "get": {
                 "description": "Read a single post by: id",
@@ -772,7 +615,7 @@ const docTemplate = `{
                         "type": "string",
                         "format": "uuid",
                         "description": "Post ID",
-                        "name": "post_id",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -796,16 +639,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/checkfollow/{follower_id}_{followed_id}": {
+        "/posts/{id}/likes/check/{user_id}": {
             "get": {
-                "description": "Check if a user follows another user by: id",
+                "description": "Check if a user has liked a post by: id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "posts"
                 ],
-                "summary": "Check if a user follows another user by: id",
+                "summary": "Check if a user has liked a post by: id",
                 "parameters": [
                     {
                         "type": "string",
@@ -818,16 +661,16 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
-                        "description": "Follower ID",
-                        "name": "follower_id",
+                        "description": "Post ID",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "format": "uuid",
-                        "description": "Followed ID",
-                        "name": "followed_id",
+                        "description": "User ID",
+                        "name": "user_id",
                         "in": "path",
                         "required": true
                     }
@@ -836,7 +679,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/users.FollowsJson"
+                            "$ref": "#/definitions/posts.LikedJson"
                         }
                     },
                     "400": {
@@ -851,13 +694,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/follow/{follower_id}_{followed_id}": {
+        "/posts/{id}/likes/{user_id}": {
             "post": {
-                "description": "Follow a user by: id",
+                "description": "Like a post by: id",
                 "tags": [
-                    "users"
+                    "posts"
                 ],
-                "summary": "Follow a user by: id",
+                "summary": "Like a post by: id",
                 "parameters": [
                     {
                         "type": "string",
@@ -870,16 +713,16 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
-                        "description": "Follower ID",
-                        "name": "follower_id",
+                        "description": "Post ID",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "format": "uuid",
-                        "description": "Followed ID",
-                        "name": "followed_id",
+                        "description": "User ID",
+                        "name": "user_id",
                         "in": "path",
                         "required": true
                     }
@@ -903,11 +746,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Unfollow a user by: id",
+                "description": "Unlike a post by: id",
                 "tags": [
-                    "users"
+                    "posts"
                 ],
-                "summary": "Unfollow a user by: id",
+                "summary": "Unlike a post by: id",
                 "parameters": [
                     {
                         "type": "string",
@@ -920,16 +763,16 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "format": "uuid",
-                        "description": "Follower ID",
-                        "name": "follower_id",
+                        "description": "Post ID",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "format": "uuid",
-                        "description": "Followed ID",
-                        "name": "followed_id",
+                        "description": "User ID",
+                        "name": "user_id",
                         "in": "path",
                         "required": true
                     }
@@ -999,16 +842,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/{id_list}": {
+        "/users/{id}": {
             "get": {
-                "description": "Read a list of users by: id_list",
+                "description": "Read a single user by: id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "users"
                 ],
-                "summary": "Read a list of users by: id_list",
+                "summary": "Read a single user by: id",
                 "parameters": [
                     {
                         "type": "string",
@@ -1020,8 +863,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "User ID List",
-                        "name": "id_list",
+                        "description": "User ID",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -1030,7 +873,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/shared.Users"
+                            "$ref": "#/definitions/shared.User"
                         }
                     },
                     "400": {
@@ -1043,9 +886,7 @@ const docTemplate = `{
                         "description": "Internal Server Error"
                     }
                 }
-            }
-        },
-        "/users/{id}": {
+            },
             "put": {
                 "description": "Update a single user by: id",
                 "consumes": [
@@ -1230,6 +1071,163 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/users/{id}/followers/check/{follower_id}": {
+            "get": {
+                "description": "Check if a user follows another user by: id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Check if a user follows another user by: id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Followed ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Follower ID",
+                        "name": "follower_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/users.FollowsJson"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/users/{id}/followers/{follower_id}": {
+            "post": {
+                "description": "Follow a user by: id",
+                "tags": [
+                    "users"
+                ],
+                "summary": "Follow a user by: id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Followed ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Follower ID",
+                        "name": "follower_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Unfollow a user by: id",
+                "tags": [
+                    "users"
+                ],
+                "summary": "Unfollow a user by: id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Followed ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Follower ID",
+                        "name": "follower_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
                     },
                     "500": {
                         "description": "Internal Server Error"

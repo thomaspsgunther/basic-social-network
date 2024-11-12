@@ -18,9 +18,9 @@ type iPostRepository interface {
 	update(ctx context.Context, post shared.Post, id uuid.UUID) error
 	delete(ctx context.Context, id uuid.UUID) error
 	like(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error
+	getLikes(ctx context.Context, id uuid.UUID) ([]shared.User, error)
 	unlike(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error
 	userLikedPost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) (bool, error)
-	getLikes(ctx context.Context, id uuid.UUID) ([]shared.User, error)
 }
 
 type postRepositoryImpl struct{}
@@ -202,6 +202,37 @@ func (i *postRepositoryImpl) like(ctx context.Context, userId uuid.UUID, postId 
 	return nil
 }
 
+func (i *postRepositoryImpl) getLikes(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
+	tx, err := database.Postgres.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		database.HandleTransaction(ctx, tx, err)
+	}()
+
+	rows, err := tx.Query(ctx, "SELECT u.id, u.username, u.full_name, u.avatar FROM likes l JOIN users u ON l.user_id = u.id WHERE l.post_id = $1", id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to select likes: %w", err)
+	}
+	defer rows.Close()
+
+	var userLikes []shared.User
+	for rows.Next() {
+		var user shared.User
+		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
+			return nil, fmt.Errorf("failed to scan user: %w", err)
+		}
+		userLikes = append(userLikes, user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error reading rows: %w", err)
+	}
+
+	return userLikes, nil
+}
+
 func (i *postRepositoryImpl) unlike(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error {
 	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
@@ -237,35 +268,4 @@ func (i *postRepositoryImpl) userLikedPost(ctx context.Context, userId uuid.UUID
 	}
 
 	return exists, nil
-}
-
-func (i *postRepositoryImpl) getLikes(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
-	tx, err := database.Postgres.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-
-	defer func() {
-		database.HandleTransaction(ctx, tx, err)
-	}()
-
-	rows, err := tx.Query(ctx, "SELECT u.id, u.username, u.full_name, u.avatar FROM likes l JOIN users u ON l.user_id = u.id WHERE l.post_id = $1", id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to select likes: %w", err)
-	}
-	defer rows.Close()
-
-	var userLikes []shared.User
-	for rows.Next() {
-		var user shared.User
-		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Avatar); err != nil {
-			return nil, fmt.Errorf("failed to scan user: %w", err)
-		}
-		userLikes = append(userLikes, user)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error reading rows: %w", err)
-	}
-
-	return userLikes, nil
 }

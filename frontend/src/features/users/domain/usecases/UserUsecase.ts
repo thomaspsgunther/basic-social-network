@@ -4,7 +4,7 @@ import { User } from '@/src/features/shared/data/models/User';
 import { IUserRepository } from '../repositories/UserRepository';
 
 interface IUserUsecase {
-  getUsersById(idList: string): Promise<User[]>;
+  getUserById(id: string): Promise<User>;
   getUsersBySearch(searchTerm: string): Promise<User[]>;
   listUserPosts(id: string, limit: number, cursor?: string): Promise<Post[]>;
   updateUser(user: User): Promise<boolean>;
@@ -23,10 +23,10 @@ export class UserUsecaseImpl implements IUserUsecase {
     this.repository = repository;
   }
 
-  async getUsersById(idList: string): Promise<User[]> {
-    const users: User[] = await this.repository.getUsersById(idList);
+  async getUserById(id: string): Promise<User> {
+    const user: User = await this.repository.getUserById(id);
 
-    return users;
+    return user;
   }
 
   async getUsersBySearch(searchTerm: string): Promise<User[]> {

@@ -5,11 +5,11 @@ import { IUserRepository } from '../../domain/repositories/UserRepository';
 import { userApi } from '../api/userApi';
 
 export class UserRepositoryImpl implements IUserRepository {
-  async getUsersById(idList: string): Promise<User[]> {
-    const response = await userApi.get(idList);
-    const users: User[] = response.data;
+  async getUserById(id: string): Promise<User> {
+    const response = await userApi.get(id);
+    const user: User = response.data;
 
-    return users;
+    return user;
   }
 
   async getUsersBySearch(searchTerm: string): Promise<User[]> {

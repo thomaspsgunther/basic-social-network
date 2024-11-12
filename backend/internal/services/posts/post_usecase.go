@@ -16,9 +16,9 @@ type IPostUsecase interface {
 	Update(ctx context.Context, post shared.Post, id uuid.UUID) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	Like(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error
+	GetLikes(ctx context.Context, id uuid.UUID) ([]shared.User, error)
 	Unlike(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error
 	UserLikedPost(ctx context.Context, userId uuid.UUID, postId uuid.UUID) (bool, error)
-	GetLikes(ctx context.Context, id uuid.UUID) ([]shared.User, error)
 }
 
 type postUsecaseImpl struct {
@@ -101,6 +101,15 @@ func (i *postUsecaseImpl) Like(ctx context.Context, userId uuid.UUID, postId uui
 	return nil
 }
 
+func (i *postUsecaseImpl) GetLikes(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
+	users, err := i.repository.getLikes(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
 func (i *postUsecaseImpl) Unlike(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error {
 	err := i.repository.unlike(ctx, userId, postId)
 	if err != nil {
@@ -117,13 +126,4 @@ func (i *postUsecaseImpl) UserLikedPost(ctx context.Context, userId uuid.UUID, p
 	}
 
 	return isLiked, nil
-}
-
-func (i *postUsecaseImpl) GetLikes(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
-	users, err := i.repository.getLikes(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return users, nil
 }

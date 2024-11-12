@@ -68,14 +68,14 @@ export const UserProfileScreen: React.FC = () => {
     }
     setIsLoading(true);
     try {
-      const users: User[] = await userUsecase.getUsersById(userId);
+      const newUser: User = await userUsecase.getUserById(userId);
 
-      if (users && authUser) {
-        setUser(users[0]);
+      if (newUser && authUser) {
+        setUser(newUser);
 
         const doesFollow: boolean = await userUsecase.userFollowsUser(
           authUser!.id,
-          users[0].id,
+          newUser.id,
         );
 
         if (doesFollow) {
@@ -83,7 +83,7 @@ export const UserProfileScreen: React.FC = () => {
         }
 
         const initialPosts: Post[] = await userUsecase.listUserPosts(
-          users[0].id,
+          newUser.id,
           15,
         );
 
@@ -114,14 +114,14 @@ export const UserProfileScreen: React.FC = () => {
     setIsFollowing(false);
     setPosts([]);
     try {
-      const users: User[] = await userUsecase.getUsersById(userId);
+      const newUser: User = await userUsecase.getUserById(userId);
 
-      if (users && authUser) {
-        setUser(users[0]);
+      if (newUser && authUser) {
+        setUser(newUser);
 
         const doesFollow: boolean = await userUsecase.userFollowsUser(
           authUser!.id,
-          users[0].id,
+          newUser.id,
         );
 
         if (doesFollow) {
@@ -129,7 +129,7 @@ export const UserProfileScreen: React.FC = () => {
         }
 
         const initialPosts: Post[] = await userUsecase.listUserPosts(
-          users[0].id,
+          newUser.id,
           15,
         );
 

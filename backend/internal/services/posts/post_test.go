@@ -288,6 +288,15 @@ func (m *mockPostRepository) like(ctx context.Context, userId uuid.UUID, postId 
 	return nil
 }
 
+func (m *mockPostRepository) getLikes(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
+	var userList []shared.User
+	for _, userId := range m.likes[id] {
+		userList = append(userList, shared.User{ID: userId})
+	}
+
+	return userList, nil
+}
+
 func (m *mockPostRepository) unlike(ctx context.Context, userId uuid.UUID, postId uuid.UUID) error {
 	users := m.likes[postId]
 	for i, id := range users {
@@ -312,13 +321,4 @@ func (m *mockPostRepository) userLikedPost(ctx context.Context, userId uuid.UUID
 		}
 	}
 	return false, nil
-}
-
-func (m *mockPostRepository) getLikes(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
-	var userList []shared.User
-	for _, userId := range m.likes[id] {
-		userList = append(userList, shared.User{ID: userId})
-	}
-
-	return userList, nil
 }

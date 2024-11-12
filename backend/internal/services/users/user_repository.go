@@ -3,7 +3,6 @@ package users
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,16 +14,16 @@ import (
 
 type iUserRepository interface {
 	create(ctx context.Context, user shared.User) (uuid.UUID, error)
-	get(ctx context.Context, idList []uuid.UUID) ([]shared.User, error)
+	get(ctx context.Context, id uuid.UUID) (shared.User, error)
 	getBySearch(ctx context.Context, searchStr string) ([]shared.User, error)
 	getPostsFromUser(ctx context.Context, userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]shared.Post, error)
 	update(ctx context.Context, user shared.User, id uuid.UUID) error
 	delete(ctx context.Context, id uuid.UUID) error
 	follow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error
-	unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error
-	userFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error)
 	getFollowers(ctx context.Context, iId uuid.UUID) ([]shared.User, error)
 	getFollowed(ctx context.Context, id uuid.UUID) ([]shared.User, error)
+	unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error
+	userFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error)
 }
 
 type userRepositoryImpl struct{}
@@ -52,45 +51,29 @@ func (r *userRepositoryImpl) create(ctx context.Context, user shared.User) (uuid
 	return id, nil
 }
 
-func (r *userRepositoryImpl) get(ctx context.Context, idList []uuid.UUID) ([]shared.User, error) {
+func (r *userRepositoryImpl) get(ctx context.Context, id uuid.UUID) (shared.User, error) {
 	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+		return shared.User{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer func() {
 		database.HandleTransaction(ctx, tx, err)
 	}()
 
-	var placeholders []string
-	args := make([]interface{}, len(idList))
-	for i, id := range idList {
-		placeholders = append(placeholders, fmt.Sprintf("$%d", i+1))
-		args[i] = id
-	}
+	query := `
+		SELECT id, username, full_name, description, avatar, post_count, follower_count, followed_count
+		FROM users
+		WHERE id = $1
+	`
 
-	placeholdersClause := strings.Join(placeholders, ", ")
-	query := fmt.Sprintf("SELECT id, username, full_name, description, avatar, post_count, follower_count, followed_count FROM users WHERE id IN (%s)", placeholdersClause)
-
-	rows, err := tx.Query(ctx, query, args...)
+	var user shared.User
+	err = tx.QueryRow(ctx, query, id).Scan(&user.ID, &user.Username, &user.FullName, &user.Description, &user.Avatar, &user.PostCount, &user.FollowerCount, &user.FollowedCount)
 	if err != nil {
-		return nil, fmt.Errorf("failed to select users: %w", err)
-	}
-	defer rows.Close()
-
-	var users []shared.User
-	for rows.Next() {
-		var user shared.User
-		if err := rows.Scan(&user.ID, &user.Username, &user.FullName, &user.Description, &user.Avatar, &user.PostCount, &user.FollowerCount, &user.FollowedCount); err != nil {
-			return nil, fmt.Errorf("failed to scan user: %w", err)
-		}
-		users = append(users, user)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error reading rows: %w", err)
+		return shared.User{}, fmt.Errorf("failed to scan user: %w", err)
 	}
 
-	return users, nil
+	return user, nil
 }
 
 func (r *userRepositoryImpl) getBySearch(ctx context.Context, searchStr string) ([]shared.User, error) {
@@ -259,43 +242,6 @@ func (r *userRepositoryImpl) follow(ctx context.Context, followerId uuid.UUID, f
 	return nil
 }
 
-func (r *userRepositoryImpl) unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error {
-	tx, err := database.Postgres.Begin(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
-	}
-
-	defer func() {
-		database.HandleTransaction(ctx, tx, err)
-	}()
-
-	_, err = tx.Exec(ctx, "DELETE FROM followers WHERE follower_id = $1 AND followed_id = $2", followerId, followedId)
-	if err != nil {
-		return fmt.Errorf("failed to delete follower: %w", err)
-	}
-
-	return nil
-}
-
-func (r *userRepositoryImpl) userFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error) {
-	tx, err := database.Postgres.Begin(ctx)
-	if err != nil {
-		return false, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-
-	defer func() {
-		database.HandleTransaction(ctx, tx, err)
-	}()
-
-	var exists bool
-	err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM followers WHERE follower_id = $1 AND followed_id = $2)", followerId, followedId).Scan(&exists)
-	if err != nil {
-		return false, fmt.Errorf("failed to check if user follows user: %w", err)
-	}
-
-	return exists, nil
-}
-
 func (r *userRepositoryImpl) getFollowers(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
 	tx, err := database.Postgres.Begin(ctx)
 	if err != nil {
@@ -356,4 +302,41 @@ func (r *userRepositoryImpl) getFollowed(ctx context.Context, id uuid.UUID) ([]s
 	}
 
 	return userFollowed, nil
+}
+
+func (r *userRepositoryImpl) unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error {
+	tx, err := database.Postgres.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		database.HandleTransaction(ctx, tx, err)
+	}()
+
+	_, err = tx.Exec(ctx, "DELETE FROM followers WHERE follower_id = $1 AND followed_id = $2", followerId, followedId)
+	if err != nil {
+		return fmt.Errorf("failed to delete follower: %w", err)
+	}
+
+	return nil
+}
+
+func (r *userRepositoryImpl) userFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error) {
+	tx, err := database.Postgres.Begin(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		database.HandleTransaction(ctx, tx, err)
+	}()
+
+	var exists bool
+	err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM followers WHERE follower_id = $1 AND followed_id = $2)", followerId, followedId).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check if user follows user: %w", err)
+	}
+
+	return exists, nil
 }

@@ -168,13 +168,13 @@ const AuthProvider: React.FC<AuthProviderProps> = ({
   const fetchUser = async (token: string) => {
     const decodedToken = decodeToken(token);
     if (decodedToken != null) {
-      const userList: User[] = await userUsecase.getUsersById(decodedToken.id);
+      const user: User = await userUsecase.getUserById(decodedToken.id);
 
-      if (!userList || userList.length === 0) {
+      if (!user) {
         throw new Error('user not found');
       }
 
-      setAuthUser(userList[0]);
+      setAuthUser(user);
     } else {
       throw new Error('invalid token');
     }

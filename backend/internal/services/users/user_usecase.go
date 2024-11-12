@@ -14,16 +14,16 @@ import (
 
 type IUserUsecase interface {
 	Create(ctx context.Context, user shared.User) (uuid.UUID, error)
-	Get(ctx context.Context, idList []uuid.UUID) ([]shared.User, error)
+	Get(ctx context.Context, id uuid.UUID) (shared.User, error)
 	GetBySearch(ctx context.Context, searchStr string) ([]shared.User, error)
 	GetPostsFromUser(ctx context.Context, userId uuid.UUID, limit int, lastCreatedAt time.Time, lastId uuid.UUID) ([]shared.Post, error)
 	Update(ctx context.Context, user shared.User, id uuid.UUID) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	Follow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error
-	Unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error
-	UserFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error)
 	GetFollowers(ctx context.Context, id uuid.UUID) ([]shared.User, error)
 	GetFollowed(ctx context.Context, id uuid.UUID) ([]shared.User, error)
+	Unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error
+	UserFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error)
 }
 
 type userUsecaseImpl struct {
@@ -57,13 +57,13 @@ func (u *userUsecaseImpl) Create(ctx context.Context, user shared.User) (uuid.UU
 	return id, nil
 }
 
-func (u *userUsecaseImpl) Get(ctx context.Context, idList []uuid.UUID) ([]shared.User, error) {
-	users, err := u.repository.get(ctx, idList)
+func (u *userUsecaseImpl) Get(ctx context.Context, id uuid.UUID) (shared.User, error) {
+	user, err := u.repository.get(ctx, id)
 	if err != nil {
-		return nil, err
+		return shared.User{}, err
 	}
 
-	return users, nil
+	return user, nil
 }
 
 func (u *userUsecaseImpl) GetBySearch(ctx context.Context, searchStr string) ([]shared.User, error) {
@@ -123,24 +123,6 @@ func (u *userUsecaseImpl) Follow(ctx context.Context, followerId uuid.UUID, foll
 	return nil
 }
 
-func (u *userUsecaseImpl) Unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error {
-	err := u.repository.unfollow(ctx, followerId, followedId)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (u *userUsecaseImpl) UserFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error) {
-	follows, err := u.repository.userFollowsUser(ctx, followerId, followedId)
-	if err != nil {
-		return false, err
-	}
-
-	return follows, nil
-}
-
 func (u *userUsecaseImpl) GetFollowers(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
 	users, err := u.repository.getFollowers(ctx, id)
 	if err != nil {
@@ -157,6 +139,24 @@ func (u *userUsecaseImpl) GetFollowed(ctx context.Context, id uuid.UUID) ([]shar
 	}
 
 	return users, nil
+}
+
+func (u *userUsecaseImpl) Unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error {
+	err := u.repository.unfollow(ctx, followerId, followedId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *userUsecaseImpl) UserFollowsUser(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) (bool, error) {
+	follows, err := u.repository.userFollowsUser(ctx, followerId, followedId)
+	if err != nil {
+		return false, err
+	}
+
+	return follows, nil
 }
 
 func Authenticate(ctx context.Context, user shared.User) (bool, error) {

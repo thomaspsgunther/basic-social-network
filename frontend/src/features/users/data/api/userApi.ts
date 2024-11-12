@@ -2,8 +2,8 @@ import { axiosInstance } from '@/src/core/axios/axiosInstance';
 import { User } from '@/src/features/shared/data/models/User';
 
 export const userApi = {
-  get: async (idList: string) => {
-    const response = await axiosInstance.get(`/users/${idList}`);
+  get: async (id: string) => {
+    const response = await axiosInstance.get(`/users/${id}`);
 
     return response;
   },
@@ -39,21 +39,7 @@ export const userApi = {
   },
   follow: async (followerId: string, followedId: string) => {
     const response = await axiosInstance.post(
-      `/users/follow/${followerId}_${followedId}`,
-    );
-
-    return response;
-  },
-  unfollow: async (followerId: string, followedId: string) => {
-    const response = await axiosInstance.delete(
-      `/users/follow/${followerId}_${followedId}`,
-    );
-
-    return response;
-  },
-  userFollowsUser: async (followerId: string, followedId: string) => {
-    const response = await axiosInstance.get(
-      `/users/checkfollow/${followerId}_${followedId}`,
+      `/users/${followedId}/followers/${followerId}`,
     );
 
     return response;
@@ -65,6 +51,20 @@ export const userApi = {
   },
   getFollowed: async (id: string) => {
     const response = await axiosInstance.get(`/users/${id}/followed`);
+
+    return response;
+  },
+  unfollow: async (followerId: string, followedId: string) => {
+    const response = await axiosInstance.delete(
+      `/users/${followedId}/followers/${followerId}`,
+    );
+
+    return response;
+  },
+  userFollowsUser: async (followerId: string, followedId: string) => {
+    const response = await axiosInstance.get(
+      `/users/${followedId}/followers/check/${followerId}`,
+    );
 
     return response;
   },

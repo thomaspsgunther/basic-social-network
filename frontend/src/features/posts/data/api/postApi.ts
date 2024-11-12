@@ -37,27 +37,27 @@ export const postApi = {
   },
   like: async (userId: string, postId: string) => {
     const response = await axiosInstance.post(
-      `/posts/likes/${userId}_${postId}`,
-    );
-
-    return response;
-  },
-  unlike: async (userId: string, postId: string) => {
-    const response = await axiosInstance.delete(
-      `/posts/likes/${userId}_${postId}`,
-    );
-
-    return response;
-  },
-  checkLiked: async (userId: string, postId: string) => {
-    const response = await axiosInstance.get(
-      `/posts/checkliked/${userId}_${postId}`,
+      `/posts/${postId}/likes/${userId}`,
     );
 
     return response;
   },
   getLikes: async (id: string) => {
     const response = await axiosInstance.get(`/posts/${id}/likes`);
+
+    return response;
+  },
+  unlike: async (userId: string, postId: string) => {
+    const response = await axiosInstance.delete(
+      `/posts/${postId}/likes/${userId}`,
+    );
+
+    return response;
+  },
+  checkLiked: async (userId: string, postId: string) => {
+    const response = await axiosInstance.get(
+      `/posts/${postId}/likes/check/${userId}`,
+    );
 
     return response;
   },

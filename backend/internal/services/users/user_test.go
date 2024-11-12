@@ -43,17 +43,15 @@ func TestCreateUserEmptyFields(t *testing.T) {
 	assert.Equal(t, uuid.Nil, id)
 }
 
-func TestGetUsers(t *testing.T) {
+func TestGetUser(t *testing.T) {
 	ts := setup()
 
 	user1 := shared.User{Username: "testuser", Password: "password123"}
-	user2 := shared.User{Username: "testuser2", Password: "password456"}
 	id1, _ := ts.usecase.Create(context.Background(), user1)
-	id2, _ := ts.usecase.Create(context.Background(), user2)
 
-	users, err := ts.usecase.Get(context.Background(), []uuid.UUID{id1, id2})
+	user, err := ts.usecase.Get(context.Background(), id1)
 	assert.NoError(t, err)
-	assert.Len(t, users, 2)
+	assert.Equal(t, user1.Username, user.Username)
 }
 
 func TestGetBySearch(t *testing.T) {
@@ -79,9 +77,9 @@ func TestUpdateUser(t *testing.T) {
 	err := ts.usecase.Update(context.Background(), user, id)
 	assert.NoError(t, err)
 
-	updatedUsers, err := ts.usecase.Get(context.Background(), []uuid.UUID{id})
+	updatedUser, err := ts.usecase.Get(context.Background(), id)
 	assert.NoError(t, err)
-	assert.Equal(t, "updateduser", updatedUsers[0].Username)
+	assert.Equal(t, "updateduser", updatedUser.Username)
 }
 
 func TestUpdateUserNotFound(t *testing.T) {
@@ -103,9 +101,9 @@ func TestDeleteUser(t *testing.T) {
 	err := ts.usecase.Delete(context.Background(), id)
 	assert.NoError(t, err)
 
-	users, err := ts.usecase.Get(context.Background(), []uuid.UUID{id})
-	assert.NoError(t, err)
-	assert.Len(t, users, 0)
+	_, err = ts.usecase.Get(context.Background(), id)
+	assert.Error(t, err)
+	assert.Equal(t, "user not found", err.Error())
 }
 
 func TestDeleteUserNotFound(t *testing.T) {
@@ -231,15 +229,11 @@ func (m *mockUserRepository) create(ctx context.Context, user shared.User) (uuid
 	return id, nil
 }
 
-func (m *mockUserRepository) get(ctx context.Context, idList []uuid.UUID) ([]shared.User, error) {
-	var result []shared.User
-	for _, id := range idList {
-		if user, exists := m.users[id]; exists {
-			result = append(result, user)
-		}
+func (m *mockUserRepository) get(ctx context.Context, id uuid.UUID) (shared.User, error) {
+	if user, exists := m.users[id]; exists {
+		return user, nil
 	}
-
-	return result, nil
+	return shared.User{}, fmt.Errorf("user not found")
 }
 
 func (m *mockUserRepository) getBySearch(ctx context.Context, searchStr string) ([]shared.User, error) {
@@ -291,6 +285,32 @@ func (m *mockUserRepository) follow(ctx context.Context, followerId uuid.UUID, f
 	return nil
 }
 
+func (m *mockUserRepository) getFollowers(ctx context.Context, userId uuid.UUID) ([]shared.User, error) {
+	var userList []shared.User
+	for followerId := range m.followersMap {
+		for _, id := range m.followersMap[followerId] {
+			if id == userId {
+				userList = append(userList, shared.User{ID: followerId})
+			}
+		}
+	}
+
+	return userList, nil
+}
+
+func (m *mockUserRepository) getFollowed(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
+	var userList []shared.User
+	for followerId, followed := range m.followersMap {
+		for _, id := range followed {
+			if followerId == id {
+				userList = append(userList, shared.User{ID: id})
+			}
+		}
+	}
+
+	return userList, nil
+}
+
 func (m *mockUserRepository) unfollow(ctx context.Context, followerId uuid.UUID, followedId uuid.UUID) error {
 	followed := m.followersMap[followerId]
 	for i, id := range followed {
@@ -317,30 +337,4 @@ func (m *mockUserRepository) userFollowsUser(ctx context.Context, followerId uui
 	}
 
 	return false, nil
-}
-
-func (m *mockUserRepository) getFollowers(ctx context.Context, userId uuid.UUID) ([]shared.User, error) {
-	var userList []shared.User
-	for followerId := range m.followersMap {
-		for _, id := range m.followersMap[followerId] {
-			if id == userId {
-				userList = append(userList, shared.User{ID: followerId})
-			}
-		}
-	}
-
-	return userList, nil
-}
-
-func (m *mockUserRepository) getFollowed(ctx context.Context, id uuid.UUID) ([]shared.User, error) {
-	var userList []shared.User
-	for followerId, followed := range m.followersMap {
-		for _, id := range followed {
-			if followerId == id {
-				userList = append(userList, shared.User{ID: id})
-			}
-		}
-	}
-
-	return userList, nil
 }

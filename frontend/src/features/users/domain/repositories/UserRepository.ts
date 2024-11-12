@@ -2,7 +2,7 @@ import { Post } from '@/src/features/shared/data/models/Post';
 import { User } from '@/src/features/shared/data/models/User';
 
 export interface IUserRepository {
-  getUsersById(idList: string): Promise<User[]>;
+  getUserById(id: string): Promise<User>;
   getUsersBySearch(searchTerm: string): Promise<User[]>;
   listUserPosts(id: string, limit: number, cursor?: string): Promise<Post[]>;
   updateUser(user: User): Promise<boolean>;

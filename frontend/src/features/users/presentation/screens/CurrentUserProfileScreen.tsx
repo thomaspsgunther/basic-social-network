@@ -65,13 +65,13 @@ export const CurrentUserProfileScreen: React.FC<
     setIsLoading(true);
     try {
       if (authUser) {
-        const users: User[] = await userUsecase.getUsersById(authUser.id);
+        const newUser: User = await userUsecase.getUserById(authUser.id);
 
-        if (users) {
-          setUser(users[0]);
+        if (newUser) {
+          setUser(newUser);
 
           const initialPosts: Post[] = await userUsecase.listUserPosts(
-            users[0].id,
+            newUser.id,
             15,
           );
 
@@ -103,13 +103,13 @@ export const CurrentUserProfileScreen: React.FC<
     setPosts([]);
     try {
       if (authUser) {
-        const users: User[] = await userUsecase.getUsersById(authUser.id);
+        const newUser: User = await userUsecase.getUserById(authUser.id);
 
-        if (users) {
-          setUser(users[0]);
+        if (newUser) {
+          setUser(newUser);
 
           const initialPosts: Post[] = await userUsecase.listUserPosts(
-            users[0].id,
+            newUser.id,
             15,
           );
 
