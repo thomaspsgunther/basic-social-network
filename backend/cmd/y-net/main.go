@@ -102,7 +102,7 @@ func main() {
 	logger.ServerLogger.Info(fmt.Sprintf("server running on http://%s:%s/api/v1/", host, port))
 	logger.ServerLogger.Info("--------------------------------------------------------------------")
 
-	go http.ListenAndServe(":"+port, r)
+	go http.ListenAndServe(host+":"+port, r)
 
 	// Shutdown server
 	exit := make(chan struct{})
