@@ -6,10 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type Posts struct {
-	PostList []*Post
-}
-
 type Post struct {
 	ID           uuid.UUID `json:"id,omitempty"`
 	User         *User     `json:"user,omitempty"`

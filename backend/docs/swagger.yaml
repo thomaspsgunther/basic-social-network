@@ -13,13 +13,6 @@ definitions:
       user:
         $ref: '#/definitions/shared.User'
     type: object
-  comments.Comments:
-    properties:
-      commentList:
-        items:
-          $ref: '#/definitions/comments.Comment'
-        type: array
-    type: object
   posts.LikedJson:
     properties:
       liked:
@@ -41,13 +34,6 @@ definitions:
         type: integer
       user:
         $ref: '#/definitions/shared.User'
-    type: object
-  shared.Posts:
-    properties:
-      postList:
-        items:
-          $ref: '#/definitions/shared.Post'
-        type: array
     type: object
   shared.TokenJson:
     properties:
@@ -76,13 +62,6 @@ definitions:
         type: integer
       username:
         type: string
-    type: object
-  shared.Users:
-    properties:
-      userList:
-        items:
-          $ref: '#/definitions/shared.User'
-        type: array
     type: object
   users.FollowsJson:
     properties:
@@ -224,7 +203,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/comments.Comments'
+            items:
+              $ref: '#/definitions/comments.Comment'
+            type: array
         "401":
           description: Unauthorized
         "500":
@@ -342,7 +323,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/shared.Posts'
+            items:
+              $ref: '#/definitions/shared.Post'
+            type: array
         "400":
           description: Bad Request
         "401":
@@ -507,7 +490,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/shared.Users'
+            items:
+              $ref: '#/definitions/shared.User'
+            type: array
         "400":
           description: Bad Request
         "401":
@@ -745,7 +730,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/shared.Users'
+            items:
+              $ref: '#/definitions/shared.User'
+            type: array
         "400":
           description: Bad Request
         "401":
@@ -777,7 +764,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/shared.Users'
+            items:
+              $ref: '#/definitions/shared.User'
+            type: array
         "400":
           description: Bad Request
         "401":
@@ -928,7 +917,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/shared.Posts'
+            items:
+              $ref: '#/definitions/shared.Post'
+            type: array
         "400":
           description: Bad Request
         "401":
@@ -959,7 +950,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/shared.Users'
+            items:
+              $ref: '#/definitions/shared.User'
+            type: array
         "400":
           description: Bad Request
         "401":

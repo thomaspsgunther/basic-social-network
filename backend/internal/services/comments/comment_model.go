@@ -7,10 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type Comments struct {
-	CommentList []*Comment
-}
-
 type Comment struct {
 	ID        uuid.UUID    `json:"id,omitempty"`
 	User      *shared.User `json:"user,omitempty"`

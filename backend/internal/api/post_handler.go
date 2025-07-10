@@ -115,7 +115,7 @@ func (h PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param       limit query int true "limit of pagination"
 // @Param       cursor query string false "cursor for pagination" Format(byte)
-// @Success     200 {object} shared.Posts
+// @Success     200 {array} shared.Post
 // @Failure     400
 // @Failure     401
 // @Failure     500
@@ -442,7 +442,7 @@ func (h PostHandler) Like(w http.ResponseWriter, r *http.Request) {
 // @Produce         json
 // @Param           Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param           id path string true "Post ID" Format(uuid)
-// @Success         200 {object} shared.Users
+// @Success         200 {array} shared.User
 // @Failure         400
 // @Failure         401
 // @Failure         500

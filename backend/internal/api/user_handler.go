@@ -47,7 +47,7 @@ func (h UserHandler) Routes() chi.Router {
 // @Produce     json
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param       search_term path string true "User Search Term"
-// @Success     200 {object} shared.Users
+// @Success     200 {array} shared.User
 // @Failure     400
 // @Failure     401
 // @Failure     500
@@ -152,7 +152,7 @@ func (h UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 // @Param            user_id path string true "User ID" Format(uuid)
 // @Param            limit query int true "limit of pagination"
 // @Param            cursor query string false "cursor for pagination" Format(byte)
-// @Success          200 {object} shared.Posts
+// @Success          200 {array} shared.Post
 // @Failure          400
 // @Failure          401
 // @Failure          500
@@ -417,7 +417,7 @@ func (h UserHandler) Follow(w http.ResponseWriter, r *http.Request) {
 // @Produce     json
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param       id path string true "User ID" Format(uuid)
-// @Success     200 {object} shared.Users
+// @Success     200 {array} shared.User
 // @Failure     400
 // @Failure     401
 // @Failure     500
@@ -472,7 +472,7 @@ func (h UserHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
 // @Produce     json
 // @Param       Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param       id path string true "User ID" Format(uuid)
-// @Success     200 {object} shared.Users
+// @Success     200 {array} shared.User
 // @Failure     400
 // @Failure     401
 // @Failure     500

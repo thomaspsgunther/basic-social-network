@@ -104,7 +104,7 @@ func (h CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 // @Produce            json
 // @Param              Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param              post_id path string true "Post ID" Format(uuid)
-// @Success            200 {object} comments.Comments
+// @Success            200 {array} comments.Comment
 // @Failure            401
 // @Failure            500
 // @Router             /comments/post/{post_id} [get]

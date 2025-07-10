@@ -105,7 +105,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/comments.Comments"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/comments.Comment"
+                            }
                         }
                     },
                     "401": {
@@ -382,7 +385,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/shared.Posts"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/shared.Post"
+                            }
                         }
                     },
                     "400": {
@@ -624,7 +630,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/shared.Users"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/shared.User"
+                            }
                         }
                     },
                     "400": {
@@ -827,7 +836,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/shared.Users"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/shared.User"
+                            }
                         }
                     },
                     "400": {
@@ -1016,7 +1028,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/shared.Users"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/shared.User"
+                            }
                         }
                     },
                     "400": {
@@ -1063,7 +1078,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/shared.Users"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/shared.User"
+                            }
                         }
                     },
                     "400": {
@@ -1281,7 +1299,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/shared.Posts"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/shared.Post"
+                            }
                         }
                     },
                     "400": {
@@ -1318,17 +1339,6 @@ const docTemplate = `{
                 }
             }
         },
-        "comments.Comments": {
-            "type": "object",
-            "properties": {
-                "commentList": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/comments.Comment"
-                    }
-                }
-            }
-        },
         "posts.LikedJson": {
             "type": "object",
             "properties": {
@@ -1360,17 +1370,6 @@ const docTemplate = `{
                 },
                 "user": {
                     "$ref": "#/definitions/shared.User"
-                }
-            }
-        },
-        "shared.Posts": {
-            "type": "object",
-            "properties": {
-                "postList": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/shared.Post"
-                    }
                 }
             }
         },
@@ -1414,17 +1413,6 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
-                }
-            }
-        },
-        "shared.Users": {
-            "type": "object",
-            "properties": {
-                "userList": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/shared.User"
-                    }
                 }
             }
         },
